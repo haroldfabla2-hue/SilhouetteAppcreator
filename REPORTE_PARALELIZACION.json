@@ -1,0 +1,33 @@
+{
+  "timestamp": "2025-11-04T14:37:32.411492",
+  "puntuacion_porcentaje": 53.85,
+  "puntos_obtenidos": 14,
+  "puntos_totales": 26,
+  "detalles": {
+    "parallel_engine": {
+      "exito": true,
+      "caracteristicas": 4,
+      "maximo": 8
+    },
+    "multiagent_orchestrator": {
+      "exito": true,
+      "fases": 5,
+      "maximo": 5
+    },
+    "parallelized_adapter": {
+      "exito": true,
+      "integraciones": 2,
+      "maximo": 5
+    },
+    "parallel_demo": {
+      "exito": true,
+      "funcionalidades": 2,
+      "maximo": 6
+    },
+    "intelligent_components": {
+      "exito": false,
+      "puntuacion": 1,
+      "maximo": 2
+    }
+  }
+}

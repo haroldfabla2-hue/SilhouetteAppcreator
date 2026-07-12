@@ -1,0 +1,737 @@
+name: Security Vulnerability Scanning
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'src/**'
+      - 'requirements*.txt'
+      - 'Dockerfile'
+      - '.github/workflows/06-security-scanning.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'src/**'
+      - 'requirements*.txt'
+      - 'Dockerfile'
+  schedule:
+    - cron: '0 4 * * *' # Daily at 4 AM
+  workflow_dispatch:
+
+env:
+  PYTHON_VERSION: '3.11'
+
+jobs:
+  dependency-vulnerability-scan:
+    name: Dependency Vulnerability Scanning
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: Install security scanning tools
+      run: |
+        python -m pip install --upgrade pip
+        pip install safety bandit pip-audit
+        pip install -r file_processing_requirements.txt
+
+    - name: Run Safety (Python dependency vulnerabilities)
+      run: |
+        echo "Running Safety vulnerability scanner..."
+        safety check --json --output safety-report.json || true
+        safety check --short-report
+        
+        # Crear reporte de dependencias
+        pip list --format=json > dependencies.json
+
+    - name: Run pip-audit
+      run: |
+        echo "Running pip-audit scanner..."
+        pip-audit --format=json --output=pip-audit-report.json || true
+        pip-audit --desc
+
+    - name: Check for known bad dependencies
+      run: |
+        # Lista de dependencias conocidas como problemáticas
+        cat > check_bad_deps.py << 'EOF'
+        import json
+        import sys
+        
+        # Dependencias con vulnerabilidades conocidas
+        BAD_DEPS = {
+            'django': '<4.0.0',
+            'flask': '<2.0.0',
+            'requests': '<2.25.0',
+            'urllib3': '<1.26.0',
+            'pyyaml': '<5.4.0',
+            'pillow': '<8.3.0',
+            'jinja2': '<2.11.3',
+            'python-dateutil': '<2.8.1'
+        }
+        
+        with open('dependencies.json', 'r') as f:
+            dependencies = json.load(f)
+        
+        found_bad = []
+        for dep in dependencies:
+            name = dep['name']
+            version = dep['version']
+            
+            if name in BAD_DEPS:
+                required = BAD_DEPS[name]
+                found_bad.append(f"{name}: current={version}, vulnerable to {required}")
+        
+        if found_bad:
+            print("❌ Known vulnerable dependencies found:")
+            for bad in found_bad:
+                print(f"  - {bad}")
+            sys.exit(1)
+        else:
+            print("✅ No known vulnerable dependencies found")
+        EOF
+        
+        python check_bad_deps.py
+
+    - name: Archive security reports
+      uses: actions/upload-artifact@v3
+      with:
+        name: dependency-security-reports
+        path: |
+          safety-report.json
+          pip-audit-report.json
+          dependencies.json
+        retention-days: 90
+
+  static-analysis-security:
+    name: Static Analysis Security Testing
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: Install static analysis tools
+      run: |
+        python -m pip install --upgrade pip
+        pip install bandit[toml] semgrep vulture
+        pip install -e .
+
+    - name: Run Bandit (SAST)
+      run: |
+        echo "Running Bandit SAST scanner..."
+        bandit -r src/ -f json -o bandit-report.json || true
+        bandit -r src/ -ll -i
+        
+        # Bandit ignores
+        cat > .bandit << 'EOF'
+        [bandit]
+        # B101: assert_used - OK for tests
+        # B601: paramiko_calls - If we use paramiko
+        # B602: subprocess_popen_with_shell_equals_true - Sometimes necessary
+        # B603: subprocess_without_shell_equals_true - Safer approach
+        # B607: start_process_with_partial_path - Acceptable for legitimate cases
+        
+        exclude_dirs = tests
+        skips = B101,B601,B602,B603,B607
+        EOF
+
+    - name: Run Semgrep
+      run: |
+        echo "Running Semgrep SAST..."
+        semgrep \
+          --config=auto \
+          --json \
+          --output=semgrep-report.json \
+          --exclude=tests \
+          src/ || true
+        
+        semgrep \
+          --config=auto \
+          --sarif \
+          --output=semgrep-report.sarif \
+          --exclude=tests \
+          src/ || true
+
+    - name: Run Vulture (dead code detection)
+      run: |
+        echo "Running Vulture dead code detection..."
+        vulture src/ --json > vulture-report.json || true
+        vulture src/ || true
+
+    - name: Custom security checks
+      run: |
+        # Verificar configuraciones de seguridad
+        cat > custom_security_checks.py << 'EOF'
+        import os
+        import json
+        import re
+        import glob
+        
+        issues = []
+        
+        # Verificar que no hay secrets hardcodeados
+        secret_patterns = [
+            r'(?i)(password|passwd|pwd)\s*[:=]\s*["\']([^"\']{8,})["\']',
+            r'(?i)(api[_-]?key|apikey)\s*[:=]\s*["\']([^"\']{8,})["\']',
+            r'(?i)(secret)\s*[:=]\s*["\']([^"\']{8,})["\']',
+            r'(?i)(token)\s*[:=]\s*["\']([^"\']{8,})["\']',
+            r'AWS[_-]?ACCESS[_-]?KEY[_-]?ID\s*[:=]\s*["\']([^"\']+)["\']',
+            r'AWS[_-]?SECRET[_-]?ACCESS[_-]?KEY\s*[:=]\s*["\']([^"\']+)["\']'
+        ]
+        
+        python_files = glob.glob('src/**/*.py', recursive=True)
+        for file_path in python_files:
+            try:
+                with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+                    content = f.read()
+                    for pattern in secret_patterns:
+                        matches = re.findall(pattern, content)
+                        for match in matches:
+                            issues.append(f"{file_path}: Potential hardcoded secret detected")
+            except Exception as e:
+                continue
+        
+        # Verificar permisos de archivos
+        for root, dirs, files in os.walk('src/'):
+            for file in files:
+                if file.endswith('.py'):
+                    file_path = os.path.join(root, file)
+                    stat = os.stat(file_path)
+                    # Verificar que no es world-writable
+                    if stat.st_mode & 0o002:
+                        issues.append(f"{file_path}: World-writable file detected")
+        
+        if issues:
+            print("❌ Security issues found:")
+            for issue in issues:
+                print(f"  - {issue}")
+        else:
+            print("✅ No custom security issues found")
+        
+        with open('custom-security-checks.json', 'w') as f:
+            json.dump({'issues': issues}, f, indent=2)
+        EOF
+        
+        python custom_security_checks.py
+
+    - name: Security configuration review
+      run: |
+        # Verificar configuraciones de seguridad
+        cat > security_config_review.py << 'EOF'
+        import json
+        import os
+        
+        config_checks = {
+            'docker_security': [],
+            'python_security': [],
+            'general_security': []
+        }
+        
+        # Verificar Dockerfile
+        if os.path.exists('Dockerfile'):
+            with open('Dockerfile', 'r') as f:
+                dockerfile = f.read()
+                if 'USER root' in dockerfile and 'USER' not in dockerfile.split('USER root')[1]:
+                    config_checks['docker_security'].append('Running as root user')
+                if '--privileged' in dockerfile:
+                    config_checks['docker_security'].append('Using --privileged flag')
+                if 'docker.sock' in dockerfile:
+                    config_checks['docker_security'].append('Mounting docker socket')
+        
+        # Verificar configuraciones Python
+        config_files = ['setup.py', 'setup.cfg', 'pyproject.toml', 'mcp-server.json']
+        for config_file in config_files:
+            if os.path.exists(config_file):
+                try:
+                    with open(config_file, 'r') as f:
+                        content = f.read()
+                        if 'debug=true' in content.lower():
+                            config_checks['python_security'].append(f'Debug mode enabled in {config_file}')
+                except:
+                    pass
+        
+        # Verificar secrets en variables de entorno
+        env_vars = {}
+        for root, dirs, files in os.walk('.'):
+            for file in files:
+                if file.endswith(('.env', '.env.example', '.env.template')):
+                    with open(os.path.join(root, file), 'r') as f:
+                        for line in f:
+                            if '=' in line and not line.strip().startswith('#'):
+                                key, value = line.strip().split('=', 1)
+                                if any(keyword in key.lower() for keyword in ['password', 'secret', 'key', 'token']):
+                                    if len(value) > 0 and not value.startswith('YOUR_') and not value.startswith('CHANGE_'):
+                                        config_checks['general_security'].append(f'Potential exposed secret in {file}: {key}')
+        
+        with open('security-config-review.json', 'w') as f:
+            json.dump(config_checks, f, indent=2)
+        
+        print("Security configuration review completed")
+        for category, issues in config_checks.items():
+            if issues:
+                print(f"\n{category}:")
+                for issue in issues:
+                    print(f"  - {issue}")
+        EOF
+        
+        python security_config_review.py
+
+    - name: Archive static analysis reports
+      uses: actions/upload-artifact@v3
+      with:
+        name: static-analysis-reports
+        path: |
+          bandit-report.json
+          semgrep-report.json
+          semgrep-report.sarif
+          vulture-report.json
+          custom-security-checks.json
+          security-config-review.json
+        retention-days: 90
+
+  container-security-scan:
+    name: Container Security Scanning
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Build Docker image
+      run: |
+        docker build -t mcp-core-security-scan:latest .
+
+    - name: Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@master
+      with:
+        image-ref: 'mcp-core-security-scan:latest'
+        format: 'sarif'
+        output: 'trivy-container-results.sarif'
+
+    - name: Upload Trivy scan results to GitHub Security tab
+      uses: github/codeql-action/upload-sarif@v2
+      with:
+        sarif_file: 'trivy-container-results.sarif'
+
+    - name: Run Anchore Grype scanner
+      uses: anchore/scan-action@v3
+      with:
+        image: 'mcp-core-security-scan:latest'
+        format: sarif
+        output-file: grype-container-results.sarif
+
+    - name: Upload Grype scan results
+      uses: github/codeql-action/upload-sarif@v2
+      with:
+        sarif_file: grype-container-results.sarif
+
+    - name: Docker Bench for Security
+      run: |
+        # Ejecutar Docker Bench for Security checks
+        git clone https://github.com/docker/docker-bench-security.git
+        cd docker-bench-security
+        docker build -t docker-bench-security .
+        docker run --rm -it --net host --pid host --userns host --cap-add audit_control \
+          -e DOCKER_CONTENT_TRUST=$DOCKER_CONTENT_TRUST \
+          -v /var/lib:/var/lib \
+          -v /var/run/docker.sock:/var/run/docker.sock \
+          -v /usr/lib/systemd:/usr/lib/systemd \
+          -v /etc:/etc --label docker_bench_security \
+          docker-bench-security | tee docker-bench-results.txt
+
+    - name: Archive container security reports
+      uses: actions/upload-artifact@v3
+      with:
+        name: container-security-reports
+        path: |
+          trivy-container-results.sarif
+          grype-container-results.sarif
+          docker-bench-results.txt
+        retention-days: 90
+
+  license-scanning:
+    name: License Compatibility Scanning
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: Install license scanning tools
+      run: |
+        python -m pip install --upgrade pip
+        pip install pip-licenses licensecheck
+        pip install -r file_processing_requirements.txt
+
+    - name: Scan licenses
+      run: |
+        # Generar reporte de licencias
+        pip-licenses --format=json --output-file=licenses.json
+        pip-licenses --format=table --with-license-file > licenses.txt
+        
+        # Verificar compatibilidad de licencias
+        cat > check_license_compatibility.py << 'EOF'
+        import json
+        
+        # Lista de licencias compatibles (Apache 2.0 project)
+        COMPATIBLE_LICENSES = [
+            'MIT', 'Apache', 'Apache 2.0', 'Apache-2.0',
+            'BSD', 'BSD-2-Clause', 'BSD-3-Clause',
+            'ISC', 'Python', 'Python-2.0',
+            ' MPL', 'Mozilla Public License',
+            'Unlicense', 'CC0'
+        ]
+        
+        # Lista de licencias problemáticas
+        INCOMPATIBLE_LICENSES = [
+            'GPL', 'AGPL', 'LGPL', 'GPLv2', 'GPLv3',
+            'AGPLv3', 'LGPLv3', 'Copyleft'
+        ]
+        
+        with open('licenses.json', 'r') as f:
+            licenses = json.load(f)
+        
+        incompatible = []
+        for pkg in licenses:
+            license_name = pkg.get('License', 'Unknown')
+            package_name = pkg.get('Name', 'Unknown')
+            
+            # Verificar licencias incompatibles
+            for bad_license in INCOMPATIBLE_LICENSES:
+                if bad_license.lower() in license_name.lower():
+                    incompatible.append(f"{package_name}: {license_name}")
+        
+        if incompatible:
+            print("❌ Incompatible licenses found:")
+            for item in incompatible:
+                print(f"  - {item}")
+        else:
+            print("✅ All licenses are compatible")
+        
+        with open('license-compatibility.json', 'w') as f:
+            json.dump({
+                'incompatible': incompatible,
+                'total_packages': len(licenses),
+                'compatible_packages': len(licenses) - len(incompatible)
+            }, f, indent=2)
+        EOF
+        
+        python check_license_compatibility.py
+
+    - name: Archive license reports
+      uses: actions/upload-artifact@v3
+      with:
+        name: license-reports
+        path: |
+          licenses.json
+          licenses.txt
+          license-compatibility.json
+        retention-days: 90
+
+  infrastructure-security:
+    name: Infrastructure Security Scanning
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Run Checkov (Infrastructure as Code security)
+      uses: bridgecrewio/checkov-action@master
+      with:
+        directory: .
+        framework: all
+        output_format: json
+        output_file_path: checkov-results.json
+
+    - name: Scan for exposed secrets in Git
+      run: |
+        # Verificar si hay secrets expuestos en Git
+        echo "Checking for exposed secrets in git history..."
+        
+        # Buscar patterns de secrets en commits recientes
+        git log -p --since="30 days ago" | grep -E -i '(password|secret|key|token|api_key)' > git-secrets-scan.txt || true
+        
+        # Verificar el estado actual
+        git diff HEAD~5 | grep -E -i '(password|secret|key|token|api_key)' >> git-secrets-scan.txt || true
+        
+        # Buscar archivos que podrían contener secrets
+        find . -type f \( -name "*.key" -o -name "*.pem" -o -name "*.p12" -o -name "*.jks" -o -name "*.env" \) > potential-secret-files.txt
+        
+        if [[ -s git-secrets-scan.txt ]] || [[ -s potential-secret-files.txt ]]; then
+          echo "⚠️ Potential security issues found in git history"
+        else
+          echo "✅ No obvious secrets in recent git history"
+        fi
+
+    - name: Archive infrastructure security reports
+      uses: actions/upload-artifact@v3
+      with:
+        name: infrastructure-security-reports
+        path: |
+          checkov-results.json
+          git-secrets-scan.txt
+          potential-secret-files.txt
+        retention-days: 90
+
+  security-dashboard:
+    name: Security Dashboard Generation
+    runs-on: ubuntu-latest
+    needs: [
+      dependency-vulnerability-scan,
+      static-analysis-security,
+      container-security-scan,
+      license-scanning,
+      infrastructure-security
+    ]
+    if: always()
+    
+    steps:
+    - name: Download all security reports
+      uses: actions/download-artifact@v3
+
+    - name: Generate comprehensive security report
+      run: |
+        cat > generate_security_dashboard.py << 'EOF'
+        import json
+        import os
+        from datetime import datetime
+        
+        dashboard = {
+            'security_dashboard': {
+                'generated_at': datetime.now().isoformat(),
+                'commit': '${{ github.sha }}',
+                'branch': '${{ github.ref_name }}',
+                'workflow_run': '${{ github.run_id }}'
+            },
+            'summary': {
+                'overall_security_score': 'unknown',
+                'critical_vulnerabilities': 0,
+                'high_vulnerabilities': 0,
+                'medium_vulnerabilities': 0,
+                'low_vulnerabilities': 0,
+                'total_issues': 0
+            },
+            'detailed_findings': {},
+            'recommendations': []
+        }
+        
+        # Procesar reportes de dependencias
+        if os.path.exists('dependency-security-reports/safety-report.json'):
+            try:
+                with open('dependency-security-reports/safety-report.json', 'r') as f:
+                    safety_data = json.load(f)
+                    dashboard['detailed_findings']['dependency_vulnerabilities'] = safety_data
+                    
+                    # Contar vulnerabilidades por severidad
+                    if isinstance(safety_data, list):
+                        for vuln in safety_data:
+                            severity = vuln.get('severity', 'medium').lower()
+                            if severity in dashboard['summary']:
+                                dashboard['summary'][f'{severity}_vulnerabilities'] += 1
+            except:
+                pass
+        
+        # Procesar reporte de Bandit
+        if os.path.exists('static-analysis-reports/bandit-report.json'):
+            try:
+                with open('static-analysis-reports/bandit-report.json', 'r') as f:
+                    bandit_data = json.load(f)
+                    dashboard['detailed_findings']['static_analysis'] = bandit_data
+            except:
+                pass
+        
+        # Procesar reporte de Trivy
+        if os.path.exists('container-security-reports/trivy-container-results.sarif'):
+            try:
+                with open('container-security-reports/trivy-container-results.sarif', 'r') as f:
+                    trivy_data = json.load(f)
+                    dashboard['detailed_findings']['container_scan'] = trivy_data
+            except:
+                pass
+        
+        # Procesar compatibilidad de licencias
+        if os.path.exists('license-reports/license-compatibility.json'):
+            try:
+                with open('license-reports/license-compatibility.json', 'r') as f:
+                    license_data = json.load(f)
+                    dashboard['detailed_findings']['license_compatibility'] = license_data
+            except:
+                pass
+        
+        # Calcular score general
+        total_vulns = (dashboard['summary']['critical_vulnerabilities'] + 
+                      dashboard['summary']['high_vulnerabilities'] + 
+                      dashboard['summary']['medium_vulnerabilities'] + 
+                      dashboard['summary']['low_vulnerabilities'])
+        dashboard['summary']['total_issues'] = total_vulns
+        
+        if dashboard['summary']['critical_vulnerabilities'] > 0:
+            dashboard['summary']['overall_security_score'] = 'critical'
+            dashboard['recommendations'].append('Fix critical vulnerabilities immediately')
+        elif dashboard['summary']['high_vulnerabilities'] > 0:
+            dashboard['summary']['overall_security_score'] = 'high_risk'
+            dashboard['recommendations'].append('Address high-risk vulnerabilities')
+        elif dashboard['summary']['medium_vulnerabilities'] > 0:
+            dashboard['summary']['overall_security_score'] = 'medium_risk'
+            dashboard['recommendations'].append('Review medium-risk findings')
+        elif total_vulns == 0:
+            dashboard['summary']['overall_security_score'] = 'secure'
+            dashboard['recommendations'].append('No immediate action required')
+        else:
+            dashboard['summary']['overall_security_score'] = 'low_risk'
+            dashboard['recommendations'].append('Monitor for new vulnerabilities')
+        
+        # Generar reporte en markdown
+        score_emoji = {
+            'secure': '✅',
+            'low_risk': '🟡',
+            'medium_risk': '⚠️',
+            'high_risk': '🔴',
+            'critical': '🚨'
+        }
+        
+        emoji = score_emoji.get(dashboard['summary']['overall_security_score'], '❓')
+        
+        report_md = f"""# 🔒 Security Scan Report {emoji}
+        
+## Summary
+- **Overall Security Score**: {dashboard['summary']['overall_security_score'].upper().replace('_', ' ')}
+- **Total Issues**: {dashboard['summary']['total_issues']}
+- **Critical**: {dashboard['summary']['critical_vulnerabilities']}
+- **High**: {dashboard['summary']['high_vulnerabilities']}
+- **Medium**: {dashboard['summary']['medium_vulnerabilities']}
+- **Low**: {dashboard['summary']['low_vulnerabilities']}
+- **Generated**: {dashboard['security_dashboard']['generated_at']}
+
+## Vulnerability Breakdown
+"""
+        
+        if dashboard['summary']['total_issues'] == 0:
+            report_md += "✅ No vulnerabilities detected!\n\n"
+        else:
+            if dashboard['summary']['critical_vulnerabilities'] > 0:
+                report_md += f"- 🔴 Critical: {dashboard['summary']['critical_vulnerabilities']} vulnerabilities\n"
+            if dashboard['summary']['high_vulnerabilities'] > 0:
+                report_md += f"- 🟠 High: {dashboard['summary']['high_vulnerabilities']} vulnerabilities\n"
+            if dashboard['summary']['medium_vulnerabilities'] > 0:
+                report_md += f"- 🟡 Medium: {dashboard['summary']['medium_vulnerabilities']} vulnerabilities\n"
+            if dashboard['summary']['low_vulnerabilities'] > 0:
+                report_md += f"- 🔵 Low: {dashboard['summary']['low_vulnerabilities']} vulnerabilities\n"
+            report_md += "\n"
+        
+        report_md += "## Recommendations\n"
+        for rec in dashboard['recommendations']:
+            report_md += f"- {rec}\n"
+        
+        report_md += f"""
+## Next Steps
+1. Review detailed findings in the artifacts
+2. Address critical and high-priority issues first
+3. Set up automated security scanning for ongoing monitoring
+4. Consider implementing security best practices
+
+## Actions Required
+"""
+        if dashboard['summary']['overall_security_score'] in ['critical', 'high_risk']:
+            report_md += "- 🚨 **Immediate action required** - Do not deploy to production\n"
+        elif dashboard['summary']['overall_security_score'] == 'medium_risk':
+            report_md += "- ⚠️ **Review required** - Address issues before production deployment\n"
+        else:
+            report_md += "- ✅ **Safe to proceed** - Continue with deployment\n"
+        
+        with open('security-dashboard.json', 'w') as f:
+            json.dump(dashboard, f, indent=2)
+        
+        with open('security-report.md', 'w') as f:
+            f.write(report_md)
+        
+        print("Security dashboard generated")
+        print(report_md)
+        EOF
+        
+        python generate_security_dashboard.py
+
+    - name: Comment PR with security report
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const fs = require('fs');
+          
+          try {
+            const report = JSON.parse(fs.readFileSync('security-dashboard.json', 'utf8'));
+            const mdReport = fs.readFileSync('security-report.md', 'utf8');
+            
+            const status = report.summary.overall_security_score;
+            const emoji = status === 'secure' ? '✅' : status === 'low_risk' ? '🟡' : status === 'medium_risk' ? '⚠️' : status === 'high_risk' ? '🔴' : '🚨';
+            
+            const comment = `## 🔒 Security Scan Results ${emoji}
+            
+${mdReport}
+            
+<details>
+<summary>View Detailed Security Dashboard</summary>
+
+\`\`\`json
+${JSON.stringify(report, null, 2)}
+\`\`\`
+
+</details>`;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+          } catch (error) {
+            console.log('Could not create security comment:', error);
+          }
+
+    - name: Fail on critical security issues
+      run: |
+        # Solo fallar si hay vulnerabilidades críticas
+        if [[ -f "security-dashboard.json" ]]; then
+          SCORE=$(jq -r '.summary.overall_security_score' security-dashboard.json)
+          CRITICAL=$(jq -r '.summary.critical_vulnerabilities' security-dashboard.json)
+          
+          if [[ "$SCORE" == "critical" ]] && [[ $CRITICAL -gt 0 ]]; then
+            echo "❌ Critical security vulnerabilities found - failing pipeline"
+            exit 1
+          elif [[ "$SCORE" == "high_risk" ]]; then
+            echo "⚠️ High-risk security issues found - manual review required"
+            # No fallar, pero imprimir warning
+          fi
+        fi
+
+    - name: Archive security dashboard
+      uses: actions/upload-artifact@v3
+      with:
+        name: security-dashboard
+        path: |
+          security-dashboard.json
+          security-report.md
+        retention-days: 90

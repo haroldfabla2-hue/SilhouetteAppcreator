@@ -1,0 +1,764 @@
+2025-11-06 05:17:00,964 - __main__ - INFO - Iniciando SilhouetteMCP Integration Orchestrator...
+2025-11-06 05:17:00,964 - __main__ - INFO - Iniciando tareas de fondo del orquestador
+2025-11-06 05:17:00,964 - __main__ - INFO - Monitoreo de salud iniciado
+2025-11-06 05:17:00,964 - __main__ - INFO - Orquestador iniciado exitosamente
+2025-11-06 05:17:00,964 - __main__ - INFO - Servidor ejecutándose en http://0.0.0.0:8025
+2025-11-06 05:17:00,967 - __main__ - INFO - WebSocket disponible en ws://0.0.0.0:8025/ws/{client_id}
+2025-11-06 05:17:00,967 - __main__ - INFO - Servicio registrado: silhouettemcp_core_f6e4abb4
+2025-11-06 05:17:00,974 - __main__ - INFO - Servicio registrado: silhouettemcp_core_5dea0317
+2025-11-06 05:17:00,976 - __main__ - INFO - Servicio registrado: silhouettemcp_server_84608e4b
+2025-11-06 05:17:00,978 - __main__ - INFO - Servicio registrado: silhouettemcp_server_cd4fa0f4
+2025-11-06 05:17:00,981 - __main__ - INFO - Servicio registrado: enhanced_scalability_1d4ee943
+2025-11-06 05:17:00,983 - __main__ - INFO - Servicio registrado: enhanced_scalability_b3733022
+2025-11-06 05:17:00,983 - __main__ - INFO - Servicio registrado: enhanced_security_603eef29
+2025-11-06 05:17:00,983 - __main__ - INFO - Servicio registrado: enhanced_security_1cf2599a
+2025-11-06 05:17:00,983 - __main__ - INFO - Servicio registrado: hierarchical_architecture_b51b2d99
+2025-11-06 05:17:00,983 - __main__ - INFO - Servicio registrado: hierarchical_architecture_0ee56a62
+2025-11-06 05:17:00,983 - __main__ - INFO - Servicio registrado: robust_diagnostic_e6d6023f
+2025-11-06 05:17:00,983 - __main__ - INFO - Servicio registrado: robust_diagnostic_e59564fa
+2025-11-06 05:17:00,983 - __main__ - INFO - Servicio registrado: comprehensive_verification_a1ceaeff
+2025-11-06 05:17:00,983 - __main__ - INFO - Servicio registrado: comprehensive_verification_dfce876a
+2025-11-06 05:17:00,986 - __main__ - INFO - Servicio registrado: expanded_content_e8f78d93
+2025-11-06 05:17:00,989 - __main__ - INFO - Servicio registrado: expanded_content_db26380f
+2025-11-06 05:17:00,992 - __main__ - INFO - Servicio registrado: expanded_finance_2529a90d
+2025-11-06 05:17:00,994 - __main__ - INFO - Servicio registrado: expanded_finance_c7e4d111
+2025-11-06 05:17:00,997 - __main__ - INFO - Servicio registrado: expanded_maps_4c6154da
+2025-11-06 05:17:01,000 - __main__ - INFO - Servicio registrado: expanded_maps_3134716d
+2025-11-06 05:17:01,000 - __main__ - INFO - Servicio registrado: expanded_research_194812a2
+2025-11-06 05:17:01,000 - __main__ - INFO - Servicio registrado: expanded_research_fc2c4f6f
+2025-11-06 05:17:01,000 - __main__ - INFO - Servicio registrado: expanded_social_travel_97ced2bc
+2025-11-06 05:17:01,000 - __main__ - INFO - Servicio registrado: expanded_social_travel_dc005215
+2025-11-06 05:17:01,003 - __main__ - INFO - Servicio registrado: expanded_supabase_1225463c
+2025-11-06 05:17:01,006 - __main__ - INFO - Servicio registrado: expanded_supabase_c4ba1bfd
+2025-11-06 05:17:01,009 - __main__ - INFO - Servicio registrado: superior_allocator_c06ba44f
+2025-11-06 05:17:01,012 - __main__ - INFO - Servicio registrado: superior_allocator_db69592e
+2025-11-06 05:17:01,014 - __main__ - INFO - Servicio registrado: comprehensive_diagnostic_f48e78be
+2025-11-06 05:17:01,017 - __main__ - INFO - Servicio registrado: comprehensive_diagnostic_0c1427a5
+2025-11-06 05:17:01,017 - __main__ - INFO - Servicio registrado: enhanced_architecture_c47382cc
+2025-11-06 05:17:01,017 - __main__ - INFO - Servicio registrado: enhanced_architecture_d75fa00f
+2025-11-06 05:17:01,017 - __main__ - INFO - Servicio registrado: server_unified_83eb45b8
+2025-11-06 05:17:01,017 - __main__ - INFO - Servicio registrado: server_unified_182a6b3a
+2025-11-06 05:17:01,018 - __main__ - ERROR - Error recopilando métricas: asyncio.run() cannot be called from a running event loop
+2025-11-06 05:17:01,021 - __main__ - ERROR - Error en tarea de monitoreo: SystemMetrics.__init__() missing 1 required positional argument: 'active_websocket_connections'
+2025-11-06 05:17:11,041 - __main__ - ERROR - Error recopilando métricas: asyncio.run() cannot be called from a running event loop
+2025-11-06 05:17:11,042 - __main__ - ERROR - Error en tarea de monitoreo: SystemMetrics.__init__() missing 1 required positional argument: 'active_websocket_connections'
+2025-11-06 05:17:21,052 - __main__ - ERROR - Error recopilando métricas: asyncio.run() cannot be called from a running event loop
+2025-11-06 05:17:21,053 - __main__ - ERROR - Error en tarea de monitoreo: SystemMetrics.__init__() missing 1 required positional argument: 'active_websocket_connections'
+2025-11-06 05:17:31,055 - __main__ - ERROR - Error recopilando métricas: asyncio.run() cannot be called from a running event loop
+2025-11-06 05:17:31,055 - __main__ - ERROR - Error en tarea de monitoreo: SystemMetrics.__init__() missing 1 required positional argument: 'active_websocket_connections'
+2025-11-06 05:17:41,056 - __main__ - ERROR - Error recopilando métricas: asyncio.run() cannot be called from a running event loop
+2025-11-06 05:17:41,056 - __main__ - ERROR - Error en tarea de monitoreo: SystemMetrics.__init__() missing 1 required positional argument: 'active_websocket_connections'
+2025-11-06 05:17:51,065 - __main__ - ERROR - Error recopilando métricas: asyncio.run() cannot be called from a running event loop
+2025-11-06 05:17:51,065 - __main__ - ERROR - Error en tarea de monitoreo: SystemMetrics.__init__() missing 1 required positional argument: 'active_websocket_connections'
+2025-11-06 05:18:01,066 - __main__ - ERROR - Error recopilando métricas: asyncio.run() cannot be called from a running event loop
+2025-11-06 05:18:01,066 - __main__ - ERROR - Error en tarea de monitoreo: SystemMetrics.__init__() missing 1 required positional argument: 'active_websocket_connections'
+2025-11-06 05:18:11,076 - __main__ - ERROR - Error recopilando métricas: asyncio.run() cannot be called from a running event loop
+2025-11-06 05:18:11,076 - __main__ - ERROR - Error en tarea de monitoreo: SystemMetrics.__init__() missing 1 required positional argument: 'active_websocket_connections'
+2025-11-06 05:18:21,086 - __main__ - ERROR - Error recopilando métricas: asyncio.run() cannot be called from a running event loop
+2025-11-06 05:18:21,086 - __main__ - ERROR - Error en tarea de monitoreo: SystemMetrics.__init__() missing 1 required positional argument: 'active_websocket_connections'
+2025-11-06 05:18:31,087 - __main__ - ERROR - Error recopilando métricas: asyncio.run() cannot be called from a running event loop
+2025-11-06 05:18:31,087 - __main__ - ERROR - Error en tarea de monitoreo: SystemMetrics.__init__() missing 1 required positional argument: 'active_websocket_connections'
+2025-11-06 05:18:41,097 - __main__ - ERROR - Error recopilando métricas: asyncio.run() cannot be called from a running event loop
+2025-11-06 05:18:41,097 - __main__ - ERROR - Error en tarea de monitoreo: SystemMetrics.__init__() missing 1 required positional argument: 'active_websocket_connections'
+2025-11-06 05:18:51,107 - __main__ - ERROR - Error recopilando métricas: asyncio.run() cannot be called from a running event loop
+2025-11-06 05:18:51,107 - __main__ - ERROR - Error en tarea de monitoreo: SystemMetrics.__init__() missing 1 required positional argument: 'active_websocket_connections'
+2025-11-06 05:19:01,108 - __main__ - ERROR - Error recopilando métricas: asyncio.run() cannot be called from a running event loop
+2025-11-06 05:19:01,108 - __main__ - ERROR - Error en tarea de monitoreo: SystemMetrics.__init__() missing 1 required positional argument: 'active_websocket_connections'
+2025-11-06 05:19:11,118 - __main__ - ERROR - Error recopilando métricas: asyncio.run() cannot be called from a running event loop
+2025-11-06 05:19:11,118 - __main__ - ERROR - Error en tarea de monitoreo: SystemMetrics.__init__() missing 1 required positional argument: 'active_websocket_connections'
+2025-11-06 05:19:21,128 - __main__ - ERROR - Error recopilando métricas: asyncio.run() cannot be called from a running event loop
+2025-11-06 05:19:21,129 - __main__ - ERROR - Error en tarea de monitoreo: SystemMetrics.__init__() missing 1 required positional argument: 'active_websocket_connections'
+2025-11-06 05:19:31,131 - __main__ - ERROR - Error recopilando métricas: asyncio.run() cannot be called from a running event loop
+2025-11-06 05:19:31,131 - __main__ - ERROR - Error en tarea de monitoreo: SystemMetrics.__init__() missing 1 required positional argument: 'active_websocket_connections'
+2025-11-06 05:19:41,141 - __main__ - ERROR - Error recopilando métricas: asyncio.run() cannot be called from a running event loop
+2025-11-06 05:19:41,141 - __main__ - ERROR - Error en tarea de monitoreo: SystemMetrics.__init__() missing 1 required positional argument: 'active_websocket_connections'
+2025-11-06 05:19:51,146 - __main__ - ERROR - Error recopilando métricas: asyncio.run() cannot be called from a running event loop
+2025-11-06 05:19:51,147 - __main__ - ERROR - Error en tarea de monitoreo: SystemMetrics.__init__() missing 1 required positional argument: 'active_websocket_connections'
+2025-11-06 05:20:01,147 - __main__ - ERROR - Error recopilando métricas: asyncio.run() cannot be called from a running event loop
+2025-11-06 05:20:01,147 - __main__ - ERROR - Error en tarea de monitoreo: SystemMetrics.__init__() missing 1 required positional argument: 'active_websocket_connections'
+2025-11-06 05:20:11,157 - __main__ - ERROR - Error recopilando métricas: asyncio.run() cannot be called from a running event loop
+2025-11-06 05:20:11,157 - __main__ - ERROR - Error en tarea de monitoreo: SystemMetrics.__init__() missing 1 required positional argument: 'active_websocket_connections'
+2025-11-06 05:20:21,166 - __main__ - ERROR - Error recopilando métricas: asyncio.run() cannot be called from a running event loop
+2025-11-06 05:20:21,166 - __main__ - ERROR - Error en tarea de monitoreo: SystemMetrics.__init__() missing 1 required positional argument: 'active_websocket_connections'
+2025-11-06 05:20:31,166 - __main__ - ERROR - Error recopilando métricas: asyncio.run() cannot be called from a running event loop
+2025-11-06 05:20:31,167 - __main__ - ERROR - Error en tarea de monitoreo: SystemMetrics.__init__() missing 1 required positional argument: 'active_websocket_connections'
+2025-11-06 05:20:41,176 - __main__ - ERROR - Error recopilando métricas: asyncio.run() cannot be called from a running event loop
+2025-11-06 05:20:41,176 - __main__ - ERROR - Error en tarea de monitoreo: SystemMetrics.__init__() missing 1 required positional argument: 'active_websocket_connections'
+2025-11-06 05:20:51,186 - __main__ - ERROR - Error recopilando métricas: asyncio.run() cannot be called from a running event loop
+2025-11-06 05:20:51,187 - __main__ - ERROR - Error en tarea de monitoreo: SystemMetrics.__init__() missing 1 required positional argument: 'active_websocket_connections'
+2025-11-06 05:21:01,187 - __main__ - ERROR - Error recopilando métricas: asyncio.run() cannot be called from a running event loop
+2025-11-06 05:21:01,187 - __main__ - ERROR - Error en tarea de monitoreo: SystemMetrics.__init__() missing 1 required positional argument: 'active_websocket_connections'
+2025-11-06 05:21:11,197 - __main__ - ERROR - Error recopilando métricas: asyncio.run() cannot be called from a running event loop
+2025-11-06 05:21:11,198 - __main__ - ERROR - Error en tarea de monitoreo: SystemMetrics.__init__() missing 1 required positional argument: 'active_websocket_connections'
+2025-11-06 05:21:21,208 - __main__ - ERROR - Error recopilando métricas: asyncio.run() cannot be called from a running event loop
+2025-11-06 05:21:21,208 - __main__ - ERROR - Error en tarea de monitoreo: SystemMetrics.__init__() missing 1 required positional argument: 'active_websocket_connections'
+2025-11-06 05:21:31,209 - __main__ - ERROR - Error recopilando métricas: asyncio.run() cannot be called from a running event loop
+2025-11-06 05:21:31,209 - __main__ - ERROR - Error en tarea de monitoreo: SystemMetrics.__init__() missing 1 required positional argument: 'active_websocket_connections'
+2025-11-06 05:21:41,216 - __main__ - ERROR - Error recopilando métricas: asyncio.run() cannot be called from a running event loop
+2025-11-06 05:21:41,216 - __main__ - ERROR - Error en tarea de monitoreo: SystemMetrics.__init__() missing 1 required positional argument: 'active_websocket_connections'
+2025-11-06 05:21:51,226 - __main__ - ERROR - Error recopilando métricas: asyncio.run() cannot be called from a running event loop
+2025-11-06 05:21:51,226 - __main__ - ERROR - Error en tarea de monitoreo: SystemMetrics.__init__() missing 1 required positional argument: 'active_websocket_connections'
+2025-11-06 05:22:01,227 - __main__ - ERROR - Error recopilando métricas: asyncio.run() cannot be called from a running event loop
+2025-11-06 05:22:01,227 - __main__ - ERROR - Error en tarea de monitoreo: SystemMetrics.__init__() missing 1 required positional argument: 'active_websocket_connections'
+2025-11-06 05:22:11,237 - __main__ - ERROR - Error recopilando métricas: asyncio.run() cannot be called from a running event loop
+2025-11-06 05:22:11,237 - __main__ - ERROR - Error en tarea de monitoreo: SystemMetrics.__init__() missing 1 required positional argument: 'active_websocket_connections'
+2025-11-06 05:22:21,246 - __main__ - ERROR - Error recopilando métricas: asyncio.run() cannot be called from a running event loop
+2025-11-06 05:22:21,246 - __main__ - ERROR - Error en tarea de monitoreo: SystemMetrics.__init__() missing 1 required positional argument: 'active_websocket_connections'
+2025-11-06 05:22:31,247 - __main__ - ERROR - Error recopilando métricas: asyncio.run() cannot be called from a running event loop
+2025-11-06 05:22:31,247 - __main__ - ERROR - Error en tarea de monitoreo: SystemMetrics.__init__() missing 1 required positional argument: 'active_websocket_connections'
+2025-11-06 05:22:41,256 - __main__ - ERROR - Error recopilando métricas: asyncio.run() cannot be called from a running event loop
+2025-11-06 05:22:41,256 - __main__ - ERROR - Error en tarea de monitoreo: SystemMetrics.__init__() missing 1 required positional argument: 'active_websocket_connections'
+2025-11-06 05:22:51,266 - __main__ - ERROR - Error recopilando métricas: asyncio.run() cannot be called from a running event loop
+2025-11-06 05:22:51,266 - __main__ - ERROR - Error en tarea de monitoreo: SystemMetrics.__init__() missing 1 required positional argument: 'active_websocket_connections'
+2025-11-06 05:23:01,267 - __main__ - ERROR - Error recopilando métricas: asyncio.run() cannot be called from a running event loop
+2025-11-06 05:23:01,267 - __main__ - ERROR - Error en tarea de monitoreo: SystemMetrics.__init__() missing 1 required positional argument: 'active_websocket_connections'
+2025-11-06 05:23:11,277 - __main__ - ERROR - Error recopilando métricas: asyncio.run() cannot be called from a running event loop
+2025-11-06 05:23:11,277 - __main__ - ERROR - Error en tarea de monitoreo: SystemMetrics.__init__() missing 1 required positional argument: 'active_websocket_connections'
+2025-11-06 05:23:21,287 - __main__ - ERROR - Error recopilando métricas: asyncio.run() cannot be called from a running event loop
+2025-11-06 05:23:21,287 - __main__ - ERROR - Error en tarea de monitoreo: SystemMetrics.__init__() missing 1 required positional argument: 'active_websocket_connections'
+2025-11-06 05:23:31,289 - __main__ - ERROR - Error recopilando métricas: asyncio.run() cannot be called from a running event loop
+2025-11-06 05:23:31,289 - __main__ - ERROR - Error en tarea de monitoreo: SystemMetrics.__init__() missing 1 required positional argument: 'active_websocket_connections'
+2025-11-06 05:23:41,298 - __main__ - ERROR - Error recopilando métricas: asyncio.run() cannot be called from a running event loop
+2025-11-06 05:23:41,298 - __main__ - ERROR - Error en tarea de monitoreo: SystemMetrics.__init__() missing 1 required positional argument: 'active_websocket_connections'
+2025-11-06 05:23:51,308 - __main__ - ERROR - Error recopilando métricas: asyncio.run() cannot be called from a running event loop
+2025-11-06 05:23:51,308 - __main__ - ERROR - Error en tarea de monitoreo: SystemMetrics.__init__() missing 1 required positional argument: 'active_websocket_connections'
+2025-11-06 05:24:01,310 - __main__ - ERROR - Error recopilando métricas: asyncio.run() cannot be called from a running event loop
+2025-11-06 05:24:01,310 - __main__ - ERROR - Error en tarea de monitoreo: SystemMetrics.__init__() missing 1 required positional argument: 'active_websocket_connections'
+2025-11-06 05:24:11,320 - __main__ - ERROR - Error recopilando métricas: asyncio.run() cannot be called from a running event loop
+2025-11-06 05:24:11,320 - __main__ - ERROR - Error en tarea de monitoreo: SystemMetrics.__init__() missing 1 required positional argument: 'active_websocket_connections'
+2025-11-06 05:24:21,330 - __main__ - ERROR - Error recopilando métricas: asyncio.run() cannot be called from a running event loop
+2025-11-06 05:24:21,330 - __main__ - ERROR - Error en tarea de monitoreo: SystemMetrics.__init__() missing 1 required positional argument: 'active_websocket_connections'
+2025-11-06 05:24:31,331 - __main__ - ERROR - Error recopilando métricas: asyncio.run() cannot be called from a running event loop
+2025-11-06 05:32:40,354 - __main__ - ERROR - Error en tarea de monitoreo: SystemMetrics.__init__() missing 1 required positional argument: 'active_websocket_connections'
+2025-11-06 05:32:50,366 - __main__ - ERROR - Error recopilando métricas: asyncio.run() cannot be called from a running event loop
+2025-11-06 05:32:50,366 - __main__ - ERROR - Error en tarea de monitoreo: SystemMetrics.__init__() missing 1 required positional argument: 'active_websocket_connections'
+2025-11-06 05:33:00,376 - __main__ - ERROR - Error recopilando métricas: asyncio.run() cannot be called from a running event loop
+2025-11-06 05:33:00,376 - __main__ - ERROR - Error en tarea de monitoreo: SystemMetrics.__init__() missing 1 required positional argument: 'active_websocket_connections'
+2025-11-06 05:33:10,377 - __main__ - ERROR - Error recopilando métricas: asyncio.run() cannot be called from a running event loop
+2025-11-06 05:33:10,377 - __main__ - ERROR - Error en tarea de monitoreo: SystemMetrics.__init__() missing 1 required positional argument: 'active_websocket_connections'
+2025-11-06 05:33:20,382 - __main__ - ERROR - Error recopilando métricas: asyncio.run() cannot be called from a running event loop
+2025-11-06 05:33:20,382 - __main__ - ERROR - Error en tarea de monitoreo: SystemMetrics.__init__() missing 1 required positional argument: 'active_websocket_connections'
+2025-11-06 05:33:30,392 - __main__ - ERROR - Error recopilando métricas: asyncio.run() cannot be called from a running event loop
+2025-11-06 05:33:30,392 - __main__ - ERROR - Error en tarea de monitoreo: SystemMetrics.__init__() missing 1 required positional argument: 'active_websocket_connections'
+2025-11-06 05:33:40,393 - __main__ - ERROR - Error recopilando métricas: asyncio.run() cannot be called from a running event loop
+2025-11-06 05:33:40,393 - __main__ - ERROR - Error en tarea de monitoreo: SystemMetrics.__init__() missing 1 required positional argument: 'active_websocket_connections'
+2025-11-06 05:33:50,403 - __main__ - ERROR - Error recopilando métricas: asyncio.run() cannot be called from a running event loop
+2025-11-06 05:33:50,403 - __main__ - ERROR - Error en tarea de monitoreo: SystemMetrics.__init__() missing 1 required positional argument: 'active_websocket_connections'
+2025-11-06 05:34:00,413 - __main__ - ERROR - Error recopilando métricas: asyncio.run() cannot be called from a running event loop
+2025-11-06 05:34:00,413 - __main__ - ERROR - Error en tarea de monitoreo: SystemMetrics.__init__() missing 1 required positional argument: 'active_websocket_connections'
+2025-11-06 05:34:10,413 - __main__ - ERROR - Error recopilando métricas: asyncio.run() cannot be called from a running event loop
+2025-11-06 05:34:10,414 - __main__ - ERROR - Error en tarea de monitoreo: SystemMetrics.__init__() missing 1 required positional argument: 'active_websocket_connections'
+2025-11-06 05:34:20,423 - __main__ - ERROR - Error recopilando métricas: asyncio.run() cannot be called from a running event loop
+2025-11-06 05:34:20,423 - __main__ - ERROR - Error en tarea de monitoreo: SystemMetrics.__init__() missing 1 required positional argument: 'active_websocket_connections'
+2025-11-06 05:34:30,424 - __main__ - ERROR - Error recopilando métricas: asyncio.run() cannot be called from a running event loop
+2025-11-06 05:34:30,424 - __main__ - ERROR - Error en tarea de monitoreo: SystemMetrics.__init__() missing 1 required positional argument: 'active_websocket_connections'
+2025-11-06 05:34:40,425 - __main__ - ERROR - Error recopilando métricas: asyncio.run() cannot be called from a running event loop
+2025-11-06 05:34:40,425 - __main__ - ERROR - Error en tarea de monitoreo: SystemMetrics.__init__() missing 1 required positional argument: 'active_websocket_connections'
+2025-11-06 05:34:50,432 - __main__ - ERROR - Error recopilando métricas: asyncio.run() cannot be called from a running event loop
+2025-11-06 05:34:50,433 - __main__ - ERROR - Error en tarea de monitoreo: SystemMetrics.__init__() missing 1 required positional argument: 'active_websocket_connections'
+2025-11-06 05:34:54,532 - __main__ - INFO - Señal 15 recibida, iniciando shutdown...
+2025-11-06 05:35:00,438 - __main__ - INFO - Deteniendo SilhouetteMCP Integration Orchestrator...
+2025-11-06 05:35:00,438 - __main__ - INFO - Deteniendo tareas de fondo del orquestador
+2025-11-06 05:35:00,438 - __main__ - INFO - Monitoreo de salud detenido
+2025-11-06 05:35:00,438 - __main__ - INFO - Orquestador detenido exitosamente
+2025-11-06 05:35:00,442 - __main__ - WARNING - El orquestador no está ejecutándose
+2025-11-06 05:35:00,828 - __main__ - INFO - Iniciando SilhouetteMCP Integration Orchestrator...
+2025-11-06 05:35:00,828 - __main__ - INFO - Iniciando tareas de fondo del orquestador
+2025-11-06 05:35:00,828 - __main__ - INFO - Monitoreo de salud iniciado
+2025-11-06 05:35:00,828 - __main__ - INFO - Orquestador iniciado exitosamente
+2025-11-06 05:35:00,828 - __main__ - INFO - Servidor ejecutándose en http://0.0.0.0:8025
+2025-11-06 05:35:00,828 - __main__ - INFO - WebSocket disponible en ws://0.0.0.0:8025/ws/{client_id}
+2025-11-06 05:35:00,828 - __main__ - INFO - Servicio registrado: silhouettemcp_core_f36f81a3
+2025-11-06 05:35:00,833 - __main__ - INFO - Servicio registrado: silhouettemcp_core_01f749fe
+2025-11-06 05:35:00,836 - __main__ - INFO - Servicio registrado: silhouettemcp_server_786ceed2
+2025-11-06 05:35:00,839 - __main__ - INFO - Servicio registrado: silhouettemcp_server_764407e4
+2025-11-06 05:35:00,843 - __main__ - INFO - Servicio registrado: enhanced_scalability_3d72bc78
+2025-11-06 05:35:00,846 - __main__ - INFO - Servicio registrado: enhanced_scalability_5cee3ae2
+2025-11-06 05:35:00,849 - __main__ - INFO - Servicio registrado: enhanced_security_15959243
+2025-11-06 05:35:00,849 - __main__ - INFO - Servicio registrado: enhanced_security_cc942e2a
+2025-11-06 05:35:00,849 - __main__ - INFO - Servicio registrado: hierarchical_architecture_59421a9d
+2025-11-06 05:35:00,849 - __main__ - INFO - Servicio registrado: hierarchical_architecture_345c880f
+2025-11-06 05:35:00,849 - __main__ - INFO - Servicio registrado: robust_diagnostic_19f36cbc
+2025-11-06 05:35:00,849 - __main__ - INFO - Servicio registrado: robust_diagnostic_9bc5c35c
+2025-11-06 05:35:00,849 - __main__ - INFO - Servicio registrado: comprehensive_verification_9cb12dc7
+2025-11-06 05:35:00,849 - __main__ - INFO - Servicio registrado: comprehensive_verification_b515d559
+2025-11-06 05:35:00,849 - __main__ - INFO - Servicio registrado: expanded_content_2678f0cb
+2025-11-06 05:35:00,852 - __main__ - INFO - Servicio registrado: expanded_content_60b39b13
+2025-11-06 05:35:00,857 - __main__ - INFO - Servicio registrado: expanded_finance_21217c3b
+2025-11-06 05:35:00,861 - __main__ - INFO - Servicio registrado: expanded_finance_b6a6d4a3
+2025-11-06 05:35:00,864 - __main__ - INFO - Servicio registrado: expanded_maps_f54cb067
+2025-11-06 05:35:00,867 - __main__ - INFO - Servicio registrado: expanded_maps_679c3f9c
+2025-11-06 05:35:00,870 - __main__ - INFO - Servicio registrado: expanded_research_8a134a0d
+2025-11-06 05:35:00,870 - __main__ - INFO - Servicio registrado: expanded_research_46ddb667
+2025-11-06 05:35:00,870 - __main__ - INFO - Servicio registrado: expanded_social_travel_0b00f748
+2025-11-06 05:35:00,870 - __main__ - INFO - Servicio registrado: expanded_social_travel_5f7ad6d7
+2025-11-06 05:35:00,870 - __main__ - INFO - Servicio registrado: expanded_supabase_1c955c6e
+2025-11-06 05:35:00,870 - __main__ - INFO - Servicio registrado: expanded_supabase_f0940623
+2025-11-06 05:35:00,870 - __main__ - INFO - Servicio registrado: superior_allocator_af87f7b3
+2025-11-06 05:35:00,870 - __main__ - INFO - Servicio registrado: superior_allocator_a3e00ca2
+2025-11-06 05:35:00,870 - __main__ - INFO - Servicio registrado: comprehensive_diagnostic_bbe0d4da
+2025-11-06 05:35:00,873 - __main__ - INFO - Servicio registrado: comprehensive_diagnostic_404f5905
+2025-11-06 05:35:00,876 - __main__ - INFO - Servicio registrado: enhanced_architecture_b2eed4fb
+2025-11-06 05:35:00,879 - __main__ - INFO - Servicio registrado: enhanced_architecture_c8605a5d
+2025-11-06 05:35:00,882 - __main__ - INFO - Servicio registrado: server_unified_35543e58
+2025-11-06 05:35:00,886 - __main__ - INFO - Servicio registrado: server_unified_ee242c6e
+2025-11-06 05:35:00,891 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 05:35:10,910 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 05:35:20,920 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 05:35:30,920 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 05:35:40,930 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 05:35:50,940 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 05:36:00,941 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 05:36:10,951 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 05:36:20,961 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 05:36:30,962 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 05:36:40,971 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 05:36:50,981 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 05:37:00,982 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 05:37:10,992 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 05:37:21,002 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 05:37:31,003 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 05:37:41,013 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 05:37:51,022 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 05:38:01,023 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 05:38:11,032 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 05:38:21,042 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 05:38:31,043 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 05:38:41,052 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 05:38:51,062 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 05:39:01,063 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 05:39:11,073 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 05:39:21,083 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 05:39:31,084 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 05:39:41,091 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 05:39:51,102 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 05:40:01,103 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 05:40:11,112 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 05:40:21,122 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 05:40:31,123 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 05:40:41,133 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 05:40:51,143 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 05:41:01,144 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 05:41:11,146 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 05:41:21,156 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 05:41:31,157 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 05:41:41,165 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 05:41:51,170 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 05:42:01,171 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 05:42:11,180 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 05:42:21,190 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 05:42:31,192 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 05:42:41,201 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 05:42:51,211 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 05:43:01,212 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 05:43:11,216 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 05:43:21,226 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 05:43:31,227 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 05:43:41,237 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 05:43:51,247 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 05:44:01,248 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 05:44:11,258 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 05:44:21,268 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:13:06,396 - __main__ - INFO - Iniciando SilhouetteMCP Integration Orchestrator...
+2025-11-06 08:13:06,396 - __main__ - INFO - Iniciando tareas de fondo del orquestador
+2025-11-06 08:13:06,396 - __main__ - INFO - Monitoreo de salud iniciado
+2025-11-06 08:13:06,396 - __main__ - INFO - Orquestador iniciado exitosamente
+2025-11-06 08:13:06,396 - __main__ - INFO - Servidor ejecutándose en http://0.0.0.0:8025
+2025-11-06 08:13:06,396 - __main__ - INFO - WebSocket disponible en ws://0.0.0.0:8025/ws/{client_id}
+2025-11-06 08:13:06,398 - __main__ - INFO - Servicio registrado: silhouettemcp_core_5409c293
+2025-11-06 08:13:06,399 - __main__ - INFO - Servicio registrado: silhouettemcp_core_e5e942fb
+2025-11-06 08:13:06,401 - __main__ - INFO - Servicio registrado: silhouettemcp_server_bc81568d
+2025-11-06 08:13:06,402 - __main__ - INFO - Servicio registrado: silhouettemcp_server_fa8292ec
+2025-11-06 08:13:06,404 - __main__ - INFO - Servicio registrado: enhanced_scalability_cc4488db
+2025-11-06 08:13:06,406 - __main__ - INFO - Servicio registrado: enhanced_scalability_f820c10b
+2025-11-06 08:13:06,406 - __main__ - INFO - Servicio registrado: enhanced_security_4f30d90f
+2025-11-06 08:13:06,406 - __main__ - INFO - Servicio registrado: enhanced_security_0bfde081
+2025-11-06 08:13:06,406 - __main__ - INFO - Servicio registrado: hierarchical_architecture_a35fe0dc
+2025-11-06 08:13:06,406 - __main__ - INFO - Servicio registrado: hierarchical_architecture_524e659f
+2025-11-06 08:13:06,406 - __main__ - INFO - Servicio registrado: robust_diagnostic_0a5763d5
+2025-11-06 08:13:06,406 - __main__ - INFO - Servicio registrado: robust_diagnostic_59c415ee
+2025-11-06 08:13:06,406 - __main__ - INFO - Servicio registrado: comprehensive_verification_c5a6e723
+2025-11-06 08:13:06,410 - __main__ - INFO - Servicio registrado: comprehensive_verification_032bb140
+2025-11-06 08:13:06,411 - __main__ - INFO - Servicio registrado: expanded_content_4a670b68
+2025-11-06 08:13:06,413 - __main__ - INFO - Servicio registrado: expanded_content_7ec41182
+2025-11-06 08:13:06,416 - __main__ - INFO - Servicio registrado: expanded_finance_6d177de4
+2025-11-06 08:13:06,417 - __main__ - INFO - Servicio registrado: expanded_finance_f8e258e7
+2025-11-06 08:13:06,419 - __main__ - INFO - Servicio registrado: expanded_maps_35ae4aa5
+2025-11-06 08:13:06,419 - __main__ - INFO - Servicio registrado: expanded_maps_106f79f1
+2025-11-06 08:13:06,419 - __main__ - INFO - Servicio registrado: expanded_research_03a066a6
+2025-11-06 08:13:06,419 - __main__ - INFO - Servicio registrado: expanded_research_ea4bb361
+2025-11-06 08:13:06,419 - __main__ - INFO - Servicio registrado: expanded_social_travel_383edeee
+2025-11-06 08:13:06,419 - __main__ - INFO - Servicio registrado: expanded_social_travel_19736c03
+2025-11-06 08:13:06,421 - __main__ - INFO - Servicio registrado: expanded_supabase_afd76436
+2025-11-06 08:13:06,423 - __main__ - INFO - Servicio registrado: expanded_supabase_adda97e8
+2025-11-06 08:13:06,425 - __main__ - INFO - Servicio registrado: superior_allocator_e6dfe2a2
+2025-11-06 08:13:06,426 - __main__ - INFO - Servicio registrado: superior_allocator_0ac51ad9
+2025-11-06 08:13:06,428 - __main__ - INFO - Servicio registrado: comprehensive_diagnostic_5348053e
+2025-11-06 08:13:06,428 - __main__ - INFO - Servicio registrado: comprehensive_diagnostic_7ae1c8af
+2025-11-06 08:13:06,428 - __main__ - INFO - Servicio registrado: enhanced_architecture_8ecc739d
+2025-11-06 08:13:06,428 - __main__ - INFO - Servicio registrado: enhanced_architecture_1e797f9d
+2025-11-06 08:13:06,428 - __main__ - INFO - Servicio registrado: server_unified_804d7d1e
+2025-11-06 08:13:06,428 - __main__ - INFO - Servicio registrado: server_unified_07df0fe5
+2025-11-06 08:13:06,429 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:13:16,445 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:13:26,455 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:13:36,455 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:13:46,465 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:13:56,475 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:14:06,476 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:14:16,486 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:14:26,496 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:14:36,496 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:14:46,506 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:14:56,516 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:15:06,517 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:15:16,527 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:15:26,532 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:15:36,534 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:15:46,544 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:15:56,549 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:16:06,550 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:16:16,560 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:16:26,570 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:16:36,570 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:16:46,580 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:16:56,590 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:17:06,591 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:17:16,601 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:17:26,611 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:17:36,611 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:17:46,621 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:17:56,623 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:18:06,624 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:18:16,634 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:18:26,644 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:18:36,644 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:18:46,654 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:18:56,664 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:19:06,664 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:19:16,674 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:19:26,684 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:19:36,685 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:19:46,695 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:19:56,705 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:20:06,705 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:20:16,715 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:20:26,719 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:20:36,720 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:20:46,730 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:20:56,740 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:21:06,741 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:21:16,751 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:21:26,761 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:21:36,762 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:21:46,772 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:21:56,783 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:22:06,783 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:22:16,793 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:22:26,803 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:22:36,803 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:22:46,814 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:22:56,824 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:23:06,825 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:23:16,835 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:23:26,843 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:23:36,845 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:23:46,854 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:23:56,864 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:24:06,865 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:24:16,875 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:24:26,885 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:24:36,887 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:24:46,897 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:24:56,907 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:25:06,908 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:25:16,916 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:25:26,926 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:25:36,929 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:25:46,939 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:25:56,949 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:26:06,950 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:26:16,960 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:26:26,970 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:26:36,971 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:26:46,981 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:26:56,991 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:27:06,992 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:27:17,002 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:27:27,012 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:27:37,014 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:27:47,024 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:27:57,032 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:28:07,033 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:28:17,042 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:28:27,052 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:28:37,054 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:28:47,064 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:28:57,074 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:29:07,075 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:29:17,079 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:29:27,089 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:29:37,090 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:29:47,100 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:29:57,110 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:30:07,111 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:30:17,121 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:30:27,131 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:30:37,132 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:30:47,142 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:30:57,143 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:31:07,145 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:31:17,156 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:31:27,166 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:31:37,167 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:31:47,177 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:31:57,181 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:32:07,182 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:32:17,192 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:32:27,202 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:32:37,203 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:32:47,213 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:32:57,223 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:33:07,225 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:33:17,229 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:33:27,239 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:33:37,240 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:33:47,245 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:33:57,255 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:34:07,256 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:34:17,266 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:34:27,276 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:34:37,277 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:34:47,288 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:34:57,298 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:35:07,299 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:35:17,309 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:35:27,319 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:35:37,321 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:35:47,329 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:35:57,331 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:36:07,333 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:36:17,343 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:36:27,353 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:36:37,353 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:36:47,363 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:36:57,373 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:37:07,374 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:37:17,384 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:37:27,394 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:37:37,395 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:37:47,405 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:37:57,415 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:38:07,416 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:38:17,426 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:38:27,436 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:38:37,437 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:38:47,447 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:38:57,457 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:39:07,458 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:39:17,468 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:39:27,478 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:39:37,479 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:39:47,489 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:39:57,499 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:40:07,501 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:40:17,511 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:40:27,515 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:40:37,517 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:40:47,527 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:40:57,537 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:41:07,538 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:41:17,548 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:41:27,558 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:41:37,561 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:41:47,567 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:41:57,577 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:42:07,578 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:42:17,588 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:42:27,598 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:42:37,599 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:42:47,603 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:42:57,613 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:43:07,614 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:43:17,624 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:43:27,634 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:43:37,635 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:43:47,642 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:43:57,652 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:44:07,653 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:44:17,663 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:44:27,673 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:44:37,675 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:44:47,685 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:44:57,695 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:45:07,697 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:45:17,707 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:45:27,717 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:45:37,719 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:45:47,729 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:45:57,739 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:46:07,741 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:46:17,751 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:46:27,759 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:46:37,760 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:46:47,770 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:46:57,780 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:47:07,781 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:47:17,791 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:47:27,796 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:47:37,797 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:47:47,807 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:47:57,817 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:48:07,818 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:48:17,828 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:48:27,838 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:48:37,840 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:48:47,850 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:48:57,860 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:49:07,861 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:49:17,871 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:49:27,881 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:49:37,883 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:49:47,893 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:49:57,903 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:50:07,904 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:50:17,914 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:50:27,924 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:50:37,926 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:50:47,936 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:50:57,946 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:51:07,947 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:51:17,957 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:51:27,968 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:51:37,969 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:51:47,979 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:51:57,989 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:52:07,991 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:52:18,001 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:52:28,011 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:52:38,014 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:52:48,024 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:52:58,034 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:53:08,036 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:53:18,046 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:53:28,056 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:53:38,057 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:53:48,067 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:53:58,077 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:54:08,078 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:54:18,088 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:54:28,098 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:54:38,099 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:54:48,109 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:54:58,119 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:55:08,120 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:55:18,131 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:55:28,142 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:55:38,143 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:55:48,149 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:55:58,159 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:56:08,161 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:56:18,167 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:56:28,177 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:56:38,180 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:56:48,190 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:56:58,200 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:57:08,202 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:57:18,212 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:57:28,222 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:57:38,223 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:57:48,233 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:57:58,244 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:58:08,246 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:58:18,248 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:58:28,258 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:58:38,259 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:58:48,263 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:58:58,273 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:59:08,275 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:59:18,286 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:59:28,296 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:59:38,298 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:59:48,301 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 08:59:58,303 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:00:08,305 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:00:18,315 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:00:28,325 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:00:38,326 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:00:48,336 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:00:58,338 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:01:08,342 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:01:18,352 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:01:28,359 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:01:38,361 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:01:48,371 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:01:58,381 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:02:08,383 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:02:18,393 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:02:28,403 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:02:38,405 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:02:48,415 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:02:58,420 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:03:08,421 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:03:18,431 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:03:28,441 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:03:38,443 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:03:48,453 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:03:58,459 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:04:08,461 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:04:18,466 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:04:28,476 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:04:38,478 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:04:48,488 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:04:58,498 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:05:08,500 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:05:18,508 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:05:28,518 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:05:38,521 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:05:48,531 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:05:58,541 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:06:08,543 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:06:18,553 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:06:28,563 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:06:38,565 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:06:48,570 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:06:58,580 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:07:08,582 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:07:18,592 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:07:28,602 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:07:38,604 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:07:48,614 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:07:58,624 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:08:08,625 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:08:18,635 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:08:28,645 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:08:38,647 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:08:48,657 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:08:58,667 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:09:08,669 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:09:18,679 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:09:28,689 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:09:38,691 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:09:48,701 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:09:58,711 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:10:08,713 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:10:18,723 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:10:28,733 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:10:38,735 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:10:48,745 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:10:58,755 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:11:08,757 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:11:18,767 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:11:28,777 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:11:38,779 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:11:48,789 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:11:58,799 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:12:08,802 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:12:18,804 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:12:28,814 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:12:38,816 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:12:48,826 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:12:58,836 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:13:08,839 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:13:18,849 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:13:28,859 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:13:38,861 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:13:48,871 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:13:58,881 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:14:08,883 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:14:18,893 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:14:28,903 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:14:38,905 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:14:48,915 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:14:58,925 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:15:08,926 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:15:18,937 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:15:28,947 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:15:38,949 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:15:48,959 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:15:58,969 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:16:08,971 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:16:18,980 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:16:28,990 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:16:38,993 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:16:49,003 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:16:59,013 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:17:09,016 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:17:19,020 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:17:29,030 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:17:39,033 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:17:49,043 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:17:59,053 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:18:09,056 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:18:19,066 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:18:29,076 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:18:39,078 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:18:49,085 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:18:59,095 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:19:09,098 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:19:19,108 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:19:29,113 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:19:39,116 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:19:49,126 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:19:59,129 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:20:09,132 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:20:19,142 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:20:29,145 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:20:39,148 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:20:49,158 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:20:59,168 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:21:09,170 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:21:19,180 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:21:29,190 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:21:39,194 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:21:49,204 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:21:59,215 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:22:09,218 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:22:19,228 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:22:29,238 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:22:39,240 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:22:49,251 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:22:59,261 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:23:09,264 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:23:19,267 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:23:29,275 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:23:39,276 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:23:49,287 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:23:59,297 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:24:09,300 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:24:19,310 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:24:29,320 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:24:39,323 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:24:49,333 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:24:59,343 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:25:09,345 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:25:19,355 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:25:29,365 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:25:39,366 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:25:49,376 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:25:59,386 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:26:09,389 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:26:19,399 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:26:29,409 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:26:39,411 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:26:49,412 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:26:59,423 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:27:09,425 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:27:19,435 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:27:29,445 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:27:39,448 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:27:49,458 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:27:59,468 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:28:09,471 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:28:19,481 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:28:29,491 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:28:39,493 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:28:49,503 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:28:59,513 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:29:09,516 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:29:19,526 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:29:29,536 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:29:39,538 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:29:49,548 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:29:59,556 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'
+2025-11-06 09:30:09,559 - __main__ - ERROR - Error en tarea de monitoreo: 'coroutine' object has no attribute 'active_websocket_connections'

@@ -1,0 +1,208 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: mcp-core-ingress
+  namespace: mcp-core-superior
+  labels:
+    app: mcp-core
+    component: ingress
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    kubernetes.io/ingress.global-static-ip-name: mcp-core-ip
+    kubernetes.io/ingress.allow-http: "true"
+    
+    # Configuración de NGINX
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    
+    # Rate limiting
+    nginx.ingress.kubernetes.io/rate-limit: "10"
+    nginx.ingress.kubernetes.io/rate-limit-window: "1m"
+    nginx.ingress.kubernetes.io/rate-limit-burst: "20"
+    
+    # Configuración de timeouts
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+    
+    # Configuración de buffering
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    nginx.ingress.kubernetes.io/proxy-buffer-size: "4k"
+    nginx.ingress.kubernetes.io/proxy-buffers: "8 4k"
+    
+    # CORS
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "https://mcp-core-superior.com"
+    nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, PUT, DELETE, OPTIONS"
+    nginx.ingress.kubernetes.io/cors-allow-headers: "Content-Type, Authorization, X-Requested-With"
+    
+    # Security headers
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      add_header X-Frame-Options "SAMEORIGIN" always;
+      add_header X-Content-Type-Options "nosniff" always;
+      add_header X-XSS-Protection "1; mode=block" always;
+      add_header Referrer-Policy "no-referrer-when-downgrade" always;
+      add_header Strict-Transport-Security "max-age=63072000" always;
+      add_header Content-Security-Policy "default-src 'self' http: https: data: blob: 'unsafe-inline'" always;
+    
+    # Health check
+    nginx.ingress.kubernetes.io/health-check-path: "/health"
+    nginx.ingress.kubernetes.io/health-check-healthy-status: "200"
+    nginx.ingress.kubernetes.io/health-check-unhealthy-status: "404"
+    
+    # Metrics
+    nginx.ingress.kubernetes.io/enable-metrics: "true"
+    nginx.ingress.kubernetes.io/metrics-path: "/nginx_status"
+    
+    # SSL/TLS
+    nginx.ingress.kubernetes.io/ssl-passthrough: "false"
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+    
+    # Load balancing
+    nginx.ingress.kubernetes.io/load-balance: "least_conn"
+    
+    # Session affinity
+    nginx.ingress.kubernetes.io/affinity: "cookie"
+    nginx.ingress.kubernetes.io/affinity-mode: "balanced"
+    
+spec:
+  tls:
+  - hosts:
+    - mcp-core-superior.com
+    - api.mcp-core-superior.com
+    secretName: mcp-core-tls-secret
+  rules:
+  # API principal
+  - host: api.mcp-core-superior.com
+    http:
+      paths:
+      # API endpoints
+      - path: /api/(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: mcp-core-service
+            port:
+              number: 8080
+      
+      # MCP Protocol
+      - path: /mcp/(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: mcp-core-service
+            port:
+              number: 8081
+      
+      # Authentication
+      - path: /auth/(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: mcp-core-service
+            port:
+              number: 8080
+      
+      # ContextForge Gateway
+      - path: /contextforge/(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: contextforge-service
+            port:
+              number: 8001
+      
+      # Métricas (solo para monitoreo interno)
+      - path: /metrics
+        pathType: Exact
+        backend:
+          service:
+            name: mcp-core-service
+            port:
+              number: 9090
+      
+      # Health check
+      - path: /health
+        pathType: Exact
+        backend:
+          service:
+            name: mcp-core-service
+            port:
+              number: 8080
+      
+      # Default path
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: mcp-core-service
+            port:
+              number: 8080
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: mcp-monitoring-ingress
+  namespace: mcp-core-monitoring
+  labels:
+    app: monitoring
+    component: ingress
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    kubernetes.io/ingress.global-static-ip-name: mcp-monitoring-ip
+    
+    # Configuración específica para monitoring
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/rate-limit: "5"
+    nginx.ingress.kubernetes.io/rate-limit-window: "1m"
+    
+    # Restricción de acceso por IP
+    nginx.ingress.kubernetes.io/whitelist-source-range: "192.168.1.0/24,10.0.0.0/8,172.16.0.0/12"
+    
+spec:
+  tls:
+  - hosts:
+    - monitoring.mcp-core-superior.com
+    secretName: mcp-monitoring-tls-secret
+  rules:
+  - host: monitoring.mcp-core-superior.com
+    http:
+      paths:
+      # Grafana
+      - path: /grafana/(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: grafana-service
+            port:
+              number: 3000
+      
+      # Prometheus
+      - path: /prometheus/(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: prometheus-service
+            port:
+              number: 9090
+      
+      # Jaeger
+      - path: /jaeger/(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: jaeger-service
+            port:
+              number: 16686
+      
+      # AlertManager
+      - path: /alertmanager/(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: alertmanager-service
+            port:
+              number: 9093

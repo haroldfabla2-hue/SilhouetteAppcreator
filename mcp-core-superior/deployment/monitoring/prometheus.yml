@@ -1,0 +1,241 @@
+# Configuración de Prometheus para MCP Core Superior
+# Monitoreo y métricas del sistema
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: 'mcp-core-superior'
+    replica: 'replica-1'
+    environment: 'production'
+
+# Archivos de reglas de alertas
+rule_files:
+  - "/etc/prometheus/rules/*.yml"
+
+# Configuración de AlertManager
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          - alertmanager:9093
+
+# Configuración de scrape
+scrape_configs:
+  # === MÉTRICAS DE MCP CORE ===
+  - job_name: 'mcp-core'
+    static_configs:
+      - targets: 
+        - 'mcp-core-service:9090'
+    scrape_interval: 10s
+    metrics_path: /metrics
+    scrape_timeout: 5s
+    honor_labels: true
+    params:
+      format: ['prometheus']
+    
+  # === MÉTRICAS DE KUBERNETES ===
+  
+  # Kubernetes API Server
+  - job_name: 'kubernetes-apiservers'
+    kubernetes_sd_configs:
+      - role: endpoints
+    scheme: https
+    tls_config:
+      ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+      insecure_skip_verify: false
+    bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_namespace, __meta_kubernetes_service_name, __meta_kubernetes_endpoint_port_name]
+        action: keep
+        regex: default;kubernetes;https
+      - source_labels: [__meta_kubernetes_endpoint_port_name]
+        action: replace
+        target_label: __address__
+        regex: https
+        replacement: kubernetes.default.svc:443
+    scrape_interval: 30s
+    scrape_timeout: 10s
+    
+  # Kubernetes Nodes
+  - job_name: 'kubernetes-nodes'
+    kubernetes_sd_configs:
+      - role: node
+    scheme: https
+    tls_config:
+      ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+    bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+    relabel_configs:
+      - action: labelmap
+        regex: __meta_kubernetes_node_label_(.+)
+      - target_label: __address__
+        replacement: kubernetes.default.svc:443
+      - source_labels: [__meta_kubernetes_node_name]
+        regex: (.+)
+        target_label: __metrics_path__
+        replacement: /api/v1/nodes/${1}/proxy/metrics
+    scrape_interval: 30s
+    
+  # Kubernetes Pods
+  - job_name: 'kubernetes-pods'
+    kubernetes_sd_configs:
+      - role: pod
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+        action: keep
+        regex: true
+      - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+        action: replace
+        target_label: __metrics_path__
+        regex: (.+)
+      - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+        action: replace
+        regex: ([^:]+)(?::\d+)?;(\d+)
+        replacement: $1:$2
+        target_label: __address__
+      - action: labelmap
+        regex: __meta_kubernetes_pod_label_(.+)
+      - source_labels: [__meta_kubernetes_namespace]
+        action: replace
+        target_label: kubernetes_namespace
+      - source_labels: [__meta_kubernetes_pod_name]
+        action: replace
+        target_label: kubernetes_pod_name
+    scrape_interval: 30s
+    
+  # Kubernetes Services
+  - job_name: 'kubernetes-services'
+    kubernetes_sd_configs:
+      - role: service
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_scrape]
+        action: keep
+        regex: true
+      - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_path]
+        action: replace
+        target_label: __metrics_path__
+        regex: (.+)
+      - source_labels: [__address__, __meta_kubernetes_service_annotation_prometheus_io_port]
+        action: replace
+        regex: ([^:]+)(?::\d+)?;(\d+)
+        replacement: $1:$2
+        target_label: __address__
+    scrape_interval: 30s
+  
+  # === MÉTRICAS DE BASE DE DATOS ===
+  
+  # PostgreSQL Metrics (via postgres_exporter)
+  - job_name: 'postgresql'
+    static_configs:
+      - targets:
+          - 'postgres-exporter:9187'
+    scrape_interval: 30s
+    metrics_path: /metrics
+    scrape_timeout: 10s
+    
+  # Vector PostgreSQL Metrics
+  - job_name: 'vector-postgresql'
+    static_configs:
+      - targets:
+          - 'vector-postgres-exporter:9187'
+    scrape_interval: 30s
+    metrics_path: /metrics
+    scrape_timeout: 10s
+    
+  # === MÉTRICAS DE CACHE ===
+  
+  # Redis Metrics (via redis_exporter)
+  - job_name: 'redis'
+    static_configs:
+      - targets:
+          - 'redis-exporter:9121'
+    scrape_interval: 30s
+    metrics_path: /metrics
+    scrape_timeout: 10s
+  
+  # === MÉTRICAS DE INFRAESTRUCTURA ===
+  
+  # Node Exporter (si está disponible)
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets:
+          - 'node-exporter:9100'
+    scrape_interval: 30s
+    metrics_path: /metrics
+    scrape_timeout: 10s
+    
+  # Kubelet Metrics
+  - job_name: 'kubelet'
+    kubernetes_sd_configs:
+      - role: node
+    relabel_configs:
+      - action: labelmap
+        regex: __meta_kubernetes_node_label_(.+)
+      - target_label: __address__
+        replacement: kubernetes.default.svc:443
+      - source_labels: [__meta_kubernetes_node_name]
+        regex: (.+)
+        target_label: __metrics_path__
+        replacement: /api/v1/nodes/${1}/proxy/metrics
+    scrape_interval: 30s
+    
+  # cAdvisor (Container metrics)
+  - job_name: 'cadvisor'
+    kubernetes_sd_configs:
+      - role: node
+    relabel_configs:
+      - action: labelmap
+        regex: __meta_kubernetes_node_label_(.+)
+      - target_label: __address__
+        replacement: kubernetes.default.svc:443
+      - source_labels: [__meta_kubernetes_node_name]
+        regex: (.+)
+        target_label: __metrics_path__
+        replacement: /api/v1/nodes/${1}/proxy/metrics/cadvisor
+    scrape_interval: 30s
+  
+  # === MÉTRICAS DE OBSERVABILIDAD ===
+  
+  # Prometheus self-monitoring
+  - job_name: 'prometheus'
+    static_configs:
+      - targets:
+          - 'localhost:9090'
+    scrape_interval: 30s
+    
+  # AlertManager
+  - job_name: 'alertmanager'
+    static_configs:
+      - targets:
+          - 'alertmanager:9093'
+    scrape_interval: 30s
+    
+  # Jaeger
+  - job_name: 'jaeger'
+    static_configs:
+      - targets:
+          - 'jaeger:14269'
+    scrape_interval: 30s
+    metrics_path: /metrics
+    
+  # Grafana
+  - job_name: 'grafana'
+    static_configs:
+      - targets:
+          - 'grafana:3000'
+    scrape_interval: 60s
+    metrics_path: /metrics
+
+# Configuración de remote write (opcional para largo plazo)
+# remote_write:
+#   - url: "https://prometheus-remote-write-endpoint.com/api/v1/write"
+#     basic_auth:
+#       username: "username"
+#       password: "password"
+
+# Configuración de remote read (opcional)
+# remote_read:
+#   - url: "https://prometheus-remote-read-endpoint.com/api/v1/read"
+#     basic_auth:
+#       username: "username"
+#       password: "password"

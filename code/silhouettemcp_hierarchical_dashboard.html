@@ -1,0 +1,1210 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SilhouetteMCP Dashboard Jerárquico Avanzado</title>
+    
+    <!-- CSS Frameworks -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="hierarchical_dashboard.css">
+    
+    <!-- Meta tags -->
+    <meta name="description" content="Dashboard Jerárquico Avanzado de SilhouetteMCP - Gestión de 100+ Agentes Especializados">
+    <meta name="author" content="SilhouetteMCP Team">
+    <meta name="keywords" content="SilhouetteMCP, Dashboard, Multi-Agent System, Hierarchical Architecture">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==">
+</head>
+<body class="dark-theme">
+    <!-- Loading Screen -->
+    <div id="loading-screen" class="loading-screen">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <h2 class="loading-title">Iniciando SilhouetteMCP Dashboard</h2>
+            <p class="loading-subtitle">Cargando arquitectura jerárquica de 100+ agentes...</p>
+            <div class="loading-progress">
+                <div class="progress-bar" role="progressbar" style="width: 0%"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation Sidebar -->
+    <nav id="sidebar" class="sidebar">
+        <div class="sidebar-header">
+            <h3><i class="fas fa-network-wired me-2"></i>SilhouetteMCP</h3>
+            <p class="sidebar-subtitle">Dashboard Jerárquico v5.0</p>
+        </div>
+        
+        <ul class="nav nav-pills flex-column mb-auto">
+            <!-- Dashboard Principal -->
+            <li class="nav-item">
+                <a href="#dashboard" class="nav-link active" data-section="dashboard">
+                    <i class="fas fa-tachometer-alt me-2"></i>
+                    Dashboard Principal
+                    <span class="badge bg-primary ms-2" id="dashboard-badge">✓</span>
+                </a>
+            </li>
+            
+            <!-- Vista Jerárquica -->
+            <li class="nav-item">
+                <a href="#hierarchy" class="nav-link" data-section="hierarchy">
+                    <i class="fas fa-sitemap me-2"></i>
+                    Vista Jerárquica
+                    <span class="badge bg-success ms-2" id="hierarchy-badge">5 Niveles</span>
+                </a>
+            </li>
+            
+            <!-- Equipos Especializados -->
+            <li class="nav-item">
+                <a href="#teams" class="nav-link" data-section="teams">
+                    <i class="fas fa-users me-2"></i>
+                    Equipos Especializados
+                    <span class="badge bg-warning ms-2" id="teams-badge">7 Equipos</span>
+                </a>
+            </li>
+            
+            <!-- Coordinación -->
+            <li class="nav-item">
+                <a href="#coordination" class="nav-link" data-section="coordination">
+                    <i class="fas fa-project-diagram me-2"></i>
+                    Coordinación
+                    <span class="badge bg-info ms-2" id="coordination-badge">Activa</span>
+                </a>
+            </li>
+            
+            <!-- Métricas -->
+            <li class="nav-item">
+                <a href="#metrics" class="nav-link" data-section="metrics">
+                    <i class="fas fa-chart-line me-2"></i>
+                    Métricas KPI
+                    <span class="badge bg-danger ms-2" id="metrics-badge">Tiempo Real</span>
+                </a>
+            </li>
+        </ul>
+        
+        <!-- Sidebar Footer -->
+        <div class="sidebar-footer">
+            <div class="system-status">
+                <small class="text-muted">Sistema Status:</small>
+                <div class="status-indicator">
+                    <span class="status-dot"></span>
+                    <span class="status-text">Operacional</span>
+                </div>
+            </div>
+            <div class="user-info">
+                <i class="fas fa-user-circle me-2"></i>
+                <span>Admin</span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Header -->
+        <header class="main-header">
+            <div class="header-left">
+                <button id="sidebar-toggle" class="btn btn-outline-secondary">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <h1 class="page-title" id="page-title">Dashboard Principal</h1>
+            </div>
+            
+            <div class="header-right">
+                <!-- Notificaciones -->
+                <div class="dropdown">
+                    <button class="btn btn-outline-secondary position-relative" data-bs-toggle="dropdown">
+                        <i class="fas fa-bell"></i>
+                        <span class="notification-badge" id="notification-badge">3</span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><h6 class="dropdown-header">Notificaciones</h6></li>
+                        <li><a class="dropdown-item" href="#"><i class="fas fa-exclamation-triangle text-warning me-2"></i>Equipo Maps con alta carga</a></li>
+                        <li><a class="dropdown-item" href="#"><i class="fas fa-check-circle text-success me-2"></i>12 tareas completadas</a></li>
+                        <li><a class="dropdown-item" href="#"><i class="fas fa-info-circle text-info me-2"></i>Nueva actualización disponible</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="#">Ver todas</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Configuración -->
+                <div class="dropdown">
+                    <button class="btn btn-outline-secondary" data-bs-toggle="dropdown">
+                        <i class="fas fa-cog"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="#"><i class="fas fa-palette me-2"></i>Tema</a></li>
+                        <li><a class="dropdown-item" href="#"><i class="fas fa-download me-2"></i>Exportar Datos</a></li>
+                        <li><a class="dropdown-item" href="#"><i class="fas fa-cog me-2"></i>Configuración</a></li>
+                    </ul>
+                </div>
+            </div>
+        </header>
+
+        <!-- Content Sections -->
+        <div class="content-wrapper">
+            
+            <!-- DASHBOARD PRINCIPAL -->
+            <section id="dashboard-section" class="content-section active">
+                <div class="container-fluid">
+                    <!-- KPI Cards Row -->
+                    <div class="row mb-4">
+                        <div class="col-xl-3 col-md-6">
+                            <div class="kpi-card card">
+                                <div class="card-body">
+                                    <div class="kpi-icon bg-primary">
+                                        <i class="fas fa-users"></i>
+                                    </div>
+                                    <div class="kpi-content">
+                                        <h3 class="kpi-value" id="total-agents">107</h3>
+                                        <p class="kpi-label">Total Agentes</p>
+                                        <small class="kpi-change positive">
+                                            <i class="fas fa-arrow-up"></i> +2.4%
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-xl-3 col-md-6">
+                            <div class="kpi-card card">
+                                <div class="card-body">
+                                    <div class="kpi-icon bg-success">
+                                        <i class="fas fa-tasks"></i>
+                                    </div>
+                                    <div class="kpi-content">
+                                        <h3 class="kpi-value" id="active-tasks">23</h3>
+                                        <p class="kpi-label">Tareas Activas</p>
+                                        <small class="kpi-change negative">
+                                            <i class="fas fa-arrow-down"></i> -5.1%
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-xl-3 col-md-6">
+                            <div class="kpi-card card">
+                                <div class="card-body">
+                                    <div class="kpi-icon bg-warning">
+                                        <i class="fas fa-percentage"></i>
+                                    </div>
+                                    <div class="kpi-content">
+                                        <h3 class="kpi-value" id="system-efficiency">94.2%</h3>
+                                        <p class="kpi-label">Eficiencia Sistema</p>
+                                        <small class="kpi-change positive">
+                                            <i class="fas fa-arrow-up"></i> +1.8%
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-xl-3 col-md-6">
+                            <div class="kpi-card card">
+                                <div class="card-body">
+                                    <div class="kpi-icon bg-info">
+                                        <i class="fas fa-clock"></i>
+                                    </div>
+                                    <div class="kpi-content">
+                                        <h3 class="kpi-value" id="avg-response-time">1.3s</h3>
+                                        <p class="kpi-label">Tiempo Respuesta</p>
+                                        <small class="kpi-change positive">
+                                            <i class="fas fa-arrow-down"></i> -12%
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Charts Row -->
+                    <div class="row">
+                        <!-- Performance Chart -->
+                        <div class="col-xl-8">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title">
+                                        <i class="fas fa-chart-line me-2"></i>
+                                        Rendimiento del Sistema
+                                    </h5>
+                                    <div class="card-tools">
+                                        <button class="btn btn-sm btn-outline-primary" onclick="refreshChart('performance')">
+                                            <i class="fas fa-sync"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="performanceChart" width="400" height="200"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Team Status -->
+                        <div class="col-xl-4">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title">
+                                        <i class="fas fa-users me-2"></i>
+                                        Estado de Equipos
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div id="team-status-list">
+                                        <div class="team-status-item">
+                                            <div class="team-info">
+                                                <h6>Maps Intelligence</h6>
+                                                <small>15 agentes</small>
+                                            </div>
+                                            <div class="team-metrics">
+                                                <span class="badge bg-success">95%</span>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="team-status-item">
+                                            <div class="team-info">
+                                                <h6>Financial Intelligence</h6>
+                                                <small>20 agentes</small>
+                                            </div>
+                                            <div class="team-metrics">
+                                                <span class="badge bg-success">92%</span>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="team-status-item">
+                                            <div class="team-info">
+                                                <h6>Social Media + Travel</h6>
+                                                <small>18 agentes</small>
+                                            </div>
+                                            <div class="team-metrics">
+                                                <span class="badge bg-warning">87%</span>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="team-status-item">
+                                            <div class="team-info">
+                                                <h6>Content Creation</h6>
+                                                <small>12 agentes</small>
+                                            </div>
+                                            <div class="team-metrics">
+                                                <span class="badge bg-success">98%</span>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="team-status-item">
+                                            <div class="team-info">
+                                                <h6>Database Operations</h6>
+                                                <small>15 agentes</small>
+                                            </div>
+                                            <div class="team-metrics">
+                                                <span class="badge bg-success">96%</span>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="team-status-item">
+                                            <div class="team-info">
+                                                <h6>Research Intelligence</h6>
+                                                <small>8 agentes</small>
+                                            </div>
+                                            <div class="team-metrics">
+                                                <span class="badge bg-success">94%</span>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="team-status-item">
+                                            <div class="team-info">
+                                                <h6>Support Systems</h6>
+                                                <small>10 agentes</small>
+                                            </div>
+                                            <div class="team-metrics">
+                                                <span class="badge bg-success">91%</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- VISTA JERÁRQUICA -->
+            <section id="hierarchy-section" class="content-section">
+                <div class="container-fluid">
+                    <div class="row">
+                        <!-- Hierarchy Controls -->
+                        <div class="col-12 mb-4">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-6">
+                                            <h5><i class="fas fa-sitemap me-2"></i>Jerarquía de 5 Niveles</h5>
+                                        </div>
+                                        <div class="col-md-6 text-end">
+                                            <div class="btn-group">
+                                                <button class="btn btn-sm btn-outline-primary" onclick="expandAllLevels()">
+                                                    <i class="fas fa-expand-arrows-alt"></i> Expandir Todo
+                                                </button>
+                                                <button class="btn btn-sm btn-outline-secondary" onclick="collapseAllLevels()">
+                                                    <i class="fas fa-compress-arrows-alt"></i> Colapsar Todo
+                                                </button>
+                                                <button class="btn btn-sm btn-outline-success" onclick="fitToScreen()">
+                                                    <i class="fas fa-crosshairs"></i> Ajustar Vista
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Hierarchy Visualization -->
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <div class="row align-items-center">
+                                        <div class="col">
+                                            <h5 class="card-title mb-0">
+                                                <i class="fas fa-sitemap me-2"></i>
+                                                Diagrama Organizacional Interactivo
+                                            </h5>
+                                        </div>
+                                        <div class="col-auto">
+                                            <div class="level-legend">
+                                                <span class="level-badge level-5">Nivel 5: Master</span>
+                                                <span class="level-badge level-4">Nivel 4: Assigner</span>
+                                                <span class="level-badge level-3">Nivel 3: Leaders</span>
+                                                <span class="level-badge level-2">Nivel 2: Supervisors</span>
+                                                <span class="level-badge level-1">Nivel 1: Specialists</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div id="hierarchy-container">
+                                        <svg id="hierarchy-svg" width="100%" height="800"></svg>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- EQUIPOS ESPECIALIZADOS -->
+            <section id="teams-section" class="content-section">
+                <div class="container-fluid">
+                    <!-- Team Overview -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5><i class="fas fa-users me-2"></i>Equipos Especializados - 7 Equipos, 90+ Agentes</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row" id="teams-overview">
+                                        <!-- Teams will be populated by JavaScript -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Team Details -->
+                    <div class="row">
+                        <!-- Maps Intelligence Team -->
+                        <div class="col-xl-6 mb-4">
+                            <div class="card team-card" data-team="maps">
+                                <div class="card-header team-header">
+                                    <div class="team-header-content">
+                                        <div class="team-info">
+                                            <h5 class="mb-0">
+                                                <i class="fas fa-map-marked-alt me-2"></i>
+                                                Maps Intelligence Team
+                                            </h5>
+                                            <small>15 agentes especializados</small>
+                                        </div>
+                                        <div class="team-status">
+                                            <span class="badge bg-success">Activo</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="team-metrics">
+                                        <div class="row text-center">
+                                            <div class="col-4">
+                                                <h4 class="text-success">15</h4>
+                                                <small>Agentes</small>
+                                            </div>
+                                            <div class="col-4">
+                                                <h4 class="text-primary">95%</h4>
+                                                <small>Rendimiento</small>
+                                            </div>
+                                            <div class="col-4">
+                                                <h4 class="text-warning">12</h4>
+                                                <small>Tareas</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="team-capabilities mt-3">
+                                        <h6>Capacidades:</h6>
+                                        <div class="capability-tags">
+                                            <span class="badge bg-light text-dark">Geocoding</span>
+                                            <span class="badge bg-light text-dark">Navegación</span>
+                                            <span class="badge bg-light text-dark">Análisis Espacial</span>
+                                            <span class="badge bg-light text-dark">Optimización de Rutas</span>
+                                        </div>
+                                    </div>
+                                    <div class="team-members mt-3">
+                                        <h6>Agentes Principales:</h6>
+                                        <ul class="list-unstyled small">
+                                            <li><i class="fas fa-crown text-warning me-2"></i>Maps_Team_Leader</li>
+                                            <li><i class="fas fa-user-tie text-primary me-2"></i>Geocoding_Specialist_1</li>
+                                            <li><i class="fas fa-user-tie text-primary me-2"></i>Route_Optimizer_1</li>
+                                            <li><i class="fas fa-user-tie text-primary me-2"></i>Location_Analyst_1</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="card-footer">
+                                    <button class="btn btn-sm btn-outline-primary" onclick="showTeamDetails('maps')">
+                                        <i class="fas fa-eye me-1"></i>Ver Detalles
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-success ms-2" onclick="manageTeam('maps')">
+                                        <i class="fas fa-cog me-1"></i>Gestionar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Financial Intelligence Team -->
+                        <div class="col-xl-6 mb-4">
+                            <div class="card team-card" data-team="financial">
+                                <div class="card-header team-header">
+                                    <div class="team-header-content">
+                                        <div class="team-info">
+                                            <h5 class="mb-0">
+                                                <i class="fas fa-chart-line me-2"></i>
+                                                Financial Intelligence Team
+                                            </h5>
+                                            <small>20 agentes especializados</small>
+                                        </div>
+                                        <div class="team-status">
+                                            <span class="badge bg-success">Activo</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="team-metrics">
+                                        <div class="row text-center">
+                                            <div class="col-4">
+                                                <h4 class="text-success">20</h4>
+                                                <small>Agentes</small>
+                                            </div>
+                                            <div class="col-4">
+                                                <h4 class="text-primary">92%</h4>
+                                                <small>Rendimiento</small>
+                                            </div>
+                                            <div class="col-4">
+                                                <h4 class="text-warning">8</h4>
+                                                <small>Tareas</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="team-capabilities mt-3">
+                                        <h6>Capacidades:</h6>
+                                        <div class="capability-tags">
+                                            <span class="badge bg-light text-dark">Análisis de Mercado</span>
+                                            <span class="badge bg-light text-dark">Gestión de Riesgos</span>
+                                            <span class="badge bg-light text-dark">Trading</span>
+                                            <span class="badge bg-light text-dark">Forecasting</span>
+                                        </div>
+                                    </div>
+                                    <div class="team-members mt-3">
+                                        <h6>Agentes Principales:</h6>
+                                        <ul class="list-unstyled small">
+                                            <li><i class="fas fa-crown text-warning me-2"></i>Financial_Team_Leader</li>
+                                            <li><i class="fas fa-user-tie text-primary me-2"></i>Stock_Analyst_1</li>
+                                            <li><i class="fas fa-user-tie text-primary me-2"></i>Risk_Manager_1</li>
+                                            <li><i class="fas fa-user-tie text-primary me-2"></i>Crypto_Specialist_1</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="card-footer">
+                                    <button class="btn btn-sm btn-outline-primary" onclick="showTeamDetails('financial')">
+                                        <i class="fas fa-eye me-1"></i>Ver Detalles
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-success ms-2" onclick="manageTeam('financial')">
+                                        <i class="fas fa-cog me-1"></i>Gestionar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Social Media + Travel Team -->
+                        <div class="col-xl-6 mb-4">
+                            <div class="card team-card" data-team="social_travel">
+                                <div class="card-header team-header">
+                                    <div class="team-header-content">
+                                        <div class="team-info">
+                                            <h5 class="mb-0">
+                                                <i class="fas fa-share-alt me-2"></i>
+                                                Social Media + Travel Team
+                                            </h5>
+                                            <small>18 agentes especializados</small>
+                                        </div>
+                                        <div class="team-status">
+                                            <span class="badge bg-success">Activo</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="team-metrics">
+                                        <div class="row text-center">
+                                            <div class="col-4">
+                                                <h4 class="text-success">18</h4>
+                                                <small>Agentes</small>
+                                            </div>
+                                            <div class="col-4">
+                                                <h4 class="text-primary">87%</h4>
+                                                <small>Rendimiento</small>
+                                            </div>
+                                            <div class="col-4">
+                                                <h4 class="text-warning">15</h4>
+                                                <small>Tareas</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="team-capabilities mt-3">
+                                        <h6>Capacidades:</h6>
+                                        <div class="capability-tags">
+                                            <span class="badge bg-light text-dark">Gestión Social</span>
+                                            <span class="badge bg-light text-dark">Planificación Viajes</span>
+                                            <span class="badge bg-light text-dark">Reservas</span>
+                                            <span class="badge bg-light text-dark">Content Curation</span>
+                                        </div>
+                                    </div>
+                                    <div class="team-members mt-3">
+                                        <h6>Agentes Principales:</h6>
+                                        <ul class="list-unstyled small">
+                                            <li><i class="fas fa-crown text-warning me-2"></i>Social_Travel_Leader</li>
+                                            <li><i class="fas fa-user-tie text-primary me-2"></i>Social_Media_Manager_1</li>
+                                            <li><i class="fas fa-user-tie text-primary me-2"></i>Travel_Planner_1</li>
+                                            <li><i class="fas fa-user-tie text-primary me-2"></i>Booking_Specialist_1</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="card-footer">
+                                    <button class="btn btn-sm btn-outline-primary" onclick="showTeamDetails('social_travel')">
+                                        <i class="fas fa-eye me-1"></i>Ver Detalles
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-success ms-2" onclick="manageTeam('social_travel')">
+                                        <i class="fas fa-cog me-1"></i>Gestionar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Content Creation Team -->
+                        <div class="col-xl-6 mb-4">
+                            <div class="card team-card" data-team="content">
+                                <div class="card-header team-header">
+                                    <div class="team-header-content">
+                                        <div class="team-info">
+                                            <h5 class="mb-0">
+                                                <i class="fas fa-palette me-2"></i>
+                                                Content Creation Team
+                                            </h5>
+                                            <small>12 agentes especializados</small>
+                                        </div>
+                                        <div class="team-status">
+                                            <span class="badge bg-success">Activo</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="team-metrics">
+                                        <div class="row text-center">
+                                            <div class="col-4">
+                                                <h4 class="text-success">12</h4>
+                                                <small>Agentes</small>
+                                            </div>
+                                            <div class="col-4">
+                                                <h4 class="text-primary">98%</h4>
+                                                <small>Rendimiento</small>
+                                            </div>
+                                            <div class="col-4">
+                                                <h4 class="text-warning">6</h4>
+                                                <small>Tareas</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="team-capabilities mt-3">
+                                        <h6>Capacidades:</h6>
+                                        <div class="capability-tags">
+                                            <span class="badge bg-light text-dark">Creación de Imágenes</span>
+                                            <span class="badge bg-light text-dark">Producción de Video</span>
+                                            <span class="badge bg-light text-dark">Composición de Audio</span>
+                                            <span class="badge bg-light text-dark">Diseño Gráfico</span>
+                                        </div>
+                                    </div>
+                                    <div class="team-members mt-3">
+                                        <h6>Agentes Principales:</h6>
+                                        <ul class="list-unstyled small">
+                                            <li><i class="fas fa-crown text-warning me-2"></i>Content_Creation_Leader</li>
+                                            <li><i class="fas fa-user-tie text-primary me-2"></i>Image_Creator_1</li>
+                                            <li><i class="fas fa-user-tie text-primary me-2"></i>Video_Producer_1</li>
+                                            <li><i class="fas fa-user-tie text-primary me-2"></i>Audio_Composer_1</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="card-footer">
+                                    <button class="btn btn-sm btn-outline-primary" onclick="showTeamDetails('content')">
+                                        <i class="fas fa-eye me-1"></i>Ver Detalles
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-success ms-2" onclick="manageTeam('content')">
+                                        <i class="fas fa-cog me-1"></i>Gestionar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Database Operations Team -->
+                        <div class="col-xl-6 mb-4">
+                            <div class="card team-card" data-team="database">
+                                <div class="card-header team-header">
+                                    <div class="team-header-content">
+                                        <div class="team-info">
+                                            <h5 class="mb-0">
+                                                <i class="fas fa-database me-2"></i>
+                                                Database Operations Team
+                                            </h5>
+                                            <small>15 agentes especializados</small>
+                                        </div>
+                                        <div class="team-status">
+                                            <span class="badge bg-success">Activo</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="team-metrics">
+                                        <div class="row text-center">
+                                            <div class="col-4">
+                                                <h4 class="text-success">15</h4>
+                                                <small>Agentes</small>
+                                            </div>
+                                            <div class="col-4">
+                                                <h4 class="text-primary">96%</h4>
+                                                <small>Rendimiento</small>
+                                            </div>
+                                            <div class="col-4">
+                                                <h4 class="text-warning">4</h4>
+                                                <small>Tareas</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="team-capabilities mt-3">
+                                        <h6>Capacidades:</h6>
+                                        <div class="capability-tags">
+                                            <span class="badge bg-light text-dark">Arquitectura BD</span>
+                                            <span class="badge bg-light text-dark">Migraciones</span>
+                                            <span class="badge bg-light text-dark">Seguridad</span>
+                                            <span class="badge bg-light text-dark">Optimización</span>
+                                        </div>
+                                    </div>
+                                    <div class="team-members mt-3">
+                                        <h6>Agentes Principales:</h6>
+                                        <ul class="list-unstyled small">
+                                            <li><i class="fas fa-crown text-warning me-2"></i>Database_Team_Leader</li>
+                                            <li><i class="fas fa-user-tie text-primary me-2"></i>Database_Architect_1</li>
+                                            <li><i class="fas fa-user-tie text-primary me-2"></i>Migration_Specialist_1</li>
+                                            <li><i class="fas fa-user-tie text-primary me-2"></i>Security_Expert_1</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="card-footer">
+                                    <button class="btn btn-sm btn-outline-primary" onclick="showTeamDetails('database')">
+                                        <i class="fas fa-eye me-1"></i>Ver Detalles
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-success ms-2" onclick="manageTeam('database')">
+                                        <i class="fas fa-cog me-1"></i>Gestionar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Research Intelligence Team -->
+                        <div class="col-xl-6 mb-4">
+                            <div class="card team-card" data-team="research">
+                                <div class="card-header team-header">
+                                    <div class="team-header-content">
+                                        <div class="team-info">
+                                            <h5 class="mb-0">
+                                                <i class="fas fa-microscope me-2"></i>
+                                                Research Intelligence Team
+                                            </h5>
+                                            <small>8 agentes especializados</small>
+                                        </div>
+                                        <div class="team-status">
+                                            <span class="badge bg-success">Activo</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="team-metrics">
+                                        <div class="row text-center">
+                                            <div class="col-4">
+                                                <h4 class="text-success">8</h4>
+                                                <small>Agentes</small>
+                                            </div>
+                                            <div class="col-4">
+                                                <h4 class="text-primary">94%</h4>
+                                                <small>Rendimiento</small>
+                                            </div>
+                                            <div class="col-4">
+                                                <h4 class="text-warning">3</h4>
+                                                <small>Tareas</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="team-capabilities mt-3">
+                                        <h6>Capacidades:</h6>
+                                        <div class="capability-tags">
+                                            <span class="badge bg-light text-dark">Investigación Académica</span>
+                                            <span class="badge bg-light text-dark">Análisis de Patentes</span>
+                                            <span class="badge bg-light text-dark">Minería de Datos</span>
+                                            <span class="badge bg-light text-dark">Síntesis de Conocimiento</span>
+                                        </div>
+                                    </div>
+                                    <div class="team-members mt-3">
+                                        <h6>Agentes Principales:</h6>
+                                        <ul class="list-unstyled small">
+                                            <li><i class="fas fa-crown text-warning me-2"></i>Research_Team_Leader</li>
+                                            <li><i class="fas fa-user-tie text-primary me-2"></i>Patent_Researcher_1</li>
+                                            <li><i class="fas fa-user-tie text-primary me-2"></i>Academic_Analyst_1</li>
+                                            <li><i class="fas fa-user-tie text-primary me-2"></i>Data_Miner_1</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="card-footer">
+                                    <button class="btn btn-sm btn-outline-primary" onclick="showTeamDetails('research')">
+                                        <i class="fas fa-eye me-1"></i>Ver Detalles
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-success ms-2" onclick="manageTeam('research')">
+                                        <i class="fas fa-cog me-1"></i>Gestionar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- COORDINACIÓN ENTRE EQUIPOS -->
+            <section id="coordination-section" class="content-section">
+                <div class="container-fluid">
+                    <!-- Coordination Overview -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5><i class="fas fa-project-diagram me-2"></i>Flujo de Coordinación Entre Equipos</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row text-center">
+                                        <div class="col-md-3">
+                                            <div class="coordination-stat">
+                                                <h3 class="text-primary">12</h3>
+                                                <small>Proyectos Multi-Equipo</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="coordination-stat">
+                                                <h3 class="text-success">89%</h3>
+                                                <small>Eficiencia Coordinación</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="coordination-stat">
+                                                <h3 class="text-warning">2.1</h3>
+                                                <small>Tiempo Promedio (horas)</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="coordination-stat">
+                                                <h3 class="text-info">15</h3>
+                                                <small>Dependencias Activas</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Coordination Flow -->
+                    <div class="row">
+                        <!-- Active Projects -->
+                        <div class="col-xl-8">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title">
+                                        <i class="fas fa-tasks me-2"></i>
+                                        Proyectos Multi-Equipo en Curso
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div id="active-projects">
+                                        <div class="project-item">
+                                            <div class="project-header">
+                                                <h6>Proyecto: Análisis de Mercado Global</h6>
+                                                <span class="badge bg-success">En Progreso</span>
+                                            </div>
+                                            <div class="project-progress">
+                                                <div class="progress">
+                                                    <div class="progress-bar" style="width: 75%"></div>
+                                                </div>
+                                                <small>75% completado</small>
+                                            </div>
+                                            <div class="project-teams">
+                                                <small><strong>Equipos:</strong> Financial Intelligence, Research Intelligence, Content Creation</small>
+                                            </div>
+                                            <div class="project-timeline">
+                                                <small><i class="fas fa-clock me-1"></i>Fecha límite: 2025-11-15</small>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="project-item">
+                                            <div class="project-header">
+                                                <h6>Proyecto: Plataforma de Viajes Integrada</h6>
+                                                <span class="badge bg-warning">En Pausa</span>
+                                            </div>
+                                            <div class="project-progress">
+                                                <div class="progress">
+                                                    <div class="progress-bar bg-warning" style="width: 45%"></div>
+                                                </div>
+                                                <small>45% completado</small>
+                                            </div>
+                                            <div class="project-teams">
+                                                <small><strong>Equipos:</strong> Social Media + Travel, Maps Intelligence, Database Operations</small>
+                                            </div>
+                                            <div class="project-timeline">
+                                                <small><i class="fas fa-clock me-1"></i>Fecha límite: 2025-11-30</small>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="project-item">
+                                            <div class="project-header">
+                                                <h6>Proyecto: Sistema de Monitoreo Avanzado</h6>
+                                                <span class="badge bg-primary">Planificación</span>
+                                            </div>
+                                            <div class="project-progress">
+                                                <div class="progress">
+                                                    <div class="progress-bar bg-info" style="width: 20%"></div>
+                                                </div>
+                                                <small>20% completado</small>
+                                            </div>
+                                            <div class="project-teams">
+                                                <small><strong>Equipos:</strong> Support Systems, Database Operations, Maps Intelligence</small>
+                                            </div>
+                                            <div class="project-timeline">
+                                                <small><i class="fas fa-clock me-1"></i>Fecha límite: 2025-12-15</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Bottlenecks and Dependencies -->
+                        <div class="col-xl-4">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title">
+                                        <i class="fas fa-exclamation-triangle me-2"></i>
+                                        Bottlenecks y Dependencias
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="alert alert-warning">
+                                        <h6><i class="fas fa-exclamation-circle me-2"></i>Bottleneck Detectado</h6>
+                                        <small>Equipo Database Operations con alta carga (85%)</small>
+                                    </div>
+                                    
+                                    <div class="alert alert-info">
+                                        <h6><i class="fas fa-link me-2"></i>Dependencia Crítica</h6>
+                                        <small>Maps Intelligence depende de Database para datos geoespaciales</small>
+                                    </div>
+                                    
+                                    <div class="alert alert-success">
+                                        <h6><i class="fas fa-check-circle me-2"></i>Coordinación Exitosa</h6>
+                                        <small>Financial y Research completaron análisis conjunto en tiempo récord</small>
+                                    </div>
+                                    
+                                    <div class="dependency-graph">
+                                        <h6>Flujo de Dependencias:</h6>
+                                        <div class="flow-item">
+                                            <span class="flow-node">Content</span>
+                                            <i class="fas fa-arrow-right"></i>
+                                            <span class="flow-node">Database</span>
+                                            <i class="fas fa-arrow-right"></i>
+                                            <span class="flow-node">Support</span>
+                                        </div>
+                                        <div class="flow-item">
+                                            <span class="flow-node">Maps</span>
+                                            <i class="fas fa-arrow-right"></i>
+                                            <span class="flow-node">Social</span>
+                                            <i class="fas fa-arrow-right"></i>
+                                            <span class="flow-node">Financial</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- MÉTRICAS DE RENDIMIENTO -->
+            <section id="metrics-section" class="content-section">
+                <div class="container-fluid">
+                    <!-- Metrics Header -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5><i class="fas fa-chart-line me-2"></i>Métricas de Rendimiento en Tiempo Real</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-3">
+                                            <div class="metric-item">
+                                                <h6 class="metric-label">Throughput</h6>
+                                                <h3 class="metric-value text-success">1,247</h3>
+                                                <small>tareas/hora</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="metric-item">
+                                                <h6 class="metric-label">Latencia</h6>
+                                                <h3 class="metric-value text-primary">1.3s</h3>
+                                                <small>promedio</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="metric-item">
+                                                <h6 class="metric-label">Utilización</h6>
+                                                <h3 class="metric-value text-warning">78%</h3>
+                                                <small>sistema</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="metric-item">
+                                                <h6 class="metric-label">Disponibilidad</h6>
+                                                <h3 class="metric-value text-info">99.9%</h3>
+                                                <small>uptime</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Charts Row -->
+                    <div class="row">
+                        <!-- KPI Dashboard -->
+                        <div class="col-xl-8">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title">
+                                        <i class="fas fa-chart-bar me-2"></i>
+                                        Dashboard KPI
+                                    </h5>
+                                    <div class="card-tools">
+                                        <select class="form-select form-select-sm" style="width: auto;" onchange="updateTimeRange(this.value)">
+                                            <option value="1h">Última Hora</option>
+                                            <option value="24h">Últimas 24h</option>
+                                            <option value="7d">Última Semana</option>
+                                            <option value="30d">Último Mes</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="kpiChart" width="400" height="200"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Real-time Metrics -->
+                        <div class="col-xl-4">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title">
+                                        <i class="fas fa-tachometer-alt me-2"></i>
+                                        Métricas en Tiempo Real
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="realtime-metric">
+                                        <div class="metric-header">
+                                            <span class="metric-name">CPU Usage</span>
+                                            <span class="metric-percentage">65%</span>
+                                        </div>
+                                        <div class="progress">
+                                            <div class="progress-bar bg-primary" style="width: 65%"></div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="realtime-metric">
+                                        <div class="metric-header">
+                                            <span class="metric-name">Memory Usage</span>
+                                            <span class="metric-percentage">72%</span>
+                                        </div>
+                                        <div class="progress">
+                                            <div class="progress-bar bg-success" style="width: 72%"></div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="realtime-metric">
+                                        <div class="metric-header">
+                                            <span class="metric-name">Network I/O</span>
+                                            <span class="metric-percentage">45%</span>
+                                        </div>
+                                        <div class="progress">
+                                            <div class="progress-bar bg-info" style="width: 45%"></div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="realtime-metric">
+                                        <div class="metric-header">
+                                            <span class="metric-name">Disk Usage</span>
+                                            <span class="metric-percentage">38%</span>
+                                        </div>
+                                        <div class="progress">
+                                            <div class="progress-bar bg-warning" style="width: 38%"></div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="realtime-metric">
+                                        <div class="metric-header">
+                                            <span class="metric-name">Active Connections</span>
+                                            <span class="metric-percentage">234</span>
+                                        </div>
+                                        <div class="progress">
+                                            <div class="progress-bar bg-secondary" style="width: 78%"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Team Performance Comparison -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title">
+                                        <i class="fas fa-users me-2"></i>
+                                        Comparación de Rendimiento por Equipo
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="teamComparisonChart" height="100"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Modals -->
+    <!-- Team Details Modal -->
+    <div class="modal fade" id="teamDetailsModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="teamDetailsTitle">
+                        <i class="fas fa-users me-2"></i>Detalles del Equipo
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="teamDetailsContent">
+                    <!-- Content will be populated by JavaScript -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    <button type="button" class="btn btn-primary" onclick="exportTeamData()">
+                        <i class="fas fa-download me-1"></i>Exportar Datos
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Agent Management Modal -->
+    <div class="modal fade" id="agentManagementModal" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-cogs me-2"></i>Gestión de Agentes
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="agent-list">
+                                <h6>Lista de Agentes</h6>
+                                <div class="list-group" id="agentList">
+                                    <!-- Agents will be populated here -->
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-8">
+                            <div class="agent-details">
+                                <h6>Detalles del Agente</h6>
+                                <div id="agentDetails">
+                                    <p class="text-muted">Selecciona un agente para ver detalles</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    <button type="button" class="btn btn-success" onclick="saveAgentChanges()">
+                        <i class="fas fa-save me-1"></i>Guardar Cambios
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
+    
+    <!-- Custom JavaScript -->
+    <script src="hierarchical_dashboard.js"></script>
+    
+    <!-- Dashboard Initialization -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeDashboard();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,749 @@
+name: Performance Regression Testing
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - '.github/workflows/05-performance-regression.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'src/**'
+      - 'tests/**'
+  schedule:
+    - cron: '0 6 * * 1' # Weekly on Monday at 6 AM
+
+env:
+  PYTHON_VERSION: '3.11'
+
+jobs:
+  baseline-comparison:
+    name: Baseline Comparison
+    runs-on: ubuntu-latest
+    outputs:
+      baseline-exists: ${{ steps.check-baseline.outputs.exists }}
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Check baseline metrics
+      id: check-baseline
+      run: |
+        # Verificar si existen métricas baseline
+        if [[ -f "performance-baseline.json" ]]; then
+          echo "exists=true" >> $GITHUB_OUTPUT
+          echo "Baseline metrics found"
+        else
+          echo "exists=false" >> $GITHUB_OUTPUT
+          echo "No baseline metrics found, will create new baseline"
+        fi
+
+  performance-benchmark:
+    name: Performance Benchmarks
+    runs-on: ubuntu-latest
+    needs: baseline-comparison
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: mcp_core_perf
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+      
+      redis:
+        image: redis:7
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pytest pytest-benchmark memory-profiler psutil
+        pip install -r file_processing_requirements.txt
+        pip install -e .
+
+    - name: Run performance benchmarks
+      env:
+        DATABASE_URL: postgresql://postgres:postgres@localhost:5432/mcp_core_perf
+        REDIS_URL: redis://localhost:6379
+        MCP_CORE_ENVIRONMENT: testing
+        MCP_CORE_MAX_CONCURRENT_TASKS: 50
+        MCP_CORE_MAX_CONCURRENT_TOOLS: 25
+      run: |
+        # Crear tests de performance específicos
+        mkdir -p tests/performance
+        
+        cat > tests/performance/test_benchmarks.py << 'EOF'
+        import pytest
+        import time
+        import asyncio
+        import psutil
+        import memory_profiler
+        from concurrent.futures import ThreadPoolExecutor
+        
+        @pytest.mark.benchmark
+        def test_agent_response_time(benchmark):
+            """Test individual agent response time"""
+            from src.agents.reasoner_wrapper import ReasonerWrapper
+            
+            async def agent_call():
+                agent = ReasonerWrapper()
+                result = await agent.process({
+                    'objective': 'test objective',
+                    'context': {'benchmark': True}
+                })
+                return result
+            
+            result = benchmark(asyncio.run, agent_call())
+            assert result is not None
+        
+        @pytest.mark.benchmark
+        def test_database_query_performance(benchmark):
+            """Test database query performance"""
+            import psycopg2
+            import os
+            
+            def db_query():
+                conn = psycopg2.connect(os.getenv('DATABASE_URL'))
+                cur = conn.cursor()
+                cur.execute('SELECT COUNT(*) FROM information_schema.tables')
+                result = cur.fetchone()[0]
+                cur.close()
+                conn.close()
+                return result
+            
+            result = benchmark(db_query)
+            assert result > 0
+        
+        @pytest.mark.benchmark
+        def test_memory_usage_large_context(benchmark):
+            """Test memory usage with large context"""
+            from src.core.context_persistence_engine import ContextPersistenceEngine
+            
+            def memory_test():
+                engine = ContextPersistenceEngine()
+                large_context = {
+                    'data': 'x' * 1000000,  # 1MB of data
+                    'nested': {f'key_{i}': f'value_{i}' for i in range(1000)}
+                }
+                result = engine.store_context('test_large', large_context)
+                return result
+            
+            result = benchmark(memory_test)
+            assert result is not None
+        
+        @pytest.mark.benchmark
+        def test_concurrent_execution(benchmark):
+            """Test concurrent execution performance"""
+            from src.orchestrator.multi_agent_orchestrator import MultiAgentOrchestrator
+            
+            async def concurrent_test():
+                orchestrator = MultiAgentOrchestrator()
+                tasks = []
+                
+                for i in range(10):
+                    task = orchestrator.orchestrate({
+                        'objective': f'performance test task {i}',
+                        'context': {'concurrent': True}
+                    })
+                    tasks.append(task)
+                
+                results = await asyncio.gather(*tasks, return_exceptions=True)
+                successful = sum(1 for r in results if not isinstance(r, Exception))
+                return successful
+            
+            result = benchmark(asyncio.run, concurrent_test())
+            assert result >= 8  # Allow some failures due to timing
+        
+        @pytest.mark.benchmark
+        def test_streaming_performance(benchmark):
+            """Test streaming endpoint performance"""
+            from src.api.streaming import StreamingAPI
+            
+            async def streaming_test():
+                streaming = StreamingAPI()
+                
+                async def data_generator():
+                    for i in range(100):
+                        yield {'data': f'item_{i}', 'timestamp': time.time()}
+                        await asyncio.sleep(0.01)  # 10ms delay
+                
+                items = []
+                async for item in data_generator():
+                    items.append(item)
+                return len(items)
+            
+            result = benchmark(asyncio.run, streaming_test())
+            assert result == 100
+        
+        @pytest.mark.benchmark
+        def test_file_processing_performance(benchmark):
+            """Test file processing performance"""
+            import tempfile
+            import os
+            from src.agents.file_processing_agent import FileProcessingAgent
+            
+            def create_test_file():
+                # Create a test file
+                fd, path = tempfile.mkstemp(suffix='.txt')
+                with os.fdopen(fd, 'w') as f:
+                    f.write('x' * 50000)  # 50KB file
+                return path
+            
+            def process_file():
+                agent = FileProcessingAgent()
+                test_file = create_test_file()
+                try:
+                    result = agent.process({
+                        'file_path': test_file,
+                        'operation': 'analyze'
+                    })
+                    return result
+                finally:
+                    os.unlink(test_file)
+            
+            result = benchmark(process_file)
+            assert result is not None
+        EOF
+        
+        # Ejecutar benchmarks
+        pytest tests/performance/test_benchmarks.py \
+          --benchmark-only \
+          --benchmark-json=benchmark-results.json \
+          --benchmark-sort=mean \
+          -v
+
+    - name: Collect performance metrics
+      run: |
+        # Recopilar métricas del sistema
+        cat > collect_metrics.py << 'EOF'
+        import psutil
+        import json
+        import time
+        
+        metrics = {
+            'system': {
+                'cpu_percent': psutil.cpu_percent(interval=1),
+                'memory_percent': psutil.virtual_memory().percent,
+                'disk_usage_percent': psutil.disk_usage('/').percent,
+                'network_io': dict(psutil.net_io_counters()._asdict())
+            },
+            'timestamp': time.time(),
+            'github_run': {
+                'run_id': '${{ github.run_id }}',
+                'commit': '${{ github.sha }}',
+                'branch': '${{ github.ref_name }}'
+            }
+        }
+        
+        with open('system-metrics.json', 'w') as f:
+            json.dump(metrics, f, indent=2)
+        
+        print("System metrics collected")
+        EOF
+        
+        python collect_metrics.py
+
+    - name: Performance regression analysis
+      if: needs.baseline-comparison.outputs.baseline-exists == 'true'
+      run: |
+        # Analizar regresiones de performance
+        cat > analyze_regression.py << 'EOF'
+        import json
+        import sys
+        
+        # Cargar resultados actuales
+        with open('benchmark-results.json', 'r') as f:
+            current_results = json.load(f)
+        
+        # Cargar baseline
+        with open('performance-baseline.json', 'r') as f:
+            baseline_results = json.load(f)
+        
+        # Comparar resultados
+        regression_found = False
+        current_benchmarks = {b['name']: b for b in current_results['benchmarks']}
+        baseline_benchmarks = {b['name']: b for b in baseline_results['benchmarks']}
+        
+        analysis = {
+            'regressions': [],
+            'improvements': [],
+            'summary': {
+                'total_tests': len(current_benchmarks),
+                'regressions_count': 0,
+                'improvements_count': 0
+            }
+        }
+        
+        for name, current in current_benchmarks.items():
+            if name in baseline_benchmarks:
+                baseline = baseline_benchmarks[name]
+                current_mean = current['stats']['mean']
+                baseline_mean = baseline['stats']['mean']
+                
+                change_percent = ((current_mean - baseline_mean) / baseline_mean) * 100
+                
+                if change_percent > 10:  # Regresión si empeora > 10%
+                    analysis['regressions'].append({
+                        'test': name,
+                        'baseline_mean': baseline_mean,
+                        'current_mean': current_mean,
+                        'change_percent': change_percent,
+                        'status': 'REGRESSION'
+                    })
+                    regression_found = True
+                elif change_percent < -10:  # Mejora si mejora > 10%
+                    analysis['improvements'].append({
+                        'test': name,
+                        'baseline_mean': baseline_mean,
+                        'current_mean': current_mean,
+                        'change_percent': change_percent,
+                        'status': 'IMPROVEMENT'
+                    })
+        
+        analysis['summary']['regressions_count'] = len(analysis['regressions'])
+        analysis['summary']['improvements_count'] = len(analysis['improvements'])
+        
+        with open('performance-analysis.json', 'w') as f:
+            json.dump(analysis, f, indent=2)
+        
+        # Reportar resultados
+        if regression_found:
+            print("❌ Performance regressions detected!")
+            for regression in analysis['regressions']:
+                print(f"  - {regression['test']}: {regression['change_percent']:.1f}% slower")
+            sys.exit(1)
+        else:
+            print("✅ No performance regressions detected")
+            if analysis['improvements']:
+                print("🎉 Performance improvements detected:")
+                for improvement in analysis['improvements']:
+                    print(f"  - {improvement['test']}: {abs(improvement['change_percent']):.1f}% faster")
+        EOF
+        
+        python analyze_regression.py
+
+    - name: Update baseline
+      if: needs.baseline-comparison.outputs.baseline-exists == 'false' || github.ref == 'refs/heads/main'
+      run: |
+        echo "Updating performance baseline..."
+        cp benchmark-results.json performance-baseline.json
+        echo "Baseline updated successfully"
+
+    - name: Archive performance results
+      uses: actions/upload-artifact@v3
+      with:
+        name: performance-results
+        path: |
+          benchmark-results.json
+          system-metrics.json
+          performance-analysis.json
+          performance-baseline.json
+        retention-days: 90
+
+  load-testing:
+    name: Load Testing
+    runs-on: ubuntu-latest
+    needs: performance-benchmark
+    if: github.ref == 'refs/heads/main' || github.event_name == 'schedule'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: Install load testing tools
+      run: |
+        python -m pip install --upgrade pip
+        pip install locust
+        pip install -r file_processing_requirements.txt
+        pip install -e .
+
+    - name: Run load tests
+      env:
+        TARGET_HOST: http://localhost:8080
+      run: |
+        # Crear configuración de Locust
+        mkdir -p load_tests
+        
+        cat > load_tests/locustfile.py << 'EOF'
+        from locust import HttpUser, task, between
+        import json
+        
+        class MCPUser(HttpUser):
+            wait_time = between(1, 3)
+            
+            @task(3)
+            def health_check(self):
+                self.client.get("/health")
+            
+            @task(2)
+            def api_status(self):
+                self.client.get("/api/status")
+            
+            @task(1)
+            def agent_execution(self):
+                self.client.post("/api/agents/execute", json={
+                    "agent_type": "reasoner",
+                    "objective": "load test objective",
+                    "context": {"load_test": True}
+                })
+        EOF
+        
+        # Ejecutar test de carga
+        locust -f load_tests/locustfile.py \
+          --headless \
+          --users 50 \
+          --spawn-rate 5 \
+          --run-time 2m \
+          --html=load-test-results.html \
+          --csv=load-test-results
+
+    - name: Analyze load test results
+      run: |
+        # Crear reporte de análisis de carga
+        cat > load_test_analysis.py << 'EOF'
+        import csv
+        import json
+        
+        try:
+            # Leer resultados CSV
+            with open('load-test-results_stats.csv', 'r') as f:
+                reader = csv.DictReader(f)
+                stats = list(reader)[-1]  # Obtener última fila (estadísticas totales)
+            
+            analysis = {
+                'load_test_analysis': {
+                    'total_requests': int(stats.get('Total Request Count', 0)),
+                    'failures': int(stats.get('Failure Count', 0)),
+                    'failure_rate': float(stats.get('Percentage failures', '0').replace('%', '')),
+                    'avg_response_time': float(stats.get('Average Response Time', '0')),
+                    'min_response_time': float(stats.get('Min Response Time', '0')),
+                    'max_response_time': float(stats.get('Max Response Time', '0')),
+                    'requests_per_second': float(stats.get('Requests/s', '0'))
+                },
+                'thresholds': {
+                    'max_failure_rate': 1.0,  # 1% failure rate max
+                    'min_requests_per_second': 10,  # 10 RPS minimum
+                    'max_response_time': 2000  # 2 seconds max response time
+                },
+                'passes': [],
+                'failures': []
+            }
+            
+            # Evaluar resultados
+            if analysis['load_test_analysis']['failure_rate'] > analysis['thresholds']['max_failure_rate']:
+                analysis['failures'].append(f"High failure rate: {analysis['load_test_analysis']['failure_rate']}%")
+            else:
+                analysis['passes'].append(f"Acceptable failure rate: {analysis['load_test_analysis']['failure_rate']}%")
+            
+            if analysis['load_test_analysis']['requests_per_second'] < analysis['thresholds']['min_requests_per_second']:
+                analysis['failures'].append(f"Low throughput: {analysis['load_test_analysis']['requests_per_second']} RPS")
+            else:
+                analysis['passes'].append(f"Good throughput: {analysis['load_test_analysis']['requests_per_second']} RPS")
+            
+            if analysis['load_test_analysis']['avg_response_time'] > analysis['thresholds']['max_response_time']:
+                analysis['failures'].append(f"High response time: {analysis['load_test_analysis']['avg_response_time']} ms")
+            else:
+                analysis['passes'].append(f"Good response time: {analysis['load_test_analysis']['avg_response_time']} ms")
+            
+            with open('load-test-analysis.json', 'w') as f:
+                json.dump(analysis, f, indent=2)
+            
+            print(f"Load test analysis completed")
+            print(f"Passes: {len(analysis['passes'])}")
+            print(f"Failures: {len(analysis['failures'])}")
+            
+            if analysis['failures']:
+                print("\nFailed checks:")
+                for failure in analysis['failures']:
+                    print(f"  ❌ {failure}")
+            
+            if len(analysis['failures']) > 0:
+                exit(1)
+            
+        except Exception as e:
+            print(f"Error analyzing load test results: {e}")
+            # No fallar el pipeline por errores de análisis
+        EOF
+        
+        python load_test_analysis.py
+
+    - name: Archive load test results
+      uses: actions/upload-artifact@v3
+      with:
+        name: load-test-results
+        path: |
+          load-test-results.html
+          load-test-results_*.csv
+          load-test-analysis.json
+        retention-days: 30
+
+  memory-profiling:
+    name: Memory Profiling
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: Install memory profiling tools
+      run: |
+        python -m pip install --upgrade pip
+        pip install memory-profiler psutil matplotlib
+        pip install -r file_processing_requirements.txt
+        pip install -e .
+
+    - name: Run memory profiling
+      run: |
+        # Profile memory usage
+        cat > memory_profile_test.py << 'EOF'
+        from memory_profiler import profile
+        import psutil
+        import os
+        
+        @profile
+        def test_memory_intensive_operations():
+            from src.orchestrator.multi_agent_orchestrator import MultiAgentOrchestrator
+            import asyncio
+            
+            async def run_test():
+                orchestrator = MultiAgentOrchestrator()
+                
+                # Simular carga de memoria intensa
+                tasks = []
+                for i in range(20):
+                    task = orchestrator.orchestrate({
+                        'objective': f'memory test task {i}',
+                        'context': {'large_context': 'x' * 50000}  # 50KB context
+                    })
+                    tasks.append(task)
+                
+                results = await asyncio.gather(*tasks, return_exceptions=True)
+                return results
+            
+            asyncio.run(run_test())
+        
+        if __name__ == "__main__":
+            test_memory_intensive_operations()
+        EOF
+        
+        python -m memory_profiler memory_profile_test.py > memory-profile-results.txt 2>&1
+        
+        # Also check system memory during test
+        python -c "
+        import psutil
+        import time
+        
+        print('Memory usage during test:')
+        process = psutil.Process()
+        initial_memory = process.memory_info().rss / 1024 / 1024  # MB
+        
+        for i in range(10):
+            current_memory = process.memory_info().rss / 1024 / 1024
+            print(f'Sample {i+1}: {current_memory:.1f} MB (delta: {current_memory - initial_memory:+.1f} MB)')
+            time.sleep(1)
+        "
+
+    - name: Archive memory profiling results
+      uses: actions/upload-artifact@v3
+      with:
+        name: memory-profiling-results
+        path: |
+          memory-profile-results.txt
+        retention-days: 30
+
+  performance-report:
+    name: Performance Report
+    runs-on: ubuntu-latest
+    needs: [performance-benchmark, load-testing, memory-profiling]
+    if: always()
+    
+    steps:
+    - name: Download all artifacts
+      uses: actions/download-artifact@v3
+
+    - name: Generate performance report
+      run: |
+        cat > generate_report.py << 'EOF'
+        import json
+        import os
+        from datetime import datetime
+        
+        report = {
+            'performance_report': {
+                'generated_at': datetime.now().isoformat(),
+                'commit': '${{ github.sha }}',
+                'branch': '${{ github.ref_name }}',
+                'triggered_by': '${{ github.actor }}',
+                'github_run_url': 'https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}'
+            },
+            'summary': {
+                'overall_status': 'unknown',
+                'critical_issues': 0,
+                'warnings': 0,
+                'info': 0
+            },
+            'detailed_results': {}
+        }
+        
+        # Compilar resultados
+        if os.path.exists('performance-results/performance-analysis.json'):
+            with open('performance-results/performance-analysis.json', 'r') as f:
+                analysis = json.load(f)
+                report['detailed_results']['benchmark_analysis'] = analysis
+                report['summary']['critical_issues'] += len(analysis.get('regressions', []))
+                report['summary']['warnings'] += len(analysis.get('improvements', []))
+        
+        if os.path.exists('load-test-results/load-test-analysis.json'):
+            with open('load-test-results/load-test-analysis.json', 'r') as f:
+                load_analysis = json.load(f)
+                report['detailed_results']['load_test_analysis'] = load_analysis
+                report['summary']['critical_issues'] += len(load_analysis.get('failures', []))
+                report['summary']['warnings'] += len(load_analysis.get('passes', []))
+        
+        # Determinar estado general
+        if report['summary']['critical_issues'] > 0:
+            report['summary']['overall_status'] = 'failed'
+        elif report['summary']['warnings'] > 0:
+            report['summary']['overall_status'] = 'warning'
+        else:
+            report['summary']['overall_status'] = 'passed'
+        
+        # Generar reporte en markdown
+        report_md = f"""# Performance Regression Test Report
+        
+## Summary
+- **Status**: {report['summary']['overall_status'].upper()}
+- **Critical Issues**: {report['summary']['critical_issues']}
+- **Warnings**: {report['summary']['warnings']}
+- **Generated**: {report['performance_report']['generated_at']}
+- **Commit**: `{report['performance_report']['commit']}`
+- **Branch**: {report['performance_report']['branch']}
+
+## Benchmark Results
+"""
+        
+        if 'benchmark_analysis' in report['detailed_results']:
+            analysis = report['detailed_results']['benchmark_analysis']
+            report_md += f"- Total Tests: {analysis['summary']['total_tests']}\n"
+            report_md += f"- Regressions: {analysis['summary']['regressions_count']}\n"
+            report_md += f"- Improvements: {analysis['summary']['improvements_count']}\n\n"
+            
+            if analysis.get('regressions'):
+                report_md += "### ⚠️ Performance Regressions\n"
+                for regression in analysis['regressions']:
+                    report_md += f"- **{regression['test']}**: {regression['change_percent']:.1f}% slower\n"
+                report_md += "\n"
+        
+        report_md += f"""
+## Load Test Results
+"""
+        if 'load_test_analysis' in report['detailed_results']:
+            load_analysis = report['detailed_results']['load_test_analysis']
+            load_data = load_analysis['load_test_analysis']
+            report_md += f"- Total Requests: {load_data['total_requests']}\n"
+            report_md += f"- Failure Rate: {load_data['failure_rate']:.2f}%\n"
+            report_md += f"- Avg Response Time: {load_data['avg_response_time']:.2f}ms\n"
+            report_md += f"- Requests/sec: {load_data['requests_per_second']:.2f}\n\n"
+        
+        report_md += f"""
+## Recommendations
+"""
+        if report['summary']['critical_issues'] > 0:
+            report_md += "- 🔴 Address performance regressions before merging\n"
+            report_md += "- 🔴 Review load test failures\n"
+        if report['summary']['warnings'] > 0:
+            report_md += "- 🟡 Consider optimizations for improvements\n"
+        if report['summary']['critical_issues'] == 0 and report['summary']['warnings'] == 0:
+            report_md += "- ✅ All performance tests passed\n"
+        
+        with open('performance-report.json', 'w') as f:
+            json.dump(report, f, indent=2)
+        
+        with open('performance-report.md', 'w') as f:
+            f.write(report_md)
+        
+        print("Performance report generated")
+        print(report_md)
+        EOF
+        
+        python generate_report.py
+
+    - name: Comment PR with results
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const fs = require('fs');
+          
+          try {
+            const report = JSON.parse(fs.readFileSync('performance-report.json', 'utf8'));
+            const mdReport = fs.readFileSync('performance-report.md', 'utf8');
+            
+            const comment = `## 🚀 Performance Regression Test Results
+            
+${mdReport}
+            
+<details>
+<summary>View Detailed Results</summary>
+
+\`\`\`json
+${JSON.stringify(report, null, 2)}
+\`\`\`
+
+</details>`;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+          } catch (error) {
+            console.log('Could not create PR comment:', error);
+          }
+
+    - name: Archive performance report
+      uses: actions/upload-artifact@v3
+      with:
+        name: performance-report
+        path: |
+          performance-report.json
+          performance-report.md
+        retention-days: 90

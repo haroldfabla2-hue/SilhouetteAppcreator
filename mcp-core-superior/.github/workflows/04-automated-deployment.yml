@@ -1,0 +1,612 @@
+name: Automated Deployment
+
+on:
+  push:
+    branches: [ main, develop ]
+    tags: [ 'v*.*.*' ]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+        - staging
+        - production
+      force_deployment:
+        description: 'Force deployment (skip health checks)'
+        required: false
+        default: false
+        type: boolean
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  pre-deployment-checks:
+    name: Pre-deployment Checks
+    runs-on: ubuntu-latest
+    outputs:
+      should-deploy: ${{ steps.evaluate.outputs.should-deploy }}
+      environment: ${{ steps.evaluate.outputs.environment }}
+      version: ${{ steps.evaluate.outputs.version }}
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Evaluate deployment conditions
+      id: evaluate
+      run: |
+        BRANCH=${{ github.ref_name }}
+        
+        if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+          ENVIRONMENT="${{ github.event.inputs.environment }}"
+          VERSION=$(git describe --tags --abbrev=0 2>/dev/null || echo "dev")
+        elif [[ "$BRANCH" == "main" ]]; then
+          ENVIRONMENT="production"
+          VERSION=$(git describe --tags --abbrev=0 2>/dev/null || echo "latest")
+        elif [[ "$BRANCH" == "develop" ]]; then
+          ENVIRONMENT="staging"
+          VERSION="staging-${{ github.sha }}"
+        else
+          echo "Deployment not triggered for branch: $BRANCH"
+          echo "should-deploy=false" >> $GITHUB_OUTPUT
+          echo "environment=skip" >> $GITHUB_OUTPUT
+          exit 0
+        fi
+        
+        echo "Environment: $ENVIRONMENT"
+        echo "Version: $VERSION"
+        echo "should-deploy=true" >> $GITHUB_OUTPUT
+        echo "environment=$ENVIRONMENT" >> $GITHUB_OUTPUT
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+    - name: Check required secrets
+      run: |
+        ENV=${{ steps.evaluate.outputs.environment }}
+        
+        case $ENV in
+          staging)
+            echo "Checking staging secrets..."
+            [[ -n "${{ secrets.STAGING_DEPLOYMENT_KEY }}" ]] || { echo "STAGING_DEPLOYMENT_KEY missing"; exit 1; }
+            ;;
+          production)
+            echo "Checking production secrets..."
+            [[ -n "${{ secrets.PRODUCTION_DEPLOYMENT_KEY }}" ]] || { echo "PRODUCTION_DEPLOYMENT_KEY missing"; exit 1; }
+            [[ -n "${{ secrets.PRODUCTION_DB_PASSWORD }}" ]] || { echo "PRODUCTION_DB_PASSWORD missing"; exit 1; }
+            ;;
+        esac
+        
+        echo "All required secrets are present"
+
+    - name: Check deployment permissions
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        # Verificar que el usuario tiene permisos para deployment
+        gh api repos/${{ github.repository }}/collaborators/${{ github.actor }}/permission --jq '.permission' | grep -E '(admin|maintain)' || \
+        gh api repos/${{ github.repository }}/teams/${{ github.repository }}-deploy/permission --jq '.permission' | grep -E '(admin|maintain)' || \
+        (echo "User ${{ github.actor }} lacks deployment permissions" && exit 1)
+
+  database-migrations:
+    name: Database Migrations
+    runs-on: ubuntu-latest
+    needs: pre-deployment-checks
+    if: steps.evaluate.outputs.should-deploy == 'true'
+    environment: ${{ needs.pre-deployment-checks.outputs.environment }}
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install alembic psycopg2-binary
+        pip install -r file_processing_requirements.txt
+
+    - name: Run database migrations - ${{ needs.pre-deployment-checks.outputs.environment }}
+      env:
+        DATABASE_URL: ${{ secrets.STAGING_DB_URL || secrets.PRODUCTION_DB_URL }}
+        ENVIRONMENT: ${{ needs.pre-deployment-checks.outputs.environment }}
+      run: |
+        # Simular migrations (en un entorno real, usar alembic o similar)
+        echo "Running migrations for $ENVIRONMENT environment"
+        
+        cat > migrate.py << 'EOF'
+        import os
+        import psycopg2
+        import sys
+        
+        db_url = os.getenv('DATABASE_URL')
+        if not db_url:
+            print("DATABASE_URL not set")
+            sys.exit(1)
+        
+        try:
+            conn = psycopg2.connect(db_url)
+            cur = conn.cursor()
+            
+            # Crear tablas necesarias si no existen
+            cur.execute('''
+                CREATE TABLE IF NOT EXISTS migrations (
+                    id SERIAL PRIMARY KEY,
+                    version VARCHAR(255) NOT NULL,
+                    applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    description TEXT
+                )
+            ''')
+            
+            # Aplicar migrations específicas del proyecto
+            cur.execute('''
+                CREATE TABLE IF NOT EXISTS agent_metrics (
+                    id SERIAL PRIMARY KEY,
+                    agent_type VARCHAR(100) NOT NULL,
+                    metric_name VARCHAR(100) NOT NULL,
+                    metric_value FLOAT,
+                    recorded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    tags JSONB
+                )
+            ''')
+            
+            cur.execute('''
+                CREATE TABLE IF NOT EXISTS task_execution_history (
+                    id SERIAL PRIMARY KEY,
+                    task_id VARCHAR(255) NOT NULL,
+                    agent_type VARCHAR(100) NOT NULL,
+                    status VARCHAR(50) NOT NULL,
+                    execution_time FLOAT,
+                    started_at TIMESTAMP,
+                    completed_at TIMESTAMP,
+                    metadata JSONB
+                )
+            ''')
+            
+            cur.execute('''
+                CREATE TABLE IF NOT EXISTS system_health_checks (
+                    id SERIAL PRIMARY KEY,
+                    service_name VARCHAR(100) NOT NULL,
+                    status VARCHAR(50) NOT NULL,
+                    response_time FLOAT,
+                    checked_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    details JSONB
+                )
+            ''')
+            
+            conn.commit()
+            print("Migrations applied successfully")
+            
+        except Exception as e:
+            print(f"Migration failed: {e}")
+            sys.exit(1)
+        finally:
+            if conn:
+                conn.close()
+        EOF
+        
+        python migrate.py
+
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: [pre-deployment-checks, database-migrations]
+    if: needs.pre-deployment-checks.outputs.environment == 'staging'
+    environment: staging
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup SSH Key
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ secrets.STAGING_DEPLOYMENT_KEY }}" > ~/.ssh/deploy_key
+        chmod 600 ~/.ssh/deploy_key
+        echo "Host staging" >> ~/.ssh/config
+        echo "  HostName ${{ secrets.STAGING_HOST }}" >> ~/.ssh/config
+        echo "  User ${{ secrets.STAGING_USER }}" >> ~/.ssh/config
+        echo "  IdentityFile ~/.ssh/deploy_key" >> ~/.ssh/config
+        echo "  StrictHostKeyChecking no" >> ~/.ssh/config
+
+    - name: Deploy to Staging
+      run: |
+        ssh staging << 'EOF'
+          set -e
+          
+          # Variables de deployment
+          IMAGE_NAME="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}"
+          VERSION="${{ needs.pre-deployment-checks.outputs.version }}"
+          CONTAINER_NAME="mcp-core-staging"
+          
+          echo "Starting deployment to staging..."
+          echo "Image: $IMAGE_NAME:$VERSION"
+          
+          # Crear directorio de aplicación
+          mkdir -p /opt/mcp-core-superior
+          
+          # Backup de la versión actual
+          if docker ps -q --filter "name=$CONTAINER_NAME" | grep -q .; then
+            echo "Creating backup of current version..."
+            docker commit $CONTAINER_NAME backup-$(date +%Y%m%d-%H%M%S)
+          fi
+          
+          # Pull new image
+          echo "Pulling new image..."
+          docker pull $IMAGE_NAME:$VERSION
+          
+          # Stop existing container gracefully
+          if docker ps -q --filter "name=$CONTAINER_NAME" | grep -q .; then
+            echo "Stopping existing container..."
+            docker stop $CONTAINER_NAME
+            docker rm $CONTAINER_NAME
+          fi
+          
+          # Deploy new version
+          echo "Starting new container..."
+          docker run -d \
+            --name $CONTAINER_NAME \
+            --restart unless-stopped \
+            -p 8080:8080 \
+            -p 8081:8081 \
+            -e MCP_CORE_ENVIRONMENT=staging \
+            -e MCP_CORE_DEBUG=false \
+            -e MCP_CORE_HOST=0.0.0.0 \
+            -e MCP_CORE_PORT=8080 \
+            -e MCP_CORE_MCP_PORT=8081 \
+            -e DATABASE_URL="${{ secrets.STAGING_DB_URL }}" \
+            -e REDIS_URL="${{ secrets.STAGING_REDIS_URL }}" \
+            -e JWT_SECRET="${{ secrets.STAGING_JWT_SECRET }}" \
+            -e CONTEXTFORGE_URL="${{ secrets.STAGING_CONTEXTFORGE_URL }}" \
+            $IMAGE_NAME:$VERSION
+          
+          echo "Container started successfully"
+        EOF
+
+    - name: Health Check - Staging
+      run: |
+        # Esperar a que el servicio esté listo
+        echo "Waiting for staging service to be ready..."
+        timeout 300 bash -c 'until curl -f http://${{ secrets.STAGING_HOST }}:8080/health; do sleep 5; done'
+        
+        # Verificar endpoints críticos
+        echo "Testing staging endpoints..."
+        curl -f http://${{ secrets.STAGING_HOST }}:8080/health
+        curl -f http://${{ secrets.STAGING_HOST }}:8080/api/status
+
+    - name: Run Staging Smoke Tests
+      run: |
+        # Ejecutar tests básicos en staging
+        python -c "
+        import requests
+        import time
+        
+        base_url = 'http://${{ secrets.STAGING_HOST }}:8080'
+        
+        # Test health endpoint
+        response = requests.get(f'{base_url}/health', timeout=30)
+        assert response.status_code == 200
+        
+        # Test status endpoint
+        response = requests.get(f'{base_url}/api/status', timeout=30)
+        assert response.status_code == 200
+        
+        print('Staging smoke tests passed')
+        "
+
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [pre-deployment-checks, database-migrations]
+    if: needs.pre-deployment-checks.outputs.environment == 'production'
+    environment: production
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup SSH Key
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ secrets.PRODUCTION_DEPLOYMENT_KEY }}" > ~/.ssh/deploy_key
+        chmod 600 ~/.ssh/deploy_key
+        echo "Host production" >> ~/.ssh/config
+        echo "  HostName ${{ secrets.PRODUCTION_HOST }}" >> ~/.ssh/config
+        echo "  User ${{ secrets.PRODUCTION_USER }}" >> ~/.ssh/config
+        echo "  IdentityFile ~/.ssh/deploy_key" >> ~/.ssh/config
+        echo "  StrictHostKeyChecking no" >> ~/.ssh/config
+
+    - name: Pre-deployment Production Check
+      run: |
+        ssh production << 'EOF'
+          echo "Checking production environment health before deployment..."
+          
+          # Verificar que el servicio actual está corriendo
+          if ! docker ps | grep -q mcp-core-production; then
+            echo "Production container not running!"
+            exit 1
+          fi
+          
+          # Verificar que responde a health checks
+          if ! curl -f --max-time 10 http://localhost:8080/health; then
+            echo "Production service unhealthy before deployment!"
+            exit 1
+          fi
+          
+          echo "Pre-deployment checks passed"
+        EOF
+
+    - name: Deploy to Production
+      run: |
+        ssh production << 'EOF'
+          set -e
+          
+          IMAGE_NAME="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}"
+          VERSION="${{ needs.pre-deployment-checks.outputs.version }}"
+          CONTAINER_NAME="mcp-core-production"
+          BACKUP_CONTAINER="mcp-core-backup"
+          
+          echo "Starting production deployment..."
+          
+          # Crear backup de la versión actual
+          if docker ps -q --filter "name=$CONTAINER_NAME" | grep -q .; then
+            echo "Creating backup of current version..."
+            BACKUP_TAG="backup-$(date +%Y%m%d-%H%M%S)"
+            docker commit $CONTAINER_NAME $BACKUP_TAG
+            echo "Backup created: $BACKUP_TAG"
+          fi
+          
+          # Pull new image
+          echo "Pulling new image..."
+          docker pull $IMAGE_NAME:$VERSION
+          
+          # Start new container (zero-downtime)
+          echo "Starting new container..."
+          docker run -d \
+            --name ${CONTAINER_NAME}-new \
+            --restart unless-stopped \
+            -p 8080 \
+            -p 8081 \
+            -e MCP_CORE_ENVIRONMENT=production \
+            -e MCP_CORE_DEBUG=false \
+            -e MCP_CORE_HOST=0.0.0.0 \
+            -e MCP_CORE_PORT=8080 \
+            -e MCP_CORE_MCP_PORT=8081 \
+            -e DATABASE_URL="${{ secrets.PRODUCTION_DB_URL }}" \
+            -e REDIS_URL="${{ secrets.PRODUCTION_REDIS_URL }}" \
+            -e JWT_SECRET="${{ secrets.PRODUCTION_JWT_SECRET }}" \
+            -e CONTEXTFORGE_URL="${{ secrets.PRODUCTION_CONTEXTFORGE_URL }}" \
+            $IMAGE_NAME:$VERSION
+          
+          # Wait for new container to be healthy
+          echo "Waiting for new container to be healthy..."
+          timeout 300 bash -c 'until curl -f --max-time 5 http://localhost:8080/health; do sleep 10; done'
+          
+          # Switch traffic to new container
+          echo "Switching traffic to new container..."
+          if docker ps -q --filter "name=$CONTAINER_NAME" | grep -q .; then
+            docker stop $CONTAINER_NAME
+            docker rm $CONTAINER_NAME
+          fi
+          docker rename ${CONTAINER_NAME}-new $CONTAINER_NAME
+          
+          echo "Production deployment completed successfully"
+        EOF
+
+    - name: Post-deployment Production Check
+      run: |
+        ssh production << 'EOF'
+          echo "Running post-deployment checks..."
+          
+          # Verificar que el servicio está corriendo
+          if ! docker ps | grep -q mcp-core-production; then
+            echo "Production container not running after deployment!"
+            exit 1
+          fi
+          
+          # Verificar health endpoint
+          if ! curl -f --max-time 30 http://localhost:8080/health; then
+            echo "Production service unhealthy after deployment!"
+            exit 1
+          fi
+          
+          # Verificar API endpoints
+          if ! curl -f --max-time 30 http://localhost:8080/api/status; then
+            echo "Production API not responding!"
+            exit 1
+          fi
+          
+          echo "Post-deployment checks passed"
+        EOF
+
+  cloud-deployment:
+    name: Deploy to Cloud Platform
+    runs-on: ubuntu-latest
+    needs: pre-deployment-checks
+    if: github.event.inputs.environment == 'production' || github.ref == 'refs/heads/main'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Deploy to AWS ECS
+      if: secrets.AWS_ACCESS_KEY_ID != ''
+      run: |
+        echo "Deploying to AWS ECS..."
+        
+        # Configurar AWS CLI
+        aws configure set aws_access_key_id ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws configure set aws_secret_access_key ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws configure set default.region ${{ secrets.AWS_REGION }}
+        
+        # Update ECS service
+        aws ecs update-service \
+          --cluster mcp-core-cluster \
+          --service mcp-core-service \
+          --force-new-deployment \
+          --region ${{ secrets.AWS_REGION }}
+
+    - name: Deploy to Google Cloud Run
+      if: secrets.GCP_SERVICE_ACCOUNT_KEY != ''
+      run: |
+        echo "Deploying to Google Cloud Run..."
+        
+        # Configurar gcloud
+        echo ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }} | base64 -d > gcp-key.json
+        gcloud auth activate-service-account --key-file=gcp-key.json
+        gcloud config set project ${{ secrets.GCP_PROJECT_ID }}
+        
+        # Deploy to Cloud Run
+        gcloud run deploy mcp-core-superior \
+          --image ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.pre-deployment-checks.outputs.version }} \
+          --platform managed \
+          --region ${{ secrets.GCP_REGION }} \
+          --allow-unauthenticated \
+          --set-env-vars MCP_CORE_ENVIRONMENT=${{ needs.pre-deployment-checks.outputs.environment }} \
+          --set-env-vars DATABASE_URL=${{ secrets.CLOUD_DB_URL }}
+
+    - name: Deploy to Azure Container Instances
+      if: secrets.AZURE_CLIENT_ID != ''
+      run: |
+        echo "Deploying to Azure Container Instances..."
+        
+        # Configurar Azure CLI
+        az login --service-principal \
+          --username ${{ secrets.AZURE_CLIENT_ID }} \
+          --password ${{ secrets.AZURE_CLIENT_SECRET }} \
+          --tenant ${{ secrets.AZURE_TENANT_ID }}
+        
+        # Deploy to Azure Container Instances
+        az container create \
+          --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
+          --name mcp-core-superior \
+          --image ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.pre-deployment-checks.outputs.version }} \
+          --cpu 2 \
+          --memory 4 \
+          --ports 8080 8081 \
+          --environment-variables \
+            MCP_CORE_ENVIRONMENT=${{ needs.pre-deployment-checks.outputs.environment }} \
+            DATABASE_URL=${{ secrets.CLOUD_DB_URL }}
+
+  post-deployment-notifications:
+    name: Post-deployment Notifications
+    runs-on: ubuntu-latest
+    needs: [deploy-staging, deploy-production, cloud-deployment]
+    if: always()
+    
+    steps:
+    - name: Notify Slack
+      if: secrets.SLACK_WEBHOOK_URL != ''
+      run: |
+        ENV=${{ needs.pre-deployment-checks.outputs.environment }}
+        STATUS="success"
+        
+        if [[ "${{ needs.deploy-staging.result }}" == "failure" ]] || [[ "${{ needs.deploy-production.result }}" == "failure" ]]; then
+          STATUS="failed"
+        fi
+        
+        cat > slack_payload.json << EOF
+        {
+          "text": "MCP Core Superior Deployment $STATUS",
+          "attachments": [
+            {
+              "color": "$STATUS" == "success" ? "good" : "danger",
+              "fields": [
+                {
+                  "title": "Environment",
+                  "value": "$ENV",
+                  "short": true
+                },
+                {
+                  "title": "Version",
+                  "value": "${{ needs.pre-deployment-checks.outputs.version }}",
+                  "short": true
+                },
+                {
+                  "title": "Triggered by",
+                  "value": "${{ github.actor }}",
+                  "short": true
+                },
+                {
+                  "title": "Commit",
+                  "value": "${{ github.sha }}",
+                  "short": true
+                }
+              ]
+            }
+          ]
+        }
+        EOF
+        
+        curl -X POST -H 'Content-type: application/json' \
+          --data @slack_payload.json \
+          ${{ secrets.SLACK_WEBHOOK_URL }}
+
+    - name: Send notification to Teams
+      if: secrets.TEAMS_WEBHOOK_URL != ''
+      run: |
+        ENV=${{ needs.pre-deployment-checks.outputs.environment }}
+        STATUS=${{ contains(needs.*.result, 'failure') && 'Failed' || 'Successful' }}
+        
+        cat > teams_payload.json << EOF
+        {
+          "@type": "MessageCard",
+          "@context": "http://schema.org/extensions",
+          "themeColor": "$STATUS" == "Successful" ? "0078D7" : "FF0000",
+          "summary": "MCP Core Superior Deployment $STATUS",
+          "sections": [{
+            "activityTitle": "Deployment $STATUS",
+            "activitySubtitle": "Environment: $ENV | Version: ${{ needs.pre-deployment-checks.outputs.version }}",
+            "facts": [
+              {
+                "name": "Environment",
+                "value": "$ENV"
+              },
+              {
+                "name": "Version",
+                "value": "${{ needs.pre-deployment-checks.outputs.version }}"
+              },
+              {
+                "name": "Triggered by",
+                "value": "${{ github.actor }}"
+              }
+            ]
+          }]
+        }
+        EOF
+        
+        curl -X POST -H 'Content-type: application/json' \
+          --data @teams_payload.json \
+          ${{ secrets.TEAMS_WEBHOOK_URL }}
+
+    - name: Create GitHub Release
+      if: needs.pre-deployment-checks.outputs.environment == 'production' && contains(github.ref, 'refs/tags/')
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref_name }}
+        release_name: Release ${{ github.ref_name }}
+        body: |
+          ## Changes in this release
+          
+          - Deployment completed successfully
+          - Environment: Production
+          - Version: ${{ needs.pre-deployment-checks.outputs.version }}
+          
+          ## Deployment Details
+          
+          - Commit: ${{ github.sha }}
+          - Deployed by: ${{ github.actor }}
+          - Timestamp: ${{ github.event.head_commit.timestamp }}
+        draft: false
+        prerelease: false

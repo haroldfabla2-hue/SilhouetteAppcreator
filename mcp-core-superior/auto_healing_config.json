@@ -1,0 +1,293 @@
+{
+  "enabled": true,
+  "debug_mode": false,
+  "environment": "production",
+  "monitoring_interval": 10,
+  "metrics_retention_hours": 24,
+  "alert_cooldown": 300,
+  "global_thresholds": {
+    "cpu_warning": 70.0,
+    "cpu_critical": 85.0,
+    "memory_warning": 75.0,
+    "memory_critical": 90.0,
+    "response_time_warning": 1.0,
+    "response_time_critical": 2.5,
+    "error_rate_warning": 0.05,
+    "error_rate_critical": 0.10,
+    "agent_health_score_warning": 0.7,
+    "agent_health_score_critical": 0.5,
+    "agent_failure_prediction_warning": 0.6,
+    "agent_failure_prediction_critical": 0.8,
+    "scaling_trigger_cpu": 80.0,
+    "scaling_trigger_memory": 85.0,
+    "scaling_trigger_response_time": 2.0,
+    "auto_recovery_failure_threshold": 3,
+    "auto_recovery_cooldown": 300,
+    "max_recovery_attempts": 5
+  },
+  "auto_scaling_config": {
+    "min_instances": 1,
+    "max_instances": 10,
+    "target_cpu_usage": 70.0,
+    "target_memory_usage": 80.0,
+    "scaling_cooldown": 300,
+    "metrics_window": 60
+  },
+  "agent_configs": {
+    "reasoner": {
+      "agent_name": "reasoner",
+      "circuit_breaker_enabled": true,
+      "circuit_breaker_failure_threshold": 4,
+      "circuit_breaker_recovery_timeout": 30,
+      "scaling_enabled": true,
+      "min_instances": 1,
+      "max_instances": 6,
+      "target_utilization": 70.0,
+      "auto_recovery_enabled": true,
+      "recovery_strategies": [
+        "restart_agent",
+        "graceful_degradation",
+        "circuit_breaker"
+      ],
+      "health_check_interval": 30,
+      "metrics_collection_enabled": true,
+      "anomaly_detection_enabled": true,
+      "custom_thresholds": {
+        "cpu_warning": 65.0,
+        "cpu_critical": 80.0,
+        "memory_warning": 70.0,
+        "memory_critical": 85.0,
+        "response_time_warning": 1.5,
+        "response_time_critical": 3.0,
+        "error_rate_warning": 0.03,
+        "error_rate_critical": 0.08
+      },
+      "fallback_behavior": "degraded",
+      "priority_level": 2
+    },
+    "planner": {
+      "agent_name": "planner",
+      "circuit_breaker_enabled": true,
+      "circuit_breaker_failure_threshold": 3,
+      "circuit_breaker_recovery_timeout": 30,
+      "scaling_enabled": true,
+      "min_instances": 1,
+      "max_instances": 4,
+      "target_utilization": 70.0,
+      "auto_recovery_enabled": true,
+      "recovery_strategies": [
+        "restart_agent",
+        "graceful_degradation",
+        "fallback_to_backup"
+      ],
+      "health_check_interval": 30,
+      "metrics_collection_enabled": true,
+      "anomaly_detection_enabled": true,
+      "custom_thresholds": {
+        "cpu_warning": 60.0,
+        "cpu_critical": 75.0,
+        "memory_warning": 65.0,
+        "memory_critical": 80.0,
+        "response_time_warning": 2.0,
+        "response_time_critical": 4.0,
+        "error_rate_warning": 0.04,
+        "error_rate_critical": 0.10
+      },
+      "fallback_behavior": "simplified_planning",
+      "priority_level": 2
+    },
+    "executor": {
+      "agent_name": "executor",
+      "circuit_breaker_enabled": true,
+      "circuit_breaker_failure_threshold": 5,
+      "circuit_breaker_recovery_timeout": 45,
+      "scaling_enabled": true,
+      "min_instances": 2,
+      "max_instances": 8,
+      "target_utilization": 75.0,
+      "auto_recovery_enabled": true,
+      "recovery_strategies": [
+        "restart_agent",
+        "restart_service",
+        "graceful_degradation",
+        "circuit_breaker"
+      ],
+      "health_check_interval": 15,
+      "metrics_collection_enabled": true,
+      "anomaly_detection_enabled": true,
+      "custom_thresholds": {
+        "cpu_warning": 75.0,
+        "cpu_critical": 90.0,
+        "memory_warning": 80.0,
+        "memory_critical": 95.0,
+        "response_time_warning": 0.8,
+        "response_time_critical": 1.5,
+        "error_rate_warning": 0.02,
+        "error_rate_critical": 0.05
+      },
+      "fallback_behavior": "limited_mode",
+      "priority_level": 1
+    },
+    "verifier": {
+      "agent_name": "verifier",
+      "circuit_breaker_enabled": true,
+      "circuit_breaker_failure_threshold": 3,
+      "circuit_breaker_recovery_timeout": 20,
+      "scaling_enabled": true,
+      "min_instances": 1,
+      "max_instances": 4,
+      "target_utilization": 60.0,
+      "auto_recovery_enabled": true,
+      "recovery_strategies": [
+        "restart_agent",
+        "graceful_degradation",
+        "circuit_breaker"
+      ],
+      "health_check_interval": 45,
+      "metrics_collection_enabled": true,
+      "anomaly_detection_enabled": true,
+      "custom_thresholds": {
+        "cpu_warning": 50.0,
+        "cpu_critical": 70.0,
+        "memory_warning": 60.0,
+        "memory_critical": 75.0,
+        "response_time_warning": 1.0,
+        "response_time_critical": 2.0,
+        "error_rate_warning": 0.01,
+        "error_rate_critical": 0.03
+      },
+      "fallback_behavior": "basic_validation",
+      "priority_level": 3
+    },
+    "memory_manager": {
+      "agent_name": "memory_manager",
+      "circuit_breaker_enabled": true,
+      "circuit_breaker_failure_threshold": 2,
+      "circuit_breaker_recovery_timeout": 15,
+      "scaling_enabled": true,
+      "min_instances": 1,
+      "max_instances": 3,
+      "target_utilization": 50.0,
+      "auto_recovery_enabled": true,
+      "recovery_strategies": [
+        "restart_agent",
+        "fallback_to_backup",
+        "circuit_breaker"
+      ],
+      "health_check_interval": 60,
+      "metrics_collection_enabled": true,
+      "anomaly_detection_enabled": true,
+      "custom_thresholds": {
+        "cpu_warning": 40.0,
+        "cpu_critical": 60.0,
+        "memory_warning": 70.0,
+        "memory_critical": 85.0,
+        "response_time_warning": 0.5,
+        "response_time_critical": 1.0,
+        "error_rate_warning": 0.01,
+        "error_rate_critical": 0.02
+      },
+      "fallback_behavior": "cache_only",
+      "priority_level": 3
+    },
+    "orchestrator": {
+      "agent_name": "orchestrator",
+      "circuit_breaker_enabled": true,
+      "circuit_breaker_failure_threshold": 2,
+      "circuit_breaker_recovery_timeout": 60,
+      "scaling_enabled": true,
+      "min_instances": 2,
+      "max_instances": 4,
+      "target_utilization": 65.0,
+      "auto_recovery_enabled": true,
+      "recovery_strategies": [
+        "restart_service",
+        "graceful_degradation",
+        "circuit_breaker",
+        "escalate"
+      ],
+      "health_check_interval": 20,
+      "metrics_collection_enabled": true,
+      "anomaly_detection_enabled": true,
+      "custom_thresholds": {
+        "cpu_warning": 60.0,
+        "cpu_critical": 80.0,
+        "memory_warning": 70.0,
+        "memory_critical": 85.0,
+        "response_time_warning": 0.8,
+        "response_time_critical": 1.5,
+        "error_rate_warning": 0.02,
+        "error_rate_critical": 0.05
+      },
+      "fallback_behavior": "sequential_processing",
+      "priority_level": 1
+    },
+    "streaming": {
+      "agent_name": "streaming",
+      "circuit_breaker_enabled": true,
+      "circuit_breaker_failure_threshold": 3,
+      "circuit_breaker_recovery_timeout": 30,
+      "scaling_enabled": true,
+      "min_instances": 1,
+      "max_instances": 5,
+      "target_utilization": 70.0,
+      "auto_recovery_enabled": true,
+      "recovery_strategies": [
+        "restart_agent",
+        "graceful_degradation",
+        "circuit_breaker"
+      ],
+      "health_check_interval": 30,
+      "metrics_collection_enabled": true,
+      "anomaly_detection_enabled": true,
+      "custom_thresholds": {
+        "cpu_warning": 65.0,
+        "cpu_critical": 85.0,
+        "memory_warning": 75.0,
+        "memory_critical": 90.0,
+        "response_time_warning": 0.3,
+        "response_time_critical": 0.8,
+        "error_rate_warning": 0.03,
+        "error_rate_critical": 0.08
+      },
+      "fallback_behavior": "buffered_streaming",
+      "priority_level": 2
+    }
+  },
+  "global_circuit_breaker": {
+    "failure_threshold": 5,
+    "recovery_timeout": 60,
+    "expected_exception": "Exception",
+    "fallback_function": null
+  },
+  "log_level": "INFO",
+  "log_metrics": true,
+  "log_recovery_actions": true,
+  "log_scaling_events": true,
+  "enable_webhook_notifications": false,
+  "webhook_url": null,
+  "enable_email_alerts": false,
+  "email_recipients": [],
+  "ml_enabled": true,
+  "ml_model_update_interval": 3600,
+  "ml_confidence_threshold": 0.8,
+  "ml_training_data_retention_days": 7,
+  "graceful_degradation_enabled": true,
+  "degradation_strategies": [
+    "reduce_concurrency",
+    "increase_timeouts",
+    "disable_non_essential_features",
+    "fallback_to_cache"
+  ],
+  "enable_automatic_backup": true,
+  "backup_interval": 3600,
+  "backup_retention_days": 30,
+  "restore_on_critical_failure": true,
+  "notification_channels": {
+    "console": true,
+    "file": false,
+    "webhook": false,
+    "email": false,
+    "slack": false
+  }
+}

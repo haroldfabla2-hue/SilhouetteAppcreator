@@ -1,0 +1,11 @@
+2025-11-04 16:16:03,551 - TestDBManager - INFO - Setting up test database... | Metadata: {}
+2025-11-04 16:16:03,553 - TestDBManager - ERROR - Error creating database: connection to server at "localhost" (::1), port 5432 failed: Connection refused
+	Is the server running on that host and accepting TCP/IP connections?
+connection to server at "localhost" (127.0.0.1), port 5432 failed: Connection refused
+	Is the server running on that host and accepting TCP/IP connections?
+ | Metadata: {}
+2025-11-04 16:16:03,553 - TestDBManager - ERROR - Failed to setup test database: connection to server at "localhost" (::1), port 5432 failed: Connection refused
+	Is the server running on that host and accepting TCP/IP connections?
+connection to server at "localhost" (127.0.0.1), port 5432 failed: Connection refused
+	Is the server running on that host and accepting TCP/IP connections?
+ | Metadata: {}

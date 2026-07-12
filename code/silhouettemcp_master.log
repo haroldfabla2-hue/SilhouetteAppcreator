@@ -1,0 +1,17 @@
+2025-11-06 04:34:01,236 - SilhouetteMCP-Master - INFO - 🚀 Iniciando SilhouetteMCP...
+2025-11-06 04:34:01,236 - SilhouetteMCP-Master - INFO - 🚀 Iniciando SilhouetteMCP - Todos los sistemas
+2025-11-06 04:34:01,236 - SilhouetteMCP-Master - INFO - ============================================================
+2025-11-06 04:34:01,239 - SilhouetteMCP-Master - INFO - Iniciando componente: diagnostic_system en puerto 8007
+2025-11-06 04:34:01,241 - SilhouetteMCP-Master - WARNING - Puerto 8007 ya está en uso
+2025-11-06 04:34:01,242 - SilhouetteMCP-Master - INFO - Iniciando componente: monitoring_system en puerto 8026
+2025-11-06 04:34:01,247 - SilhouetteMCP-Master - ERROR - Script no encontrado: code/silhouettemcp_integrated_monitoring.py
+2025-11-06 04:34:01,247 - SilhouetteMCP-Master - INFO - Iniciando componente: integration_orchestrator en puerto 8025
+2025-11-06 04:34:01,250 - SilhouetteMCP-Master - ERROR - Script no encontrado: code/silhouettemcp_integration_orchestrator.py
+2025-11-06 04:34:01,250 - SilhouetteMCP-Master - INFO - Iniciando componente: server_unified_original en puerto 8001
+2025-11-06 04:34:01,250 - SilhouetteMCP-Master - ERROR - Script no encontrado: code/silhouettemcp_server_unified.py
+2025-11-06 04:34:01,250 - SilhouetteMCP-Master - INFO - Iniciando componente: hierarchical_architecture_original en puerto 8002
+2025-11-06 04:34:01,254 - SilhouetteMCP-Master - ERROR - Script no encontrado: code/silhouettemcp_hierarchical_architecture.py
+2025-11-06 04:34:01,257 - SilhouetteMCP-Master - INFO - ============================================================
+2025-11-06 04:34:01,259 - SilhouetteMCP-Master - INFO - Inicialización completada: 1/20 componentes
+2025-11-06 04:34:01,262 - SilhouetteMCP-Master - WARNING - ⚠️ 19 componentes fallaron
+2025-11-06 04:34:01,265 - SilhouetteMCP-Master - ERROR - ❌ Error en la inicialización

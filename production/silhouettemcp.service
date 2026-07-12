@@ -1,0 +1,16 @@
+
+[Unit]
+Description=SilhouetteMCP Ultra-Optimized 110/100
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+WorkingDirectory=/workspace
+EnvironmentFile=/workspace/production/.env
+ExecStart=/usr/bin/python3 /workspace/code/silhouettemcp_ultra_optimized_110.py
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

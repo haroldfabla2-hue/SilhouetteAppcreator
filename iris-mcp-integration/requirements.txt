@@ -1,0 +1,32 @@
+# IRIS MCP Integration Requirements
+# FastAPI for web server and API endpoints
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+
+# HTTP client for API calls
+requests==2.31.0
+
+# CLI framework
+click==8.1.7
+
+# Email functionality
+secure-smtplib==0.1.1
+
+# Async support
+asyncio-mqtt==0.16.1
+
+# Data handling
+pydantic==2.5.0
+
+# Environment configuration
+python-dotenv==1.0.0
+
+# Development and testing
+pytest==7.4.3
+pytest-asyncio==0.21.1
+
+# Logging and monitoring
+structlog==23.2.0
+
+# Utilities
+pathlib2==2.3.7

@@ -1,0 +1,145 @@
+{
+  "timestamp": "2025-11-06T09:56:13.959982",
+  "version": "110.0.0",
+  "recovery_status": "SUCCESS",
+  "result": {
+    "final_score": 35.0,
+    "base_score": 0.0,
+    "bonuses": {
+      "redundancy": 10,
+      "ai_predictive": 8,
+      "autoscaling": 7,
+      "recovery": 5,
+      "ultra_monitoring": 5
+    },
+    "healthy_systems": 0,
+    "total_systems": 15,
+    "optimization_level": "ULTRA",
+    "target_achieved": false,
+    "deployment_ready": false
+  },
+  "systems": {
+    "8001": {
+      "name": "SilhouetteMCP Unified Core",
+      "type": "core"
+    },
+    "8002": {
+      "name": "Hierarchical Architecture",
+      "type": "architecture"
+    },
+    "8003": {
+      "name": "Dashboard Analytics",
+      "type": "ui"
+    },
+    "8004": {
+      "name": "Testing Suite",
+      "type": "testing"
+    },
+    "8005": {
+      "name": "Real-time Metrics",
+      "type": "monitoring"
+    },
+    "8006": {
+      "name": "WebSocket Communication",
+      "type": "realtime"
+    },
+    "8007": {
+      "name": "Diagnostic System",
+      "type": "diagnostic"
+    },
+    "8010": {
+      "name": "Enhanced Architecture",
+      "type": "architecture"
+    },
+    "8020": {
+      "name": "Enhanced Scalability",
+      "type": "scalability"
+    },
+    "8027": {
+      "name": "Enhanced Security",
+      "type": "security"
+    },
+    "8015": {
+      "name": "AI Predictive Engine",
+      "type": "ai"
+    },
+    "8016": {
+      "name": "Redundancy System",
+      "type": "redundancy"
+    },
+    "8017": {
+      "name": "Auto-scaling Engine",
+      "type": "scaling"
+    },
+    "8018": {
+      "name": "Recovery System",
+      "type": "recovery"
+    },
+    "8019": {
+      "name": "Ultra-monitoring",
+      "type": "monitoring"
+    }
+  },
+  "processes": {
+    "8001": {
+      "start_time": 1762394165.9256008,
+      "pid": 2398
+    },
+    "8002": {
+      "start_time": 1762394165.9258296,
+      "pid": 2399
+    },
+    "8003": {
+      "start_time": 1762394165.9260237,
+      "pid": 2400
+    },
+    "8004": {
+      "start_time": 1762394165.926219,
+      "pid": 2401
+    },
+    "8005": {
+      "start_time": 1762394165.926391,
+      "pid": 2402
+    },
+    "8006": {
+      "start_time": 1762394165.926584,
+      "pid": 2403
+    },
+    "8007": {
+      "start_time": 1762394165.9267566,
+      "pid": 2404
+    },
+    "8010": {
+      "start_time": 1762394165.9269302,
+      "pid": 2405
+    },
+    "8020": {
+      "start_time": 1762394165.927118,
+      "pid": 2406
+    },
+    "8027": {
+      "start_time": 1762394165.927289,
+      "pid": 2407
+    },
+    "8015": {
+      "start_time": 1762394165.927456,
+      "pid": 2408
+    },
+    "8016": {
+      "start_time": 1762394165.927652,
+      "pid": 2409
+    },
+    "8017": {
+      "start_time": 1762394165.9278295,
+      "pid": 2410
+    },
+    "8018": {
+      "start_time": 1762394165.9280343,
+      "pid": 2411
+    },
+    "8019": {
+      "start_time": 1762394165.9282148,
+      "pid": 2412
+    }
+  }
+}

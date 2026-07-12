@@ -1,0 +1,934 @@
+{
+  "timestamp": 1762392095.7027261,
+  "last_update": 1762392061.6734633,
+  "summary": {
+    "total_systems": 3,
+    "healthy_systems": 2,
+    "warning_systems": 0,
+    "critical_systems": 1,
+    "offline_systems": 0,
+    "active_alerts": 121
+  },
+  "systems": {
+    "silhouettemcp_core": {
+      "status": "critical",
+      "metrics": {
+        "cpu": 10.5,
+        "memory": 56.4,
+        "disk": 47.7,
+        "response_time": 30.0,
+        "error_rate": 0.9100000000000001
+      },
+      "uptime_hours": 1.1377118657032648,
+      "last_check": 1762392092.6800427
+    },
+    "silhouettemcp_improved": {
+      "status": "healthy",
+      "metrics": {
+        "cpu": 17.4,
+        "memory": 56.2,
+        "disk": 47.7,
+        "response_time": 1.017881155014038,
+        "error_rate": 0.23999999999999932
+      },
+      "uptime_hours": 1.138272859454155,
+      "last_check": 1762392094.6997306
+    },
+    "silhouettemcp_cache": {
+      "status": "healthy",
+      "metrics": {
+        "cpu": 15.9,
+        "memory": 56.3,
+        "disk": 47.7,
+        "response_time": 0.0020513534545898438,
+        "error_rate": 0.13999999999999968
+      },
+      "uptime_hours": 1.1385514020257526,
+      "last_check": 1762392095.7025225
+    }
+  },
+  "alerts": [
+    {
+      "alert_id": "silhouettemcp_core_1762387997_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762387997.9198797
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762388031_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762388031.9435117
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762388065_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762388065.9724393
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762388100_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762388100.000053
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762388134_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762388134.0282285
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762388168_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762388168.0572546
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762388202_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762388202.0858548
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762388236_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762388236.11532
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762388270_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762388270.1480083
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762388304_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762388304.1790738
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762388338_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762388338.2073855
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762388372_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762388372.2396927
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762388406_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762388406.269032
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762388440_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762388440.2990804
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762388474_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762388474.333298
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762388508_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762388508.3625908
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762388542_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762388542.3950362
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762388576_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762388576.424897
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762388610_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762388610.4545133
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762388644_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762388644.4825277
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762388678_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762388678.5120678
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762388712_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762388712.5400097
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762388746_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762388746.5688863
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762388780_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762388780.5985727
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762388814_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762388814.6279116
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762388848_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762388848.656914
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762388882_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762388882.6854486
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762388916_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762388916.7148721
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762388950_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762388950.7433956
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762388984_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762388984.7726607
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762389018_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762389018.8057606
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762389052_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762389052.8364706
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762389086_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762389086.8666008
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762389120_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762389120.895895
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762389154_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762389154.9242337
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762389188_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762389188.9515529
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762389222_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762389222.9820101
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762389257_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762389257.0111918
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762389291_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762389291.0407062
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762389325_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762389325.0686026
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762389359_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762389359.0982137
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762389393_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762389393.1255744
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762389427_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762389427.1552265
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762389461_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762389461.2121122
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762389495_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762389495.240003
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762389530_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762389530.2732337
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762389565_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762389565.3060133
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762389600_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762389600.3573592
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762389635_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762389635.3938725
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762389670_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762389670.4295135
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762389705_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762389705.4664862
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762389739_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762389739.506537
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762389773_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762389773.5353837
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762389807_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762389807.564831
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762389841_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762389841.5980573
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762389875_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762389875.6274445
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762389909_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762389909.6549752
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762389943_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762389943.6839097
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762389977_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762389977.7126923
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762390011_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762390011.7397652
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762390045_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762390045.7685692
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762390079_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762390079.7997203
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762390113_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762390113.829022
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762390147_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762390147.8574026
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762390181_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762390181.8873074
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762390215_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762390215.9192336
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762390249_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762390249.9488401
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762390283_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762390283.9780366
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762390318_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762390318.0062132
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762390352_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762390352.0389304
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762390386_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762390386.0705981
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762390420_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762390420.0994945
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762390454_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762390454.1295648
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762390488_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762390488.1619394
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762390522_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762390522.190398
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762390556_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762390556.226726
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762390590_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762390590.2564447
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762390624_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762390624.2896178
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762390658_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762390658.3207786
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762390692_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762390692.3503761
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762390726_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762390726.3801477
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762390760_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762390760.4105985
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762390794_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762390794.4392161
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762390828_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762390828.4683032
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762390862_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762390862.5044026
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762390896_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762390896.5364873
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762390930_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762390930.5758736
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762390964_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762390964.6125517
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762390998_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762390998.642926
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762391032_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762391032.673009
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762391066_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762391066.7020962
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762391100_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762391100.7317057
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762391134_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762391134.7607284
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762391168_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762391168.7907999
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762391202_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762391202.8199542
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762391236_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762391236.8503633
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762391270_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762391270.8799214
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762391304_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762391304.9097788
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762391338_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762391338.9422464
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762391372_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762391372.9813077
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762391407_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762391407.0097663
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762391441_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762391441.03875
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762391475_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762391475.0672553
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762391509_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762391509.1006699
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762391543_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762391543.1304364
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762391577_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762391577.1599553
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762391611_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762391611.1910005
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762391645_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762391645.2218416
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762391680_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762391680.2592902
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762391715_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762391715.2966664
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762391750_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762391750.3813102
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762391786_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762391786.3878522
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762391820_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762391820.4259725
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762391854_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762391854.456476
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762391888_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762391888.4861207
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762391922_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762391922.5277278
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762391956_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762391956.5607984
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762391990_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762391990.590429
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762392024_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762392024.6196856
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762392058_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762392058.6523623
+    },
+    {
+      "alert_id": "silhouettemcp_core_1762392092_492",
+      "system_id": "silhouettemcp_core",
+      "severity": "critical",
+      "message": "Response time critical: 30.0s",
+      "timestamp": 1762392092.680268
+    }
+  ],
+  "predictions": {
+    "silhouettemcp_core": {
+      "predicted_cpu": 9.862424242424243,
+      "predicted_memory": 56.448484848484846,
+      "capacity_assessment": "adequate",
+      "confidence": 0.8815,
+      "recommendations": [
+        "Capacidad adecuada",
+        "Continuar monitoreo regular",
+        "Mantener niveles óptimos"
+      ]
+    },
+    "silhouettemcp_improved": {
+      "predicted_cpu": 17.247272727272726,
+      "predicted_memory": 56.23333333333334,
+      "capacity_assessment": "adequate",
+      "confidence": 0.8159395,
+      "recommendations": [
+        "Capacidad adecuada",
+        "Continuar monitoreo regular",
+        "Mantener niveles óptimos"
+      ]
+    },
+    "silhouettemcp_cache": {
+      "predicted_cpu": 15.314545454545454,
+      "predicted_memory": 56.343030303030304,
+      "capacity_assessment": "adequate",
+      "confidence": 0.8548475,
+      "recommendations": [
+        "Capacidad adecuada",
+        "Continuar monitoreo regular",
+        "Mantener niveles óptimos"
+      ]
+    }
+  }
+}

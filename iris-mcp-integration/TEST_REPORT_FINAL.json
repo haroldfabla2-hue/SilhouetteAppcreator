@@ -1,0 +1,486 @@
+{
+  "timestamp": 1762308166.0938518,
+  "total_tests": 68,
+  "passed_tests": 42,
+  "failed_tests": 26,
+  "success_rate": 61.76470588235294,
+  "status": "🔴 SISTEMA REQUIERE ATENCIÓN",
+  "results": [
+    {
+      "test": "Imports Robust",
+      "success": false,
+      "message": "Error en importaciones: No module named 'fastapi'",
+      "details": "",
+      "timestamp": 1762308166.0447545
+    },
+    {
+      "test": "Server Store persistente",
+      "success": true,
+      "message": "Store persistente encontrado",
+      "details": "",
+      "timestamp": 1762308166.0456088
+    },
+    {
+      "test": "Server CORS configurado",
+      "success": true,
+      "message": "CORS configurado encontrado",
+      "details": "",
+      "timestamp": 1762308166.045647
+    },
+    {
+      "test": "Server Redis implementado",
+      "success": false,
+      "message": "Redis implementado NO encontrado",
+      "details": "",
+      "timestamp": 1762308166.0456858
+    },
+    {
+      "test": "Server Connection pooling",
+      "success": false,
+      "message": "Connection pooling NO encontrado",
+      "details": "",
+      "timestamp": 1762308166.0457134
+    },
+    {
+      "test": "Server Retry logic",
+      "success": false,
+      "message": "Retry logic NO encontrado",
+      "details": "",
+      "timestamp": 1762308166.0457437
+    },
+    {
+      "test": "Server Rate limiting",
+      "success": false,
+      "message": "Rate limiting NO encontrado",
+      "details": "",
+      "timestamp": 1762308166.0457728
+    },
+    {
+      "test": "Notifications Import sys agregado",
+      "success": true,
+      "message": "Import sys agregado encontrado",
+      "details": "",
+      "timestamp": 1762308166.050194
+    },
+    {
+      "test": "Notifications Validación email implementada",
+      "success": false,
+      "message": "Validación email implementada NO encontrado",
+      "details": "",
+      "timestamp": 1762308166.0502608
+    },
+    {
+      "test": "Notifications Retry logic en notificaciones",
+      "success": false,
+      "message": "Retry logic en notificaciones NO encontrado",
+      "details": "",
+      "timestamp": 1762308166.0502973
+    },
+    {
+      "test": "Notifications Exponential backoff",
+      "success": false,
+      "message": "Exponential backoff NO encontrado",
+      "details": "",
+      "timestamp": 1762308166.0503259
+    },
+    {
+      "test": "Notifications Validación de credenciales",
+      "success": false,
+      "message": "Validación de credenciales NO encontrado",
+      "details": "",
+      "timestamp": 1762308166.050353
+    },
+    {
+      "test": "Notifications Rate limiting",
+      "success": false,
+      "message": "Rate limiting NO encontrado",
+      "details": "",
+      "timestamp": 1762308166.050382
+    },
+    {
+      "test": "Notifications Patrones async/await",
+      "success": true,
+      "message": "Patrones async/await encontrado",
+      "details": "",
+      "timestamp": 1762308166.0503967
+    },
+    {
+      "test": "Notifications Tipos MIME correctos",
+      "success": true,
+      "message": "Tipos MIME correctos encontrado",
+      "details": "",
+      "timestamp": 1762308166.0504084
+    },
+    {
+      "test": "Notifications Librería SMTP",
+      "success": true,
+      "message": "Librería SMTP encontrado",
+      "details": "",
+      "timestamp": 1762308166.0504205
+    },
+    {
+      "test": "CLI Click framework",
+      "success": true,
+      "message": "Click framework encontrado",
+      "details": "",
+      "timestamp": 1762308166.0528316
+    },
+    {
+      "test": "CLI Comandos CLI",
+      "success": false,
+      "message": "Comandos CLI NO encontrado",
+      "details": "",
+      "timestamp": 1762308166.0528696
+    },
+    {
+      "test": "CLI Comando principal iris",
+      "success": false,
+      "message": "Comando principal iris NO encontrado",
+      "details": "",
+      "timestamp": 1762308166.0529034
+    },
+    {
+      "test": "CLI Manager CLI implementado",
+      "success": true,
+      "message": "Manager CLI implementado encontrado",
+      "details": "",
+      "timestamp": 1762308166.0529203
+    },
+    {
+      "test": "CLI Llamadas API",
+      "success": true,
+      "message": "Llamadas API encontrado",
+      "details": "",
+      "timestamp": 1762308166.0529335
+    },
+    {
+      "test": "Templates Manager de templates",
+      "success": true,
+      "message": "Manager de templates encontrado",
+      "details": "",
+      "timestamp": 1762308166.0554276
+    },
+    {
+      "test": "Templates Clase Template",
+      "success": true,
+      "message": "Clase Template encontrado",
+      "details": "",
+      "timestamp": 1762308166.0554495
+    },
+    {
+      "test": "Templates Creación de templates",
+      "success": false,
+      "message": "Creación de templates NO encontrado",
+      "details": "",
+      "timestamp": 1762308166.0554783
+    },
+    {
+      "test": "Templates Listado de templates",
+      "success": true,
+      "message": "Listado de templates encontrado",
+      "details": "",
+      "timestamp": 1762308166.0555034
+    },
+    {
+      "test": "Templates Aplicación de templates",
+      "success": false,
+      "message": "Aplicación de templates NO encontrado",
+      "details": "",
+      "timestamp": 1762308166.055531
+    },
+    {
+      "test": "Dashboard Estado React",
+      "success": true,
+      "message": "Estado React encontrado",
+      "details": "",
+      "timestamp": 1762308166.060284
+    },
+    {
+      "test": "Dashboard Efectos React",
+      "success": true,
+      "message": "Efectos React encontrado",
+      "details": "",
+      "timestamp": 1762308166.060332
+    },
+    {
+      "test": "Dashboard SSE implementado",
+      "success": true,
+      "message": "SSE implementado encontrado",
+      "details": "",
+      "timestamp": 1762308166.060349
+    },
+    {
+      "test": "Dashboard Gráficos Recharts",
+      "success": false,
+      "message": "Gráficos Recharts NO encontrado",
+      "details": "",
+      "timestamp": 1762308166.060369
+    },
+    {
+      "test": "Dashboard Componente React",
+      "success": true,
+      "message": "Componente React encontrado",
+      "details": "",
+      "timestamp": 1762308166.060382
+    },
+    {
+      "test": "Dashboard Interfaces TypeScript",
+      "success": true,
+      "message": "Interfaces TypeScript encontrado",
+      "details": "",
+      "timestamp": 1762308166.0603936
+    },
+    {
+      "test": "Package React",
+      "success": true,
+      "message": "React v^18.2.0",
+      "details": "",
+      "timestamp": 1762308166.0620043
+    },
+    {
+      "test": "Package TypeScript",
+      "success": true,
+      "message": "TypeScript v^5.0.0",
+      "details": "",
+      "timestamp": 1762308166.0620265
+    },
+    {
+      "test": "Package Recharts",
+      "success": true,
+      "message": "Recharts v^2.8.0",
+      "details": "",
+      "timestamp": 1762308166.0620408
+    },
+    {
+      "test": "Package Vite",
+      "success": true,
+      "message": "Vite v^5.0.0",
+      "details": "",
+      "timestamp": 1762308166.0620534
+    },
+    {
+      "test": "Script Script setup",
+      "success": true,
+      "message": "Script setup encontrado",
+      "details": "",
+      "timestamp": 1762308166.0639646
+    },
+    {
+      "test": "Script Script metrics server",
+      "success": true,
+      "message": "Script metrics server encontrado",
+      "details": "",
+      "timestamp": 1762308166.0648758
+    },
+    {
+      "test": "Script Script dashboard",
+      "success": true,
+      "message": "Script dashboard encontrado",
+      "details": "",
+      "timestamp": 1762308166.065695
+    },
+    {
+      "test": "Script Script MCP server",
+      "success": true,
+      "message": "Script MCP server encontrado",
+      "details": "",
+      "timestamp": 1762308166.0664349
+    },
+    {
+      "test": "Script Dependencies Python",
+      "success": true,
+      "message": "Dependencies Python encontrado",
+      "details": "",
+      "timestamp": 1762308166.0672157
+    },
+    {
+      "test": "Error Handling Bloques try implementados",
+      "success": true,
+      "message": "Bloques try implementados encontrado",
+      "details": "",
+      "timestamp": 1762308166.0677476
+    },
+    {
+      "test": "Error Handling Manejo de excepciones",
+      "success": true,
+      "message": "Manejo de excepciones encontrado",
+      "details": "",
+      "timestamp": 1762308166.0677705
+    },
+    {
+      "test": "Error Handling Bloques finally",
+      "success": true,
+      "message": "Bloques finally encontrado",
+      "details": "",
+      "timestamp": 1762308166.0677974
+    },
+    {
+      "test": "Error Handling Logging de errores",
+      "success": false,
+      "message": "Logging de errores NO encontrado",
+      "details": "",
+      "timestamp": 1762308166.0678256
+    },
+    {
+      "test": "Error Handling Excepciones HTTP",
+      "success": true,
+      "message": "Excepciones HTTP encontrado",
+      "details": "",
+      "timestamp": 1762308166.067839
+    },
+    {
+      "test": "Error Handling Manejo de conexiones",
+      "success": false,
+      "message": "Manejo de conexiones NO encontrado",
+      "details": "",
+      "timestamp": 1762308166.0678644
+    },
+    {
+      "test": "Security CORS configurado",
+      "success": true,
+      "message": "CORS configurado implementado",
+      "details": "",
+      "timestamp": 1762308166.0712278
+    },
+    {
+      "test": "Security Validación de origen",
+      "success": false,
+      "message": "Validación de origen NO implementado",
+      "details": "",
+      "timestamp": 1762308166.0722528
+    },
+    {
+      "test": "Security Rate limiting",
+      "success": true,
+      "message": "Rate limiting implementado",
+      "details": "",
+      "timestamp": 1762308166.0732968
+    },
+    {
+      "test": "Security Connection pooling",
+      "success": false,
+      "message": "Connection pooling NO implementado",
+      "details": "",
+      "timestamp": 1762308166.0743418
+    },
+    {
+      "test": "Security Validación de credenciales",
+      "success": false,
+      "message": "Validación de credenciales NO implementado",
+      "details": "",
+      "timestamp": 1762308166.0752735
+    },
+    {
+      "test": "Security Sanitización",
+      "success": false,
+      "message": "Sanitización NO implementado",
+      "details": "",
+      "timestamp": 1762308166.0761595
+    },
+    {
+      "test": "Security Escaping",
+      "success": true,
+      "message": "Escaping implementado",
+      "details": "",
+      "timestamp": 1762308166.0773053
+    },
+    {
+      "test": "Security Timeouts",
+      "success": true,
+      "message": "Timeouts implementado",
+      "details": "",
+      "timestamp": 1762308166.0783432
+    },
+    {
+      "test": "Performance Cache implementado",
+      "success": true,
+      "message": "Cache implementado implementado",
+      "details": "",
+      "timestamp": 1762308166.0794373
+    },
+    {
+      "test": "Performance Connection pooling",
+      "success": false,
+      "message": "Connection pooling NO implementado",
+      "details": "",
+      "timestamp": 1762308166.0803363
+    },
+    {
+      "test": "Performance Buffering",
+      "success": true,
+      "message": "Buffering implementado",
+      "details": "",
+      "timestamp": 1762308166.0813468
+    },
+    {
+      "test": "Performance Procesamiento en lotes",
+      "success": true,
+      "message": "Procesamiento en lotes implementado",
+      "details": "",
+      "timestamp": 1762308166.0822477
+    },
+    {
+      "test": "Performance Operaciones asíncronas",
+      "success": true,
+      "message": "Operaciones asíncronas implementado",
+      "details": "",
+      "timestamp": 1762308166.0832355
+    },
+    {
+      "test": "Performance Estructuras eficientes",
+      "success": true,
+      "message": "Estructuras eficientes implementado",
+      "details": "",
+      "timestamp": 1762308166.0853236
+    },
+    {
+      "test": "Performance Locks para concurrencia",
+      "success": true,
+      "message": "Locks para concurrencia implementado",
+      "details": "",
+      "timestamp": 1762308166.0863073
+    },
+    {
+      "test": "Production Variables de entorno",
+      "success": false,
+      "message": "Variables de entorno NO implementado",
+      "details": "",
+      "timestamp": 1762308166.0876148
+    },
+    {
+      "test": "Production Logging de errores",
+      "success": false,
+      "message": "Logging de errores NO implementado",
+      "details": "",
+      "timestamp": 1762308166.08895
+    },
+    {
+      "test": "Production Monitoreo",
+      "success": true,
+      "message": "Monitoreo implementado",
+      "details": "",
+      "timestamp": 1762308166.0895658
+    },
+    {
+      "test": "Production Degradación elegante",
+      "success": false,
+      "message": "Degradación elegante NO implementado",
+      "details": "",
+      "timestamp": 1762308166.0909145
+    },
+    {
+      "test": "Production Health checks",
+      "success": false,
+      "message": "Health checks NO implementado",
+      "details": "",
+      "timestamp": 1762308166.092207
+    },
+    {
+      "test": "Production Configuración externa",
+      "success": true,
+      "message": "Configuración externa implementado",
+      "details": "",
+      "timestamp": 1762308166.0933912
+    }
+  ]
+}

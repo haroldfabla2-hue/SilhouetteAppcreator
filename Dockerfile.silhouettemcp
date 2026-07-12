@@ -1,0 +1,53 @@
+# SilhouetteMCP Server - Dockerfile optimizado para producción
+FROM python:3.11-slim
+
+# Metadatos
+LABEL maintainer="Alberto Farah <alberto.farahb@hotmail.com>"
+LABEL description="SilhouetteMCP Server - Servidor MCP superior para gestión multi-aplicación"
+LABEL version="2.0.0"
+
+# Variables de entorno
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Instalar dependencias del sistema
+RUN apt-get update && apt-get install -y \
+    curl \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+# Crear usuario no-root para seguridad
+RUN groupadd -r silhouettemcp && useradd -r -g silhouettemcp silhouettemcp
+
+# Crear directorio de trabajo
+WORKDIR /app
+
+# Copiar requirements
+COPY requirements.txt .
+
+# Instalar dependencias Python
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copiar aplicación
+COPY silhouettemcp_server.py .
+
+# Crear directorio para datos persistentes
+RUN mkdir -p /app/data && chown -R silhouettemcp:silhouettemcp /app
+
+# Cambiar a usuario no-root
+USER silhouettemcp
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:8000/health || exit 1
+
+# Exponer puerto
+EXPOSE 8000
+
+# Variables de entorno del servidor
+ENV HOST=0.0.0.0
+ENV PORT=8000
+
+# Comando de inicio
+CMD ["python", "silhouettemcp_server.py"]

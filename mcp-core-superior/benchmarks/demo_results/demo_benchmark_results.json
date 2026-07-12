@@ -1,0 +1,471 @@
+{
+  "demo_metadata": {
+    "demo_type": "simulated_benchmark",
+    "timestamp": "2025-11-04T07:38:08.585870",
+    "note": "Datos simulados para demostraci\u00f3n"
+  },
+  "results": [
+    {
+      "test_name": "latency",
+      "agent_name": "mcp_core_superior",
+      "metric_name": "avg_latency",
+      "value": 92.5,
+      "unit": "ms",
+      "timestamp": "2025-11-04T07:38:08.585552",
+      "additional_data": {}
+    },
+    {
+      "test_name": "latency",
+      "agent_name": "minimax_agent",
+      "metric_name": "avg_latency",
+      "value": 150.2,
+      "unit": "ms",
+      "timestamp": "2025-11-04T07:38:08.585561",
+      "additional_data": {}
+    },
+    {
+      "test_name": "throughput",
+      "agent_name": "mcp_core_superior",
+      "metric_name": "requests_per_second",
+      "value": 148.1,
+      "unit": "req/s",
+      "timestamp": "2025-11-04T07:38:08.585566",
+      "additional_data": {}
+    },
+    {
+      "test_name": "throughput",
+      "agent_name": "minimax_agent",
+      "metric_name": "requests_per_second",
+      "value": 98.5,
+      "unit": "req/s",
+      "timestamp": "2025-11-04T07:38:08.585568",
+      "additional_data": {}
+    },
+    {
+      "test_name": "memory",
+      "agent_name": "mcp_core_superior",
+      "metric_name": "memory_usage",
+      "value": 245,
+      "unit": "MB",
+      "timestamp": "2025-11-04T07:38:08.585571",
+      "additional_data": {}
+    },
+    {
+      "test_name": "memory",
+      "agent_name": "minimax_agent",
+      "metric_name": "memory_usage",
+      "value": 312,
+      "unit": "MB",
+      "timestamp": "2025-11-04T07:38:08.585573",
+      "additional_data": {}
+    },
+    {
+      "test_name": "accuracy",
+      "agent_name": "mcp_core_superior",
+      "metric_name": "success_rate",
+      "value": 98.5,
+      "unit": "percent",
+      "timestamp": "2025-11-04T07:38:08.585576",
+      "additional_data": {}
+    },
+    {
+      "test_name": "accuracy",
+      "agent_name": "minimax_agent",
+      "metric_name": "success_rate",
+      "value": 96.2,
+      "unit": "percent",
+      "timestamp": "2025-11-04T07:38:08.585577",
+      "additional_data": {}
+    },
+    {
+      "test_name": "scalability",
+      "agent_name": "mcp_core_superior",
+      "metric_name": "performance_score",
+      "value": 94.9,
+      "unit": "percent",
+      "timestamp": "2025-11-04T07:38:08.585582",
+      "additional_data": {
+        "concurrent_users": 1
+      }
+    },
+    {
+      "test_name": "scalability",
+      "agent_name": "minimax_agent",
+      "metric_name": "performance_score",
+      "value": 74.8,
+      "unit": "percent",
+      "timestamp": "2025-11-04T07:38:08.585584",
+      "additional_data": {
+        "concurrent_users": 1
+      }
+    },
+    {
+      "test_name": "scalability",
+      "agent_name": "mcp_core_superior",
+      "metric_name": "performance_score",
+      "value": 94.5,
+      "unit": "percent",
+      "timestamp": "2025-11-04T07:38:08.585587",
+      "additional_data": {
+        "concurrent_users": 5
+      }
+    },
+    {
+      "test_name": "scalability",
+      "agent_name": "minimax_agent",
+      "metric_name": "performance_score",
+      "value": 74.0,
+      "unit": "percent",
+      "timestamp": "2025-11-04T07:38:08.585590",
+      "additional_data": {
+        "concurrent_users": 5
+      }
+    },
+    {
+      "test_name": "scalability",
+      "agent_name": "mcp_core_superior",
+      "metric_name": "performance_score",
+      "value": 94.0,
+      "unit": "percent",
+      "timestamp": "2025-11-04T07:38:08.585593",
+      "additional_data": {
+        "concurrent_users": 10
+      }
+    },
+    {
+      "test_name": "scalability",
+      "agent_name": "minimax_agent",
+      "metric_name": "performance_score",
+      "value": 73.0,
+      "unit": "percent",
+      "timestamp": "2025-11-04T07:38:08.585594",
+      "additional_data": {
+        "concurrent_users": 10
+      }
+    },
+    {
+      "test_name": "scalability",
+      "agent_name": "mcp_core_superior",
+      "metric_name": "performance_score",
+      "value": 92.5,
+      "unit": "percent",
+      "timestamp": "2025-11-04T07:38:08.585597",
+      "additional_data": {
+        "concurrent_users": 25
+      }
+    },
+    {
+      "test_name": "scalability",
+      "agent_name": "minimax_agent",
+      "metric_name": "performance_score",
+      "value": 70.0,
+      "unit": "percent",
+      "timestamp": "2025-11-04T07:38:08.585599",
+      "additional_data": {
+        "concurrent_users": 25
+      }
+    },
+    {
+      "test_name": "scalability",
+      "agent_name": "mcp_core_superior",
+      "metric_name": "performance_score",
+      "value": 90.0,
+      "unit": "percent",
+      "timestamp": "2025-11-04T07:38:08.585601",
+      "additional_data": {
+        "concurrent_users": 50
+      }
+    },
+    {
+      "test_name": "scalability",
+      "agent_name": "minimax_agent",
+      "metric_name": "performance_score",
+      "value": 65.0,
+      "unit": "percent",
+      "timestamp": "2025-11-04T07:38:08.585603",
+      "additional_data": {
+        "concurrent_users": 50
+      }
+    },
+    {
+      "test_name": "scalability",
+      "agent_name": "mcp_core_superior",
+      "metric_name": "performance_score",
+      "value": 85.0,
+      "unit": "percent",
+      "timestamp": "2025-11-04T07:38:08.585605",
+      "additional_data": {
+        "concurrent_users": 100
+      }
+    },
+    {
+      "test_name": "scalability",
+      "agent_name": "minimax_agent",
+      "metric_name": "performance_score",
+      "value": 55.0,
+      "unit": "percent",
+      "timestamp": "2025-11-04T07:38:08.585607",
+      "additional_data": {
+        "concurrent_users": 100
+      }
+    },
+    {
+      "test_name": "cost",
+      "agent_name": "mcp_core_superior",
+      "metric_name": "cost_per_operation",
+      "value": 0.8,
+      "unit": "USD",
+      "timestamp": "2025-11-04T07:38:08.585609",
+      "additional_data": {}
+    },
+    {
+      "test_name": "cost",
+      "agent_name": "minimax_agent",
+      "metric_name": "cost_per_operation",
+      "value": 1.2,
+      "unit": "USD",
+      "timestamp": "2025-11-04T07:38:08.585610",
+      "additional_data": {}
+    },
+    {
+      "test_name": "workflow_time",
+      "agent_name": "mcp_core_superior",
+      "metric_name": "completion_time",
+      "value": 4600,
+      "unit": "ms",
+      "timestamp": "2025-11-04T07:38:08.585614",
+      "additional_data": {
+        "workflow": "multi_step_processing"
+      }
+    },
+    {
+      "test_name": "workflow_time",
+      "agent_name": "minimax_agent",
+      "metric_name": "completion_time",
+      "value": 6650,
+      "unit": "ms",
+      "timestamp": "2025-11-04T07:38:08.585616",
+      "additional_data": {
+        "workflow": "multi_step_processing"
+      }
+    },
+    {
+      "test_name": "workflow_time",
+      "agent_name": "mcp_core_superior",
+      "metric_name": "completion_time",
+      "value": 4300,
+      "unit": "ms",
+      "timestamp": "2025-11-04T07:38:08.585618",
+      "additional_data": {
+        "workflow": "parallel_execution"
+      }
+    },
+    {
+      "test_name": "workflow_time",
+      "agent_name": "minimax_agent",
+      "metric_name": "completion_time",
+      "value": 6200,
+      "unit": "ms",
+      "timestamp": "2025-11-04T07:38:08.585620",
+      "additional_data": {
+        "workflow": "parallel_execution"
+      }
+    },
+    {
+      "test_name": "workflow_time",
+      "agent_name": "mcp_core_superior",
+      "metric_name": "completion_time",
+      "value": 3800,
+      "unit": "ms",
+      "timestamp": "2025-11-04T07:38:08.585622",
+      "additional_data": {
+        "workflow": "data_pipeline"
+      }
+    },
+    {
+      "test_name": "workflow_time",
+      "agent_name": "minimax_agent",
+      "metric_name": "completion_time",
+      "value": 5450,
+      "unit": "ms",
+      "timestamp": "2025-11-04T07:38:08.585624",
+      "additional_data": {
+        "workflow": "data_pipeline"
+      }
+    },
+    {
+      "test_name": "cold_start",
+      "agent_name": "mcp_core_superior",
+      "metric_name": "startup_time",
+      "value": 1200,
+      "unit": "ms",
+      "timestamp": "2025-11-04T07:38:08.585626",
+      "additional_data": {}
+    },
+    {
+      "test_name": "cold_start",
+      "agent_name": "minimax_agent",
+      "metric_name": "startup_time",
+      "value": 2100,
+      "unit": "ms",
+      "timestamp": "2025-11-04T07:38:08.585627",
+      "additional_data": {}
+    },
+    {
+      "test_name": "database",
+      "agent_name": "mcp_core_superior",
+      "metric_name": "query_time",
+      "value": 22,
+      "unit": "ms",
+      "timestamp": "2025-11-04T07:38:08.585631",
+      "additional_data": {
+        "query_type": "SELECT"
+      }
+    },
+    {
+      "test_name": "database",
+      "agent_name": "minimax_agent",
+      "metric_name": "query_time",
+      "value": 32,
+      "unit": "ms",
+      "timestamp": "2025-11-04T07:38:08.585639",
+      "additional_data": {
+        "query_type": "SELECT"
+      }
+    },
+    {
+      "test_name": "database",
+      "agent_name": "mcp_core_superior",
+      "metric_name": "query_time",
+      "value": 17,
+      "unit": "ms",
+      "timestamp": "2025-11-04T07:38:08.585642",
+      "additional_data": {
+        "query_type": "INSERT"
+      }
+    },
+    {
+      "test_name": "database",
+      "agent_name": "minimax_agent",
+      "metric_name": "query_time",
+      "value": 37,
+      "unit": "ms",
+      "timestamp": "2025-11-04T07:38:08.585644",
+      "additional_data": {
+        "query_type": "INSERT"
+      }
+    },
+    {
+      "test_name": "database",
+      "agent_name": "mcp_core_superior",
+      "metric_name": "query_time",
+      "value": 18,
+      "unit": "ms",
+      "timestamp": "2025-11-04T07:38:08.585646",
+      "additional_data": {
+        "query_type": "UPDATE"
+      }
+    },
+    {
+      "test_name": "database",
+      "agent_name": "minimax_agent",
+      "metric_name": "query_time",
+      "value": 38,
+      "unit": "ms",
+      "timestamp": "2025-11-04T07:38:08.585647",
+      "additional_data": {
+        "query_type": "UPDATE"
+      }
+    },
+    {
+      "test_name": "database",
+      "agent_name": "mcp_core_superior",
+      "metric_name": "query_time",
+      "value": 18,
+      "unit": "ms",
+      "timestamp": "2025-11-04T07:38:08.585649",
+      "additional_data": {
+        "query_type": "DELETE"
+      }
+    },
+    {
+      "test_name": "database",
+      "agent_name": "minimax_agent",
+      "metric_name": "query_time",
+      "value": 38,
+      "unit": "ms",
+      "timestamp": "2025-11-04T07:38:08.585650",
+      "additional_data": {
+        "query_type": "DELETE"
+      }
+    },
+    {
+      "test_name": "network",
+      "agent_name": "mcp_core_superior",
+      "metric_name": "overhead",
+      "value": 850,
+      "unit": "bytes",
+      "timestamp": "2025-11-04T07:38:08.585652",
+      "additional_data": {}
+    },
+    {
+      "test_name": "network",
+      "agent_name": "minimax_agent",
+      "metric_name": "overhead",
+      "value": 1200,
+      "unit": "bytes",
+      "timestamp": "2025-11-04T07:38:08.585654",
+      "additional_data": {}
+    }
+  ],
+  "analysis": {
+    "summary": {
+      "total_tests": 40,
+      "mcp_tests": 20,
+      "minimax_tests": 20
+    },
+    "mcp_performance": {
+      "latency": 92.5,
+      "throughput": 148.1,
+      "memory": 245.0,
+      "accuracy": 98.5
+    },
+    "minimax_performance": {
+      "latency": 150.2,
+      "throughput": 98.5,
+      "memory": 312.0,
+      "accuracy": 96.2
+    },
+    "comparative_analysis": {
+      "latency": {
+        "mcp_value": 92.5,
+        "minimax_value": 150.2,
+        "winner": "mcp_core_superior",
+        "difference_percent": 62.378378378378365
+      },
+      "throughput": {
+        "mcp_value": 148.1,
+        "minimax_value": 98.5,
+        "winner": "mcp_core_superior",
+        "difference_percent": 50.355329949238566
+      },
+      "memory": {
+        "mcp_value": 245.0,
+        "minimax_value": 312.0,
+        "winner": "mcp_core_superior",
+        "difference_percent": 27.346938775510203
+      },
+      "accuracy": {
+        "mcp_value": 98.5,
+        "minimax_value": 96.2,
+        "winner": "mcp_core_superior",
+        "difference_percent": 2.390852390852388
+      }
+    },
+    "winner": "MCP-Core-Superior",
+    "wins": {
+      "mcp": 4,
+      "minimax": 0
+    }
+  }
+}

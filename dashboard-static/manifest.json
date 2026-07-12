@@ -1,0 +1,49 @@
+{
+    "name": "SilhouetteMCP Dashboard Ultra",
+    "short_name": "MCP Dashboard",
+    "description": "Dashboard administrativo ultra-avanzado para SilhouetteMCP - Score 110/100",
+    "start_url": "/dashboard-ultra",
+    "display": "standalone",
+    "background_color": "#0A0E1A",
+    "theme_color": "#0066FF",
+    "orientation": "portrait-primary",
+    "icons": [
+        {
+            "src": "/dashboard/assets/icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "/dashboard/assets/icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
+        }
+    ],
+    "categories": ["productivity", "business", "utilities"],
+    "screenshots": [],
+    "shortcuts": [
+        {
+            "name": "Dashboard",
+            "short_name": "Dashboard",
+            "description": "Ver métricas principales",
+            "url": "/dashboard-ultra#dashboard",
+            "icons": []
+        },
+        {
+            "name": "APIs",
+            "short_name": "APIs",
+            "description": "Gestionar APIs dinámicas",
+            "url": "/dashboard-ultra#apis",
+            "icons": []
+        },
+        {
+            "name": "Monitoring",
+            "short_name": "Monitoring",
+            "description": "Monitoreo en tiempo real",
+            "url": "/dashboard-ultra#monitoring",
+            "icons": []
+        }
+    ]
+}

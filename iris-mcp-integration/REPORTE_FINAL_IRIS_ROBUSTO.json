@@ -1,0 +1,771 @@
+{
+  "timestamp": 1762308237.8514051,
+  "fecha_reporte": "2025-11-05 10:00:26",
+  "sistema": "IRIS MCP Integration",
+  "version": "1.1.0-robust",
+  "total_validaciones": 107,
+  "validaciones_exitosas": 86,
+  "validaciones_fallidas": 21,
+  "tasa_exito": 80.37383177570094,
+  "estado_sistema": "🟡 SISTEMA CASI LISTO",
+  "recomendacion": "⚠️  Sistema funcional, revisar validaciones fallidas.",
+  "archivos_robustos": [
+    "iris_metrics_server_robust.py",
+    "iris_notifications_robust.py"
+  ],
+  "archivos_principales": [
+    "iris_metrics_server.py",
+    "iris_notifications.py"
+  ],
+  "resultados": [
+    {
+      "test": "Robust Métricas server robusto",
+      "success": true,
+      "message": "Métricas server robusto existe",
+      "details": "",
+      "timestamp": 1762308237.8209417
+    },
+    {
+      "test": "Robust Notificaciones robustas",
+      "success": true,
+      "message": "Notificaciones robustas existe",
+      "details": "",
+      "timestamp": 1762308237.8218393
+    },
+    {
+      "test": "Main Métricas server principal",
+      "success": true,
+      "message": "Métricas server principal existe",
+      "details": "",
+      "timestamp": 1762308237.822445
+    },
+    {
+      "test": "Main Notificaciones principales",
+      "success": true,
+      "message": "Notificaciones principales existe",
+      "details": "",
+      "timestamp": 1762308237.8229766
+    },
+    {
+      "test": "Metrics Store persistente",
+      "success": true,
+      "message": "Store persistente implementado",
+      "details": "",
+      "timestamp": 1762308237.8235726
+    },
+    {
+      "test": "Metrics CORS configurado específicamente",
+      "success": true,
+      "message": "CORS configurado específicamente implementado",
+      "details": "",
+      "timestamp": 1762308237.8235962
+    },
+    {
+      "test": "Metrics Threading para concurrencia",
+      "success": true,
+      "message": "Threading para concurrencia implementado",
+      "details": "",
+      "timestamp": 1762308237.823611
+    },
+    {
+      "test": "Metrics Estructuras de datos eficientes",
+      "success": true,
+      "message": "Estructuras de datos eficientes implementado",
+      "details": "",
+      "timestamp": 1762308237.823624
+    },
+    {
+      "test": "Metrics Sistema de backup",
+      "success": true,
+      "message": "Sistema de backup implementado",
+      "details": "",
+      "timestamp": 1762308237.8236394
+    },
+    {
+      "test": "Metrics Validación de datos",
+      "success": true,
+      "message": "Validación de datos implementado",
+      "details": "",
+      "timestamp": 1762308237.8236666
+    },
+    {
+      "test": "Metrics Restauración desde backup",
+      "success": true,
+      "message": "Restauración desde backup implementado",
+      "details": "",
+      "timestamp": 1762308237.8236804
+    },
+    {
+      "test": "Metrics Buffer de guardado",
+      "success": true,
+      "message": "Buffer de guardado implementado",
+      "details": "",
+      "timestamp": 1762308237.8236923
+    },
+    {
+      "test": "Metrics Logging de errores",
+      "success": false,
+      "message": "Logging de errores NO encontrado",
+      "details": "",
+      "timestamp": 1762308237.823717
+    },
+    {
+      "test": "Metrics Manejo de excepciones",
+      "success": true,
+      "message": "Manejo de excepciones implementado",
+      "details": "",
+      "timestamp": 1762308237.8237286
+    },
+    {
+      "test": "Metrics Bloques finally",
+      "success": true,
+      "message": "Bloques finally implementado",
+      "details": "",
+      "timestamp": 1762308237.823751
+    },
+    {
+      "test": "Metrics Excepciones HTTP",
+      "success": true,
+      "message": "Excepciones HTTP implementado",
+      "details": "",
+      "timestamp": 1762308237.8237622
+    },
+    {
+      "test": "Metrics Middleware CORS",
+      "success": true,
+      "message": "Middleware CORS implementado",
+      "details": "",
+      "timestamp": 1762308237.8237734
+    },
+    {
+      "test": "Metrics Streaming responses",
+      "success": true,
+      "message": "Streaming responses implementado",
+      "details": "",
+      "timestamp": 1762308237.8237853
+    },
+    {
+      "test": "Metrics Tracking de conexiones",
+      "success": false,
+      "message": "Tracking de conexiones NO encontrado",
+      "details": "",
+      "timestamp": 1762308237.8238132
+    },
+    {
+      "test": "Metrics Limpieza elegante",
+      "success": false,
+      "message": "Limpieza elegante NO encontrado",
+      "details": "",
+      "timestamp": 1762308237.8238432
+    },
+    {
+      "test": "Metrics Gestión de memoria",
+      "success": false,
+      "message": "Gestión de memoria NO encontrado",
+      "details": "",
+      "timestamp": 1762308237.8238735
+    },
+    {
+      "test": "Notifications Import sys agregado",
+      "success": true,
+      "message": "Import sys agregado implementado",
+      "details": "",
+      "timestamp": 1762308237.8243876
+    },
+    {
+      "test": "Notifications Eventos de notificación",
+      "success": true,
+      "message": "Eventos de notificación implementado",
+      "details": "",
+      "timestamp": 1762308237.8244104
+    },
+    {
+      "test": "Notifications Configuración robusta",
+      "success": true,
+      "message": "Configuración robusta implementado",
+      "details": "",
+      "timestamp": 1762308237.824425
+    },
+    {
+      "test": "Notifications Tipos de notificación",
+      "success": true,
+      "message": "Tipos de notificación implementado",
+      "details": "",
+      "timestamp": 1762308237.8244371
+    },
+    {
+      "test": "Notifications Niveles de notificación",
+      "success": true,
+      "message": "Niveles de notificación implementado",
+      "details": "",
+      "timestamp": 1762308237.8244493
+    },
+    {
+      "test": "Notifications Rate limiting avanzado",
+      "success": true,
+      "message": "Rate limiting avanzado implementado",
+      "details": "",
+      "timestamp": 1762308237.8244612
+    },
+    {
+      "test": "Notifications Algoritmo token bucket",
+      "success": true,
+      "message": "Algoritmo token bucket implementado",
+      "details": "",
+      "timestamp": 1762308237.8244736
+    },
+    {
+      "test": "Notifications Threading para concurrencia",
+      "success": true,
+      "message": "Threading para concurrencia implementado",
+      "details": "",
+      "timestamp": 1762308237.8244853
+    },
+    {
+      "test": "Notifications Ejecución concurrente",
+      "success": true,
+      "message": "Ejecución concurrente implementado",
+      "details": "",
+      "timestamp": 1762308237.8244975
+    },
+    {
+      "test": "Notifications Tipos MIME",
+      "success": true,
+      "message": "Tipos MIME implementado",
+      "details": "",
+      "timestamp": 1762308237.8245084
+    },
+    {
+      "test": "Notifications Multipart MIME",
+      "success": true,
+      "message": "Multipart MIME implementado",
+      "details": "",
+      "timestamp": 1762308237.8245196
+    },
+    {
+      "test": "Notifications Validación de datos",
+      "success": false,
+      "message": "Validación de datos NO encontrado",
+      "details": "",
+      "timestamp": 1762308237.8245525
+    },
+    {
+      "test": "Notifications Sanitización",
+      "success": false,
+      "message": "Sanitización NO encontrado",
+      "details": "",
+      "timestamp": 1762308237.8245835
+    },
+    {
+      "test": "Notifications Operaciones asíncronas",
+      "success": true,
+      "message": "Operaciones asíncronas implementado",
+      "details": "",
+      "timestamp": 1762308237.824595
+    },
+    {
+      "test": "Notifications Manejo de errores",
+      "success": true,
+      "message": "Manejo de errores implementado",
+      "details": "",
+      "timestamp": 1762308237.824616
+    },
+    {
+      "test": "Notifications Lógica de reintentos",
+      "success": false,
+      "message": "Lógica de reintentos NO encontrado",
+      "details": "",
+      "timestamp": 1762308237.824657
+    },
+    {
+      "test": "Notifications Validación de credenciales",
+      "success": false,
+      "message": "Validación de credenciales NO encontrado",
+      "details": "",
+      "timestamp": 1762308237.8246891
+    },
+    {
+      "test": "CLI Framework Click",
+      "success": true,
+      "message": "Framework Click encontrado",
+      "details": "",
+      "timestamp": 1762308237.8260114
+    },
+    {
+      "test": "CLI Comandos CLI",
+      "success": true,
+      "message": "Comandos CLI encontrado",
+      "details": "",
+      "timestamp": 1762308237.8260329
+    },
+    {
+      "test": "CLI Comando principal iris",
+      "success": true,
+      "message": "Comando principal iris encontrado",
+      "details": "",
+      "timestamp": 1762308237.8260496
+    },
+    {
+      "test": "CLI Manager CLI",
+      "success": true,
+      "message": "Manager CLI encontrado",
+      "details": "",
+      "timestamp": 1762308237.8260639
+    },
+    {
+      "test": "CLI Llamadas API",
+      "success": true,
+      "message": "Llamadas API encontrado",
+      "details": "",
+      "timestamp": 1762308237.8260758
+    },
+    {
+      "test": "CLI Output CLI",
+      "success": true,
+      "message": "Output CLI encontrado",
+      "details": "",
+      "timestamp": 1762308237.8260887
+    },
+    {
+      "test": "CLI Comandos",
+      "success": false,
+      "message": "Comandos NO encontrado",
+      "details": "",
+      "timestamp": 1762308237.826114
+    },
+    {
+      "test": "CLI Comando status",
+      "success": true,
+      "message": "Comando status encontrado",
+      "details": "",
+      "timestamp": 1762308237.8261256
+    },
+    {
+      "test": "CLI Comando agents",
+      "success": true,
+      "message": "Comando agents encontrado",
+      "details": "",
+      "timestamp": 1762308237.8261375
+    },
+    {
+      "test": "CLI Comando templates",
+      "success": true,
+      "message": "Comando templates encontrado",
+      "details": "",
+      "timestamp": 1762308237.826148
+    },
+    {
+      "test": "Templates Manager de templates",
+      "success": true,
+      "message": "Manager de templates encontrado",
+      "details": "",
+      "timestamp": 1762308237.8275006
+    },
+    {
+      "test": "Templates Clase Template",
+      "success": false,
+      "message": "Clase Template NO encontrado",
+      "details": "",
+      "timestamp": 1762308237.8275392
+    },
+    {
+      "test": "Templates Creación de templates",
+      "success": false,
+      "message": "Creación de templates NO encontrado",
+      "details": "",
+      "timestamp": 1762308237.827568
+    },
+    {
+      "test": "Templates Listado de templates",
+      "success": true,
+      "message": "Listado de templates encontrado",
+      "details": "",
+      "timestamp": 1762308237.8275952
+    },
+    {
+      "test": "Templates Aplicación de templates",
+      "success": false,
+      "message": "Aplicación de templates NO encontrado",
+      "details": "",
+      "timestamp": 1762308237.8276224
+    },
+    {
+      "test": "Templates Validación de templates",
+      "success": true,
+      "message": "Validación de templates encontrado",
+      "details": "",
+      "timestamp": 1762308237.8276463
+    },
+    {
+      "test": "Templates Actualización de templates",
+      "success": false,
+      "message": "Actualización de templates NO encontrado",
+      "details": "",
+      "timestamp": 1762308237.8276818
+    },
+    {
+      "test": "Templates Eliminación de templates",
+      "success": true,
+      "message": "Eliminación de templates encontrado",
+      "details": "",
+      "timestamp": 1762308237.8277056
+    },
+    {
+      "test": "Templates Templates de workflow",
+      "success": true,
+      "message": "Templates de workflow encontrado",
+      "details": "",
+      "timestamp": 1762308237.8277197
+    },
+    {
+      "test": "Templates Templates de automatización",
+      "success": true,
+      "message": "Templates de automatización encontrado",
+      "details": "",
+      "timestamp": 1762308237.827731
+    },
+    {
+      "test": "Dashboard Componente React",
+      "success": true,
+      "message": "Componente React implementado",
+      "details": "",
+      "timestamp": 1762308237.8305762
+    },
+    {
+      "test": "Dashboard Estado React",
+      "success": true,
+      "message": "Estado React implementado",
+      "details": "",
+      "timestamp": 1762308237.8305955
+    },
+    {
+      "test": "Dashboard Efectos React",
+      "success": true,
+      "message": "Efectos React implementado",
+      "details": "",
+      "timestamp": 1762308237.8306084
+    },
+    {
+      "test": "Dashboard Interfaces TypeScript",
+      "success": true,
+      "message": "Interfaces TypeScript implementado",
+      "details": "",
+      "timestamp": 1762308237.83062
+    },
+    {
+      "test": "Dashboard SSE implementado",
+      "success": true,
+      "message": "SSE implementado implementado",
+      "details": "",
+      "timestamp": 1762308237.8306365
+    },
+    {
+      "test": "Dashboard Actualizaciones periódicas",
+      "success": false,
+      "message": "Actualizaciones periódicas NO encontrado",
+      "details": "",
+      "timestamp": 1762308237.8306682
+    },
+    {
+      "test": "Dashboard Manejo de errores",
+      "success": false,
+      "message": "Manejo de errores NO encontrado",
+      "details": "",
+      "timestamp": 1762308237.8306894
+    },
+    {
+      "test": "Dashboard Estados de carga",
+      "success": false,
+      "message": "Estados de carga NO encontrado",
+      "details": "",
+      "timestamp": 1762308237.8307083
+    },
+    {
+      "test": "Dashboard Tarjetas de agentes",
+      "success": false,
+      "message": "Tarjetas de agentes NO encontrado",
+      "details": "",
+      "timestamp": 1762308237.830728
+    },
+    {
+      "test": "Dashboard Display de métricas",
+      "success": false,
+      "message": "Display de métricas NO encontrado",
+      "details": "",
+      "timestamp": 1762308237.8307447
+    },
+    {
+      "test": "Config REACT",
+      "success": true,
+      "message": "react configurado",
+      "details": "",
+      "timestamp": 1762308237.8321052
+    },
+    {
+      "test": "Config TYPESCRIPT",
+      "success": true,
+      "message": "typescript configurado",
+      "details": "",
+      "timestamp": 1762308237.8321266
+    },
+    {
+      "test": "Config RECHARTS",
+      "success": true,
+      "message": "recharts configurado",
+      "details": "",
+      "timestamp": 1762308237.8321424
+    },
+    {
+      "test": "Config VITE",
+      "success": true,
+      "message": "vite configurado",
+      "details": "",
+      "timestamp": 1762308237.8321543
+    },
+    {
+      "test": "Script setup.sh",
+      "success": true,
+      "message": "Script setup.sh existe",
+      "details": "",
+      "timestamp": 1762308237.8321898
+    },
+    {
+      "test": "Script start_metrics_server.sh",
+      "success": true,
+      "message": "Script start_metrics_server.sh existe",
+      "details": "",
+      "timestamp": 1762308237.8322155
+    },
+    {
+      "test": "Script start_dashboard.sh",
+      "success": true,
+      "message": "Script start_dashboard.sh existe",
+      "details": "",
+      "timestamp": 1762308237.8322356
+    },
+    {
+      "test": "Script run_mcp_server.sh",
+      "success": true,
+      "message": "Script run_mcp_server.sh existe",
+      "details": "",
+      "timestamp": 1762308237.832255
+    },
+    {
+      "test": "Requirements",
+      "success": true,
+      "message": "Requirements.txt existe",
+      "details": "",
+      "timestamp": 1762308237.832273
+    },
+    {
+      "test": "Architecture api",
+      "success": true,
+      "message": "Directorio api existe",
+      "details": "",
+      "timestamp": 1762308237.83231
+    },
+    {
+      "test": "Architecture cli",
+      "success": true,
+      "message": "Directorio cli existe",
+      "details": "",
+      "timestamp": 1762308237.8323286
+    },
+    {
+      "test": "Architecture dashboard",
+      "success": true,
+      "message": "Directorio dashboard existe",
+      "details": "",
+      "timestamp": 1762308237.832345
+    },
+    {
+      "test": "Architecture notifications",
+      "success": true,
+      "message": "Directorio notifications existe",
+      "details": "",
+      "timestamp": 1762308237.832362
+    },
+    {
+      "test": "Architecture templates",
+      "success": true,
+      "message": "Directorio templates existe",
+      "details": "",
+      "timestamp": 1762308237.8323784
+    },
+    {
+      "test": "Architecture configs",
+      "success": true,
+      "message": "Directorio configs existe",
+      "details": "",
+      "timestamp": 1762308237.8323948
+    },
+    {
+      "test": "Architecture logs",
+      "success": true,
+      "message": "Directorio logs existe",
+      "details": "",
+      "timestamp": 1762308237.832411
+    },
+    {
+      "test": "Architecture tests",
+      "success": true,
+      "message": "Directorio tests existe",
+      "details": "",
+      "timestamp": 1762308237.8324265
+    },
+    {
+      "test": "Config File mcp-server.json",
+      "success": true,
+      "message": "mcp-server.json existe",
+      "details": "",
+      "timestamp": 1762308237.8324451
+    },
+    {
+      "test": "Config File README.md",
+      "success": true,
+      "message": "README.md existe",
+      "details": "",
+      "timestamp": 1762308237.8324635
+    },
+    {
+      "test": "Config File run.sh",
+      "success": true,
+      "message": "run.sh existe",
+      "details": "",
+      "timestamp": 1762308237.8324814
+    },
+    {
+      "test": "Security CORS configurado",
+      "success": true,
+      "message": "CORS configurado implementado",
+      "details": "",
+      "timestamp": 1762308237.8336132
+    },
+    {
+      "test": "Security Credenciales manejadas",
+      "success": true,
+      "message": "Credenciales manejadas implementado",
+      "details": "",
+      "timestamp": 1762308237.8345933
+    },
+    {
+      "test": "Security Headers configurados",
+      "success": true,
+      "message": "Headers configurados implementado",
+      "details": "",
+      "timestamp": 1762308237.8355289
+    },
+    {
+      "test": "Security Métodos restringidos",
+      "success": true,
+      "message": "Métodos restringidos implementado",
+      "details": "",
+      "timestamp": 1762308237.83649
+    },
+    {
+      "test": "Security Sanitización",
+      "success": false,
+      "message": "Sanitización NO encontrado",
+      "details": "",
+      "timestamp": 1762308237.8376093
+    },
+    {
+      "test": "Security Validación",
+      "success": false,
+      "message": "Validación NO encontrado",
+      "details": "",
+      "timestamp": 1762308237.8385603
+    },
+    {
+      "test": "Security Rate limiting",
+      "success": true,
+      "message": "Rate limiting implementado",
+      "details": "",
+      "timestamp": 1762308237.839463
+    },
+    {
+      "test": "Security Validación credenciales",
+      "success": false,
+      "message": "Validación credenciales NO encontrado",
+      "details": "",
+      "timestamp": 1762308237.8404987
+    },
+    {
+      "test": "Security Escaping",
+      "success": true,
+      "message": "Escaping implementado",
+      "details": "",
+      "timestamp": 1762308237.8414292
+    },
+    {
+      "test": "Security Timeouts",
+      "success": true,
+      "message": "Timeouts implementado",
+      "details": "",
+      "timestamp": 1762308237.842585
+    },
+    {
+      "test": "Performance Cache implementado",
+      "success": true,
+      "message": "Cache implementado implementado",
+      "details": "",
+      "timestamp": 1762308237.8435874
+    },
+    {
+      "test": "Performance Buffering",
+      "success": true,
+      "message": "Buffering implementado",
+      "details": "",
+      "timestamp": 1762308237.844656
+    },
+    {
+      "test": "Performance Threading",
+      "success": true,
+      "message": "Threading implementado",
+      "details": "",
+      "timestamp": 1762308237.8455184
+    },
+    {
+      "test": "Performance Async/await",
+      "success": true,
+      "message": "Async/await implementado",
+      "details": "",
+      "timestamp": 1762308237.8463948
+    },
+    {
+      "test": "Performance Estructuras eficientes",
+      "success": true,
+      "message": "Estructuras eficientes implementado",
+      "details": "",
+      "timestamp": 1762308237.847427
+    },
+    {
+      "test": "Performance Gestión de conexiones",
+      "success": true,
+      "message": "Gestión de conexiones implementado",
+      "details": "",
+      "timestamp": 1762308237.8483472
+    },
+    {
+      "test": "Performance Pools de conexiones",
+      "success": true,
+      "message": "Pools de conexiones implementado",
+      "details": "",
+      "timestamp": 1762308237.849243
+    },
+    {
+      "test": "Performance Procesamiento en lotes",
+      "success": true,
+      "message": "Procesamiento en lotes implementado",
+      "details": "",
+      "timestamp": 1762308237.8501499
+    },
+    {
+      "test": "Performance Locks para concurrencia",
+      "success": true,
+      "message": "Locks para concurrencia implementado",
+      "details": "",
+      "timestamp": 1762308237.8509805
+    }
+  ]
+}

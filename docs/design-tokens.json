@@ -1,0 +1,264 @@
+{
+  "$schema": "https://tr.designtokens.org/format/",
+  "name": "IRIS Agent Design Tokens",
+  "version": "1.0.0",
+  "description": "Design tokens for IRIS AI Agent platform - Modern Minimalism Premium + Tech Dashboard",
+  
+  "color": {
+    "brand": {
+      "primary": {
+        "50": { "value": "#E6F0FF", "type": "color" },
+        "100": { "value": "#CCE0FF", "type": "color" },
+        "500": { "value": "#0066FF", "type": "color" },
+        "600": { "value": "#0052CC", "type": "color" },
+        "900": { "value": "#003D99", "type": "color" }
+      }
+    },
+    
+    "neutral": {
+      "50": { "value": "#FAFAFA", "type": "color" },
+      "100": { "value": "#F5F5F5", "type": "color" },
+      "200": { "value": "#E5E5E5", "type": "color" },
+      "500": { "value": "#A3A3A3", "type": "color" },
+      "700": { "value": "#404040", "type": "color" },
+      "800": { "value": "#262626", "type": "color" },
+      "900": { "value": "#171717", "type": "color" },
+      "950": { "value": "#0A0A0A", "type": "color" }
+    },
+    
+    "semantic": {
+      "success": { "value": "#10B981", "type": "color" },
+      "warning": { "value": "#F59E0B", "type": "color" },
+      "error": { "value": "#EF4444", "type": "color" },
+      "info": { "value": "#3B82F6", "type": "color" }
+    },
+    
+    "background": {
+      "light": {
+        "base": { "value": "{color.neutral.50}", "type": "color" },
+        "surface": { "value": "{color.neutral.100}", "type": "color" },
+        "raised": { "value": "#FFFFFF", "type": "color" }
+      },
+      "dark": {
+        "base": { "value": "{color.neutral.950}", "type": "color" },
+        "surface": { "value": "{color.neutral.900}", "type": "color" },
+        "raised": { "value": "{color.neutral.800}", "type": "color" }
+      }
+    },
+    
+    "text": {
+      "light": {
+        "primary": { "value": "{color.neutral.900}", "type": "color" },
+        "secondary": { "value": "{color.neutral.700}", "type": "color" },
+        "disabled": { "value": "{color.neutral.500}", "type": "color" }
+      },
+      "dark": {
+        "primary": { "value": "{color.neutral.50}", "type": "color" },
+        "secondary": { "value": "{color.neutral.500}", "type": "color" },
+        "disabled": { "value": "#525252", "type": "color" }
+      }
+    },
+    
+    "border": {
+      "light": {
+        "default": { "value": "{color.neutral.200}", "type": "color" },
+        "subtle": { "value": "{color.neutral.100}", "type": "color" }
+      },
+      "dark": {
+        "default": { "value": "{color.neutral.800}", "type": "color" },
+        "subtle": { "value": "{color.neutral.900}", "type": "color" }
+      }
+    }
+  },
+  
+  "typography": {
+    "fontFamily": {
+      "primary": { 
+        "value": "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif",
+        "type": "fontFamily" 
+      },
+      "monospace": { 
+        "value": "'JetBrains Mono', 'Fira Code', 'Consolas', monospace",
+        "type": "fontFamily" 
+      }
+    },
+    
+    "fontSize": {
+      "hero": { "value": "72px", "type": "dimension" },
+      "title": { "value": "48px", "type": "dimension" },
+      "subtitle": { "value": "32px", "type": "dimension" },
+      "bodyLarge": { "value": "20px", "type": "dimension" },
+      "body": { "value": "16px", "type": "dimension" },
+      "bodySmall": { "value": "14px", "type": "dimension" },
+      "caption": { "value": "12px", "type": "dimension" }
+    },
+    
+    "fontWeight": {
+      "regular": { "value": "400", "type": "fontWeight" },
+      "medium": { "value": "500", "type": "fontWeight" },
+      "semibold": { "value": "600", "type": "fontWeight" },
+      "bold": { "value": "700", "type": "fontWeight" }
+    },
+    
+    "lineHeight": {
+      "hero": { "value": "1.1", "type": "number" },
+      "title": { "value": "1.2", "type": "number" },
+      "subtitle": { "value": "1.3", "type": "number" },
+      "body": { "value": "1.5", "type": "number" },
+      "bodyLarge": { "value": "1.6", "type": "number" },
+      "caption": { "value": "1.4", "type": "number" }
+    },
+    
+    "letterSpacing": {
+      "tight": { "value": "-0.02em", "type": "dimension" },
+      "normal": { "value": "0", "type": "dimension" },
+      "wide": { "value": "0.01em", "type": "dimension" }
+    }
+  },
+  
+  "spacing": {
+    "xs": { "value": "8px", "type": "dimension" },
+    "sm": { "value": "12px", "type": "dimension" },
+    "md": { "value": "16px", "type": "dimension" },
+    "lg": { "value": "24px", "type": "dimension" },
+    "xl": { "value": "32px", "type": "dimension" },
+    "2xl": { "value": "40px", "type": "dimension" },
+    "3xl": { "value": "48px", "type": "dimension" },
+    "4xl": { "value": "64px", "type": "dimension" },
+    "5xl": { "value": "96px", "type": "dimension" },
+    "6xl": { "value": "128px", "type": "dimension" }
+  },
+  
+  "borderRadius": {
+    "sm": { "value": "8px", "type": "dimension" },
+    "md": { "value": "12px", "type": "dimension" },
+    "lg": { "value": "16px", "type": "dimension" },
+    "xl": { "value": "20px", "type": "dimension" },
+    "full": { "value": "9999px", "type": "dimension" }
+  },
+  
+  "boxShadow": {
+    "card": { 
+      "value": "0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06)",
+      "type": "shadow" 
+    },
+    "cardHover": { 
+      "value": "0 10px 15px rgba(0, 0, 0, 0.1), 0 4px 6px rgba(0, 0, 0, 0.05)",
+      "type": "shadow" 
+    },
+    "modal": { 
+      "value": "0 20px 25px rgba(0, 0, 0, 0.1), 0 10px 10px rgba(0, 0, 0, 0.04)",
+      "type": "shadow" 
+    },
+    "dropdown": { 
+      "value": "0 4px 6px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06)",
+      "type": "shadow" 
+    }
+  },
+  
+  "animation": {
+    "duration": {
+      "fast": { "value": "200ms", "type": "duration" },
+      "normal": { "value": "250ms", "type": "duration" },
+      "slow": { "value": "300ms", "type": "duration" }
+    },
+    
+    "easing": {
+      "easeOut": { "value": "cubic-bezier(0.4, 0, 0.2, 1)", "type": "cubicBezier" },
+      "easeInOut": { "value": "cubic-bezier(0.4, 0, 0.6, 1)", "type": "cubicBezier" }
+    }
+  },
+  
+  "component": {
+    "sidebar": {
+      "width": {
+        "collapsed": { "value": "64px", "type": "dimension" },
+        "expanded": { "value": "240px", "type": "dimension" }
+      }
+    },
+    
+    "header": {
+      "height": { "value": "64px", "type": "dimension" },
+      "backdropBlur": { "value": "12px", "type": "dimension" }
+    },
+    
+    "contextPanel": {
+      "width": {
+        "collapsed": { "value": "48px", "type": "dimension" },
+        "expanded": { "value": "360px", "type": "dimension" }
+      }
+    },
+    
+    "button": {
+      "height": {
+        "sm": { "value": "32px", "type": "dimension" },
+        "md": { "value": "40px", "type": "dimension" },
+        "lg": { "value": "48px", "type": "dimension" }
+      },
+      "padding": {
+        "horizontal": { "value": "16px", "type": "dimension" }
+      }
+    },
+    
+    "input": {
+      "height": {
+        "md": { "value": "40px", "type": "dimension" },
+        "lg": { "value": "48px", "type": "dimension" }
+      }
+    },
+    
+    "card": {
+      "padding": {
+        "sm": { "value": "24px", "type": "dimension" },
+        "md": { "value": "32px", "type": "dimension" },
+        "lg": { "value": "40px", "type": "dimension" }
+      }
+    },
+    
+    "messageBubble": {
+      "maxWidth": { "value": "700px", "type": "dimension" },
+      "padding": { "value": "16px 20px", "type": "dimension" }
+    },
+    
+    "avatar": {
+      "size": {
+        "sm": { "value": "24px", "type": "dimension" },
+        "md": { "value": "32px", "type": "dimension" },
+        "lg": { "value": "40px", "type": "dimension" },
+        "xl": { "value": "48px", "type": "dimension" }
+      }
+    },
+    
+    "icon": {
+      "size": {
+        "sm": { "value": "16px", "type": "dimension" },
+        "md": { "value": "20px", "type": "dimension" },
+        "lg": { "value": "24px", "type": "dimension" }
+      },
+      "strokeWidth": { "value": "2px", "type": "dimension" }
+    },
+    
+    "badge": {
+      "size": { "value": "20px", "type": "dimension" },
+      "fontSize": { "value": "11px", "type": "dimension" }
+    }
+  },
+  
+  "breakpoint": {
+    "sm": { "value": "640px", "type": "dimension" },
+    "md": { "value": "768px", "type": "dimension" },
+    "lg": { "value": "1024px", "type": "dimension" },
+    "xl": { "value": "1280px", "type": "dimension" },
+    "2xl": { "value": "1536px", "type": "dimension" }
+  },
+  
+  "zIndex": {
+    "base": { "value": "0", "type": "number" },
+    "dropdown": { "value": "10", "type": "number" },
+    "sticky": { "value": "20", "type": "number" },
+    "fixed": { "value": "30", "type": "number" },
+    "modalBackdrop": { "value": "40", "type": "number" },
+    "modal": { "value": "50", "type": "number" },
+    "toast": { "value": "60", "type": "number" }
+  }
+}

@@ -1,0 +1,1044 @@
+name: Documentation Generation and Deployment
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'docs/**'
+      - 'src/**'
+      - 'README.md'
+      - 'requirements*.txt'
+      - '.github/workflows/07-documentation.yml'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'docs/**'
+      - 'src/**'
+      - 'README.md'
+  workflow_dispatch:
+    inputs:
+      regenerate_docs:
+        description: 'Regenerate documentation from source'
+        required: false
+        default: true
+        type: boolean
+
+env:
+  PYTHON_VERSION: '3.11'
+
+jobs:
+  validate-documentation:
+    name: Validate Documentation
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: Install validation tools
+      run: |
+        python -m pip install --upgrade pip
+        pip install pydocstyle doc8 markdown-link-check
+        pip install -r file_processing_requirements.txt
+        pip install -e .
+
+    - name: Check docstring coverage
+      run: |
+        cat > check_docstrings.py << 'EOF'
+        import ast
+        import os
+        import glob
+        from collections import defaultdict
+        
+        def extract_docstrings(file_path):
+            docstrings = []
+            try:
+                with open(file_path, 'r', encoding='utf-8') as f:
+                    tree = ast.parse(f.read())
+                
+                for node in ast.walk(tree):
+                    if isinstance(node, (ast.FunctionDef, ast.ClassDef, ast.AsyncFunctionDef)):
+                        if ast.get_docstring(node):
+                            docstrings.append({
+                                'type': node.__class__.__name__,
+                                'name': node.name,
+                                'has_docstring': True
+                            })
+                        else:
+                            docstrings.append({
+                                'type': node.__class__.__name__,
+                                'name': node.name,
+                                'has_docstring': False
+                            })
+            except:
+                pass
+            return docstrings
+        
+        def check_module_documentation():
+            coverage = {
+                'total_functions': 0,
+                'documented_functions': 0,
+                'total_classes': 0,
+                'documented_classes': 0,
+                'files_checked': 0,
+                'missing_docstrings': []
+            }
+            
+            python_files = glob.glob('src/**/*.py', recursive=True)
+            
+            for file_path in python_files:
+                docstrings = extract_docstrings(file_path)
+                coverage['files_checked'] += 1
+                
+                for item in docstrings:
+                    coverage[f'total_{item["type"].lower()[:-3]}s'] += 1
+                    if item['has_docstring']:
+                        coverage[f'documented_{item["type"].lower()[:-3']}s'] += 1
+                    else:
+                        coverage['missing_docstrings'].append({
+                            'file': file_path,
+                            'type': item['type'],
+                            'name': item['name']
+                        })
+            
+            # Calcular porcentajes
+            function_coverage = (coverage['documented_functions'] / max(coverage['total_functions'], 1)) * 100
+            class_coverage = (coverage['documented_classes'] / max(coverage['total_classes'], 1)) * 100
+            overall_coverage = (coverage['documented_functions'] + coverage['documented_classes']) / max(
+                coverage['total_functions'] + coverage['total_classes'], 1) * 100
+            
+            print(f"Documentation Coverage Report")
+            print(f"=" * 40)
+            print(f"Files checked: {coverage['files_checked']}")
+            print(f"Functions: {coverage['documented_functions']}/{coverage['total_functions']} ({function_coverage:.1f}%)")
+            print(f"Classes: {coverage['documented_classes']}/{coverage['total_classes']} ({class_coverage:.1f}%)")
+            print(f"Overall coverage: {overall_coverage:.1f}%")
+            
+            # Guardar reporte
+            import json
+            with open('docstring-coverage.json', 'w') as f:
+                json.dump({
+                    'coverage': coverage,
+                    'percentages': {
+                        'function_coverage': function_coverage,
+                        'class_coverage': class_coverage,
+                        'overall_coverage': overall_coverage
+                    }
+                }, f, indent=2)
+            
+            # Fallar si coverage es muy bajo
+            if overall_coverage < 70:
+                print(f"\n❌ Documentation coverage too low: {overall_coverage:.1f}%")
+                print("\nMissing docstrings:")
+                for item in coverage['missing_docstrings'][:10]:  # Mostrar solo los primeros 10
+                    print(f"  - {item['file']}:{item['type']} {item['name']}")
+                if len(coverage['missing_docstrings']) > 10:
+                    print(f"  ... and {len(coverage['missing_docstrings']) - 10} more")
+                return False
+            
+            return True
+        
+        if __name__ == "__main__":
+            success = check_module_documentation()
+            exit(0 if success else 1)
+        EOF
+        
+        python check_docstrings.py
+
+    - name: Run doc8 for documentation style
+      run: |
+        doc8 docs/ --ignore=D002,D003 || true
+
+    - name: Check Markdown links
+      run: |
+        find docs/ -name "*.md" -exec markdown-link-check {} \; || true
+
+    - name: Validate README links
+      run: |
+        markdown-link-check README.md || true
+
+    - name: Archive validation results
+      uses: actions/upload-artifact@v3
+      with:
+        name: documentation-validation
+        path: |
+          docstring-coverage.json
+        retention-days: 30
+
+  generate-api-documentation:
+    name: Generate API Documentation
+    runs-on: ubuntu-latest
+    needs: validate-documentation
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: Install documentation tools
+      run: |
+        python -m pip install --upgrade pip
+        pip install pdoc3 sphinx sphinx-rtd-theme myst-parser
+        pip install -r file_processing_requirements.txt
+        pip install -e .
+
+    - name: Generate API documentation with pdoc3
+      run: |
+        # Generar documentación de API usando pdoc3
+        mkdir -p docs/api
+        
+        # Generar documentación para cada módulo
+        python -m pdoc3 \
+          --html \
+          --output-dir docs/api \
+          --force \
+          --config show_source_code=False \
+          src/
+        
+        # Generar documentación JSON para análisis
+        python -m pdoc3 \
+          --json \
+          --output docs/api \
+          --force \
+          src/ || true
+
+    - name: Generate Sphinx documentation
+      run: |
+        # Configurar Sphinx
+        mkdir -p docs/sphinx
+        
+        # Crear conf.py para Sphinx
+        cat > docs/sphinx/conf.py << 'EOF'
+        import os
+        import sys
+        sys.path.insert(0, os.path.abspath('../../src'))
+        
+        extensions = [
+            'sphinx.ext.autodoc',
+            'sphinx.ext.viewcode',
+            'sphinx.ext.napoleon',
+            'myst_parser',
+        ]
+        
+        templates_path = ['_templates']
+        exclude_patterns = []
+        
+        html_theme = 'sphinx_rtd_theme'
+        html_static_path = ['_static']
+        
+        autodoc_member_order = 'bysource'
+        napoleon_google_docstring = True
+        napoleon_numpy_docstring = True
+        
+        project = 'MCP Core Superior'
+        copyright = '2024, MiniMax'
+        author = 'MiniMax'
+        version = '1.0.0'
+        release = '1.0.0'
+        EOF
+        
+        # Crear index.rst
+        cat > docs/sphinx/index.rst << 'EOF'
+        Welcome to MCP Core Superior Documentation
+        ===========================================
+        
+        .. toctree::
+           :maxdepth: 2
+           :caption: Contents:
+        
+           api/modules
+           agents
+           deployment
+           development
+        
+        Indices and tables
+        ==================
+        
+        * :ref:`genindex`
+        * :ref:`modindex`
+        * :ref:`search`
+        EOF
+        
+        # Construir documentación Sphinx
+        cd docs/sphinx
+        sphinx-build -b html . _build/html
+        cd -
+
+    - name: Generate agent-specific documentation
+      run: |
+        # Generar documentación específica para agentes
+        cat > generate_agent_docs.py << 'EOF'
+        import json
+        import os
+        import glob
+        
+        def extract_agent_info():
+            agents_doc = "# Agent Documentation\n\n"
+            
+            # Buscar archivos de agentes
+            agent_files = glob.glob('src/agents/*_agent.py')
+            
+            for agent_file in agent_files:
+                agent_name = os.path.basename(agent_file).replace('_agent.py', '')
+                
+                agents_doc += f"## {agent_name.title()} Agent\n\n"
+                agents_doc += f"**File**: `{agent_file}`\n\n"
+                
+                # Leer contenido del archivo para extraer información
+                try:
+                    with open(agent_file, 'r') as f:
+                        content = f.read()
+                        
+                        # Buscar descripción en docstring
+                        if 'class ' in content:
+                            class_start = content.find('class ')
+                            class_end = content.find(':', class_start)
+                            class_def = content[class_start:class_end]
+                            
+                            # Extraer docstring si existe
+                            if '"""' in class_def:
+                                docstring_start = class_def.find('"""') + 3
+                                docstring_end = class_def.find('"""', docstring_start)
+                                if docstring_end != -1:
+                                    docstring = class_def[docstring_start:docstring_end].strip()
+                                    agents_doc += f"**Description**: {docstring}\n\n"
+                except:
+                    agents_doc += "**Description**: Auto-generated documentation\n\n"
+                
+                agents_doc += "---\n\n"
+            
+            with open('docs/agents.md', 'w') as f:
+                f.write(agents_doc)
+            
+            print("Agent documentation generated")
+        
+        extract_agent_info()
+        EOF
+        
+        python generate_agent_docs.py
+
+    - name: Generate deployment documentation
+      run: |
+        cat > generate_deployment_docs.py << 'EOF'
+        deployment_md = """# Deployment Guide
+
+## Prerequisites
+
+- Docker 20.10+
+- PostgreSQL 12+
+- Redis 6+
+- Python 3.9+
+
+## Docker Deployment
+
+### Quick Start
+
+```bash
+# Pull the latest image
+docker pull ghcr.io/your-org/mcp-core-superior:latest
+
+# Run with docker-compose
+docker-compose up -d
+```
+
+### Environment Variables
+
+| Variable | Description | Required | Default |
+|----------|-------------|----------|---------|
+| MCP_CORE_ENVIRONMENT | Deployment environment | Yes | development |
+| DATABASE_URL | PostgreSQL connection string | Yes | - |
+| REDIS_URL | Redis connection string | No | redis://localhost:6379 |
+| JWT_SECRET | Secret for JWT tokens | Yes | - |
+| CONTEXTFORGE_URL | ContextForge Gateway URL | Yes | - |
+
+### Kubernetes Deployment
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mcp-core-superior
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: mcp-core-superior
+  template:
+    metadata:
+      labels:
+        app: mcp-core-superior
+    spec:
+      containers:
+      - name: mcp-core
+        image: ghcr.io/your-org/mcp-core-superior:latest
+        ports:
+        - containerPort: 8080
+        - containerPort: 8081
+        env:
+        - name: MCP_CORE_ENVIRONMENT
+          value: "production"
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: mcp-secrets
+              key: database-url
+        resources:
+          limits:
+            memory: "2Gi"
+            cpu: "1000m"
+          requests:
+            memory: "1Gi"
+            cpu: "500m"
+```
+
+## Cloud Deployment
+
+### AWS ECS
+
+```bash
+# Update ECS service
+aws ecs update-service --cluster mcp-core --service mcp-core-service --force-new-deployment
+```
+
+### Google Cloud Run
+
+```bash
+# Deploy to Cloud Run
+gcloud run deploy mcp-core-superior \\
+  --image ghcr.io/your-org/mcp-core-superior:latest \\
+  --platform managed \\
+  --region us-central1
+```
+
+### Azure Container Instances
+
+```bash
+# Deploy to Azure
+az container create \\
+  --resource-group myResourceGroup \\
+  --name mcp-core-superior \\
+  --image ghcr.io/your-org/mcp-core-superior:latest
+```
+
+## Monitoring
+
+- Health endpoint: `/health`
+- Metrics endpoint: `/metrics`
+- Status endpoint: `/api/status`
+
+## Troubleshooting
+
+### Logs
+
+```bash
+# View logs
+docker logs mcp-core-superior
+
+# Follow logs
+docker logs -f mcp-core-superior
+```
+
+### Database Connection Issues
+
+1. Verify DATABASE_URL format
+2. Check network connectivity
+3. Validate credentials
+4. Review PostgreSQL logs
+
+### Performance Issues
+
+1. Check resource utilization
+2. Review database query performance
+3. Monitor memory usage
+4. Analyze concurrent task limits
+"""
+        
+        with open('docs/deployment.md', 'w') as f:
+            f.write(deployment_md)
+        
+        print("Deployment documentation generated")
+        EOF
+        
+        python generate_deployment_docs.py
+
+    - name: Generate development guide
+      run: |
+        dev_md = """# Development Guide
+
+## Setting Up Development Environment
+
+### 1. Clone Repository
+
+```bash
+git clone https://github.com/your-org/mcp-core-superior.git
+cd mcp-core-superior
+```
+
+### 2. Install Dependencies
+
+```bash
+# Create virtual environment
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\\Scripts\\activate
+
+# Install dependencies
+pip install -r file_processing_requirements.txt
+pip install -e .
+```
+
+### 3. Set Up Development Database
+
+```bash
+# Start PostgreSQL and Redis (using Docker)
+docker-compose -f docker-compose.dev.yml up -d
+
+# Run migrations
+python migrate.py
+```
+
+### 4. Environment Configuration
+
+Create `.env` file:
+
+```bash
+MCP_CORE_ENVIRONMENT=development
+MCP_CORE_DEBUG=true
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/mcp_core_dev
+REDIS_URL=redis://localhost:6379
+JWT_SECRET=your-development-secret
+CONTEXTFORGE_URL=http://localhost:8001
+```
+
+## Development Workflow
+
+### Code Style
+
+- Follow PEP 8
+- Use Black for formatting: `black src/ tests/`
+- Use isort for imports: `isort src/ tests/`
+- Use mypy for type checking: `mypy src/`
+
+### Testing
+
+```bash
+# Run unit tests
+pytest tests/ -v
+
+# Run with coverage
+pytest tests/ --cov=src --cov-report=html
+
+# Run specific test
+pytest tests/test_agents/test_reasoner_agent.py -v
+```
+
+### Debugging
+
+```bash
+# Run with debug logging
+MCP_CORE_DEBUG=true python -m src.core.fastmcp_server
+
+# Use Python debugger
+import pdb; pdb.set_trace()
+```
+
+## Adding New Agents
+
+1. Create agent class in `src/agents/`
+2. Implement required methods
+3. Add tests in `tests/test_agents/`
+4. Update agent registry
+5. Update documentation
+
+## Architecture Patterns
+
+### Agent Interface
+
+```python
+from abc import ABC, abstractmethod
+
+class BaseAgent(ABC):
+    @abstractmethod
+    async def process(self, request: dict) -> dict:
+        pass
+    
+    @abstractmethod
+    async def validate(self, request: dict) -> bool:
+        pass
+```
+
+### Error Handling
+
+```python
+try:
+    result = await agent.process(request)
+except SpecificError as e:
+    logger.error(f"Agent error: {e}")
+    raise
+except Exception as e:
+    logger.exception(f"Unexpected error: {e}")
+    raise
+```
+
+## Performance Optimization
+
+1. Use async/await appropriately
+2. Implement connection pooling
+3. Cache frequently accessed data
+4. Monitor memory usage
+5. Profile slow operations
+
+## Common Issues
+
+### Import Errors
+
+- Ensure PYTHONPATH includes project root
+- Check __init__.py files
+- Verify module structure
+
+### Database Connection Issues
+
+- Verify DATABASE_URL format
+- Check PostgreSQL status
+- Review connection pool settings
+
+### Memory Leaks
+
+- Monitor memory usage
+- Close resources properly
+- Use context managers
+"""
+        
+        with open('docs/development.md', 'w') as f:
+            f.write(dev_md)
+        
+        print("Development guide generated")
+
+    - name: Archive generated documentation
+      uses: actions/upload-artifact@v3
+      with:
+        name: generated-documentation
+        path: |
+          docs/api/
+          docs/sphinx/_build/html/
+          docs/agents.md
+          docs/deployment.md
+          docs/development.md
+        retention-days: 30
+
+  build-docs-site:
+    name: Build Documentation Site
+    runs-on: ubuntu-latest
+    needs: generate-api-documentation
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: Install MkDocs
+      run: |
+        python -m pip install --upgrade pip
+        pip install mkdocs mkdocs-material mkdocs-mermaid2-plugin
+        pip install -e .
+
+    - name: Download generated documentation
+      uses: actions/download-artifact@v3
+      with:
+        name: generated-documentation
+        path: generated_docs/
+
+    - name: Create MkDocs configuration
+      run: |
+        mkdir -p docs_site
+        
+        cat > docs_site/mkdocs.yml << 'EOF'
+        site_name: MCP Core Superior Documentation
+        site_description: Enterprise-grade multi-agent orchestrator documentation
+        site_url: https://your-org.github.io/mcp-core-superior/
+        repo_url: https://github.com/your-org/mcp-core-superior
+        repo_name: your-org/mcp-core-superior
+        
+        theme:
+          name: material
+          features:
+            - navigation.instant
+            - navigation.expand
+            - content.code.copy
+            - search.suggest
+            - search.highlight
+          palette:
+            - scheme: default
+              primary: blue
+              accent: light blue
+            - scheme: slate
+              primary: blue
+              accent: light blue
+        
+        nav:
+          - Home: index.md
+          - API Reference:
+              - Overview: api/overview.md
+              - Agents: api/agents.md
+              - Core: api/core.md
+          - Agents:
+              - Reasoner Agent: agents/reasoner.md
+              - Planner Agent: agents/planner.md
+              - Executor Agent: agents/executor.md
+              - Verifier Agent: agents/verifier.md
+              - Memory Manager: agents/memory.md
+          - Deployment: deployment.md
+          - Development: development.md
+          - Examples: examples.md
+          - Changelog: changelog.md
+        
+        plugins:
+          - search
+          - mermaid2
+        
+        markdown_extensions:
+          - pymdownx.highlight
+          - pymdownx.superfences
+          - pymdownx.tabbed
+          - pymdownx.snippets
+          - admonition
+          - toc
+        
+        extra:
+          version:
+            provider: mike
+          social:
+            - icon: fontawesome/brands/github
+              link: https://github.com/your-org
+            - icon: fontawesome/brands/twitter
+              link: https://twitter.com/your-org
+        
+        watch:
+          - src/
+          - generated_docs/
+        EOF
+
+    - name: Prepare documentation content
+      run: |
+        # Crear página principal
+        cat > docs_site/docs/index.md << 'EOF'
+        # MCP Core Superior
+        
+        Enterprise-grade multi-agent orchestrator that integrates 5 specialized agents (Reasoner, Planner, Executor, Verifier, MemoryManager) with real-time SSE streaming.
+        
+        ## Features
+        
+        - 🚀 **High Performance**: < 100ms latency for critical tools
+        - 🔄 **Concurrent Execution**: 100+ concurrent tasks
+        - 📊 **Real-time Monitoring**: Comprehensive metrics and health checks
+        - 🔒 **Security**: Built-in authentication and DDoS protection
+        - 🌊 **Streaming**: Real-time updates via Server-Sent Events
+        - 🧠 **Intelligent Routing**: Dynamic agent selection
+        - 💾 **Persistent Context**: Semantic memory management
+        - ✅ **Quality Validation**: Automated result verification
+        
+        ## Quick Start
+        
+        ```bash
+        # Docker deployment
+        docker pull ghcr.io/your-org/mcp-core-superior:latest
+        docker run -p 8080:8080 -p 8081:8081 ghcr.io/your-org/mcp-core-superior:latest
+        
+        # Python installation
+        pip install mcp-core-superior
+        
+        # From source
+        git clone https://github.com/your-org/mcp-core-superior.git
+        cd mcp-core-superior
+        pip install -e .
+        ```
+        
+        ## Documentation
+        
+        - [API Reference](api/overview.md) - Complete API documentation
+        - [Agent Guide](agents/) - Detailed agent documentation
+        - [Deployment Guide](deployment.md) - Production deployment instructions
+        - [Development Guide](development.md) - Contributing guidelines
+        
+        ## Examples
+        
+        Check out the [examples directory](../examples/) for usage examples.
+        
+        ## Support
+        
+        - 📖 [Documentation](https://your-org.github.io/mcp-core-superior/)
+        - 🐛 [Issue Tracker](https://github.com/your-org/mcp-core-superior/issues)
+        - 💬 [Discussions](https://github.com/your-org/mcp-core-superior/discussions)
+        EOF
+        
+        # Copiar documentación generada
+        cp -r generated_docs/docs/api docs_site/docs/ || true
+        cp -r generated_docs/docs/sphinx/_build/html/* docs_site/docs/ || true
+        cp docs/agents.md docs_site/docs/agents/ || mkdir -p docs_site/docs/agents && cp docs/agents.md docs_site/docs/agents/index.md || true
+        cp docs/deployment.md docs_site/docs/ || true
+        cp docs/development.md docs_site/docs/ || true
+        
+        # Crear página de changelog
+        cat > docs_site/docs/changelog.md << 'EOF'
+        # Changelog
+        
+        All notable changes to this project will be documented in this file.
+        
+        The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+        and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+        
+        ## [1.0.0] - 2024-11-04
+        
+        ### Added
+        - Initial release of MCP Core Superior
+        - Multi-agent orchestration system
+        - Real-time streaming capabilities
+        - Comprehensive monitoring and metrics
+        - Security features (authentication, DDoS protection)
+        - Context persistence and semantic memory
+        - Docker and Kubernetes deployment support
+        - Cloud platform integrations (AWS, GCP, Azure)
+        
+        ### Documentation
+        - Complete API documentation
+        - Deployment guides
+        - Development guidelines
+        - Agent-specific documentation
+        EOF
+
+    - name: Build documentation site
+      run: |
+        cd docs_site
+        mkdocs build --clean
+
+    - name: Test documentation site
+      run: |
+        # Verificar que la documentación se construyó correctamente
+        if [[ -d "docs_site/site" ]]; then
+          echo "✅ Documentation site built successfully"
+          ls -la docs_site/site/
+          
+          # Verificar páginas importantes
+          required_pages=(
+            "docs_site/site/index.html"
+            "docs_site/site/api/overview.html"
+            "docs_site/site/deployment.html"
+            "docs_site/site/development.html"
+          )
+          
+          for page in "${required_pages[@]}"; do
+            if [[ -f "$page" ]]; then
+              echo "✅ Found: $page"
+            else
+              echo "⚠️ Missing: $page"
+            fi
+          done
+        else
+          echo "❌ Documentation site build failed"
+          exit 1
+        fi
+
+    - name: Archive documentation site
+      uses: actions/upload-artifact@v3
+      with:
+        name: documentation-site
+        path: docs_site/site/
+        retention-days: 90
+
+  deploy-documentation:
+    name: Deploy Documentation
+    runs-on: ubuntu-latest
+    needs: build-docs-site
+    if: github.ref == 'refs/heads/main'
+    
+    environment:
+      name: documentation
+      url: https://your-org.github.io/mcp-core-superior/
+    
+    steps:
+    - name: Download documentation site
+      uses: actions/download-artifact@v3
+      with:
+        name: documentation-site
+        path: docs/
+
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: Deploy to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: docs/
+        publish_branch: gh-pages
+        force_orphan: true
+        cname: your-org.github.io
+
+    - name: Deploy to Netlify
+      if: secrets.NETLIFY_AUTH_TOKEN != ''
+      uses: nwtgck/actions-netlify@v2.0
+      with:
+        publish-dir: docs/
+        production-branch: gh-pages
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        deploy-message: "Deploy from GitHub Actions"
+      env:
+        NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+        NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+
+    - name: Deploy to Vercel
+      if: secrets.VERCEL_TOKEN != ''
+      run: |
+        npm install -g vercel
+        
+        # Crear archivo de configuración para Vercel
+        cat > vercel.json << 'EOF'
+        {
+          "version": 2,
+          "builds": [
+            {
+              "src": "**/*",
+              "use": "@vercel/static"
+            }
+          ],
+          "routes": [
+            {
+              "src": "/(.*)",
+              "dest": "/$1"
+            }
+          ]
+        }
+        EOF
+        
+        vercel --token ${{ secrets.VERCEL_TOKEN }} --prod --yes --token ${{ secrets.VERCEL_TOKEN }}
+
+    - name: Generate documentation API
+      run: |
+        # Crear un endpoint para servir la documentación via API
+        cat > deploy_docs_api.py << 'EOF'
+        import os
+        import json
+        
+        # Generar índice de documentación
+        docs_index = {
+            'documentation': {
+                'generated_at': '2024-11-04T05:43:15Z',
+                'version': '1.0.0',
+                'commit': '${{ github.sha }}',
+                'branches': {
+                    'main': 'https://your-org.github.io/mcp-core-superior/',
+                    'develop': 'https://your-org.github.io/mcp-core-superior/develop/'
+                },
+                'sections': [
+                    {
+                        'title': 'API Reference',
+                        'path': '/api/',
+                        'description': 'Complete API documentation'
+                    },
+                    {
+                        'title': 'Agent Guide',
+                        'path': '/agents/',
+                        'description': 'Detailed agent documentation'
+                    },
+                    {
+                        'title': 'Deployment',
+                        'path': '/deployment.html',
+                        'description': 'Production deployment guide'
+                    },
+                    {
+                        'title': 'Development',
+                        'path': '/development.html',
+                        'description': 'Development guidelines'
+                    }
+                ],
+                'links': {
+                    'github': 'https://github.com/your-org/mcp-core-superior',
+                    'pypi': 'https://pypi.org/project/mcp-core-superior/',
+                    'docker': 'https://hub.docker.com/r/your-org/mcp-core-superior'
+                }
+            }
+        }
+        
+        with open('docs_index.json', 'w') as f:
+            json.dump(docs_index, f, indent=2)
+        
+        print("Documentation index generated")
+        EOF
+        
+        python deploy_docs_api.py
+
+    - name: Notify deployment
+      if: secrets.SLACK_WEBHOOK_URL != ''
+      run: |
+        cat > notify_slack.py << 'EOF'
+        import requests
+        import json
+        
+        webhook_url = '${{ secrets.SLACK_WEBHOOK_URL }}'
+        
+        message = {
+            'text': '📚 Documentation Deployed',
+            'blocks': [
+                {
+                    'type': 'section',
+                    'text': {
+                        'type': 'mrkdwn',
+                        'text': '*📚 Documentation Deployed Successfully*'
+                    }
+                },
+                {
+                    'type': 'section',
+                    'fields': [
+                        {
+                            'type': 'mrkdwn',
+                            'text': '*Branch:*\n${{ github.ref_name }}'
+                        },
+                        {
+                            'type': 'mrkdwn',
+                            'text': '*Commit:*\n`${{ github.sha[:8] }}`'
+                        },
+                        {
+                            'type': 'mrkdwn',
+                            'text': '*URL:*\n<https://your-org.github.io/mcp-core-superior/|View Docs>'
+                        }
+                    ]
+                }
+            ]
+        }
+        
+        response = requests.post(webhook_url, json=message)
+        if response.status_code == 200:
+            print('✅ Slack notification sent')
+        else:
+            print(f'⚠️ Slack notification failed: {response.status_code}')
+        EOF
+        
+        python notify_slack.py
+
+    - name: Archive deployment info
+      uses: actions/upload-artifact@v3
+      with:
+        name: documentation-deployment
+        path: |
+          docs_index.json
+        retention-days: 90

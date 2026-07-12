@@ -1,0 +1,43 @@
+# Dockerfile optimizado para producción IRIS Server
+FROM python:3.11-slim
+
+# Configurar variables de entorno
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
+
+# Crear usuario no-root para seguridad
+RUN groupadd -r irisuser && useradd -r -g irisuser irisuser
+
+# Instalar dependencias del sistema
+RUN apt-get update && apt-get install -y \
+    curl \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
+
+# Instalar dependencias Python
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copiar código de la aplicación
+WORKDIR /app
+COPY iris-mcp-integration/ ./iris-mcp-integration/
+COPY *.html ./frontends/ 2>/dev/null || true
+
+# Crear directorios necesarios con permisos
+RUN mkdir -p /app/data /app/logs /app/frontends && \
+    chown -R irisuser:irisuser /app
+
+# Cambiar a usuario no-root
+USER irisuser
+
+# Puerto del servidor
+EXPOSE 8000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD curl -f http://localhost:8000/health || exit 1
+
+# Comando de inicio optimizado
+CMD ["python3", "iris-mcp-integration/api/iris_metrics_server.py"]

@@ -1,0 +1,235 @@
+{
+  "timestamp": "2025-11-05 00:27:36",
+  "resumen": {
+    "total": 32,
+    "exitosos": 30,
+    "fallidos": 0,
+    "advertencias": 2
+  },
+  "resultados": [
+    {
+      "test": "Import setup_wizard.py",
+      "status": "PASS",
+      "mensaje": "Módulo importado correctamente",
+      "detalles": [
+        "Tamaño: 17114 bytes"
+      ]
+    },
+    {
+      "test": "Import templates.py",
+      "status": "PASS",
+      "mensaje": "Módulo importado correctamente",
+      "detalles": [
+        "Tamaño: 25361 bytes"
+      ]
+    },
+    {
+      "test": "Import cli.py",
+      "status": "PASS",
+      "mensaje": "Módulo importado correctamente",
+      "detalles": [
+        "Tamaño: 19296 bytes"
+      ]
+    },
+    {
+      "test": "Import notifications.py",
+      "status": "PASS",
+      "mensaje": "Módulo importado correctamente",
+      "detalles": [
+        "Tamaño: 20392 bytes"
+      ]
+    },
+    {
+      "test": "Import dashboard_server.py",
+      "status": "PASS",
+      "mensaje": "Módulo importado correctamente",
+      "detalles": [
+        "Tamaño: 9780 bytes"
+      ]
+    },
+    {
+      "test": "Dependencia click",
+      "status": "PASS",
+      "mensaje": "Dependencia disponible",
+      "detalles": []
+    },
+    {
+      "test": "Dependencia colorama",
+      "status": "PASS",
+      "mensaje": "Dependencia disponible",
+      "detalles": []
+    },
+    {
+      "test": "Dependencia requests",
+      "status": "PASS",
+      "mensaje": "Dependencia disponible",
+      "detalles": []
+    },
+    {
+      "test": "Dependencia fastapi",
+      "status": "PASS",
+      "mensaje": "Dependencia disponible",
+      "detalles": []
+    },
+    {
+      "test": "Dependencia uvicorn",
+      "status": "PASS",
+      "mensaje": "Dependencia disponible",
+      "detalles": []
+    },
+    {
+      "test": "Dependencia dotenv",
+      "status": "PASS",
+      "mensaje": "Dependencia disponible",
+      "detalles": []
+    },
+    {
+      "test": "Dependencia asyncio",
+      "status": "PASS",
+      "mensaje": "Dependencia disponible",
+      "detalles": []
+    },
+    {
+      "test": "Dependencia json",
+      "status": "PASS",
+      "mensaje": "Dependencia disponible",
+      "detalles": []
+    },
+    {
+      "test": "Dependencia pathlib",
+      "status": "PASS",
+      "mensaje": "Dependencia disponible",
+      "detalles": []
+    },
+    {
+      "test": "Dashboard package.json",
+      "status": "PASS",
+      "mensaje": "Configuración encontrada: react_repo",
+      "detalles": [
+        "Versiones: React ^18.3.1"
+      ]
+    },
+    {
+      "test": "Dashboard dependencies",
+      "status": "PASS",
+      "mensaje": "node_modules presente (40 paquetes)",
+      "detalles": [
+        "Ruta: /workspace/mcp-dashboard/node_modules"
+      ]
+    },
+    {
+      "test": "Dashboard TypeScript files",
+      "status": "PASS",
+      "mensaje": "Archivos TS/TSX encontrados: 8",
+      "detalles": [
+        "mcp-dashboard/src/App.tsx",
+        "mcp-dashboard/src/main.tsx",
+        "mcp-dashboard/src/components/Dashboard.tsx",
+        "mcp-dashboard/src/components/ErrorBoundary.tsx",
+        "mcp-dashboard/src/hooks/use-mobile.tsx"
+      ]
+    },
+    {
+      "test": "Sistema Sistema principal",
+      "status": "PASS",
+      "mensaje": "Directorio encontrado con 529 archivos",
+      "detalles": [
+        "Ruta: /workspace/mcp-core-superior"
+      ]
+    },
+    {
+      "test": "Sistema Backend API",
+      "status": "PASS",
+      "mensaje": "Directorio encontrado con 129 archivos",
+      "detalles": [
+        "Ruta: /workspace/backend"
+      ]
+    },
+    {
+      "test": "Sistema Frontend principal",
+      "status": "PASS",
+      "mensaje": "Directorio encontrado con 17 archivos",
+      "detalles": [
+        "Ruta: /workspace/frontend"
+      ]
+    },
+    {
+      "test": "Sistema Suite de testing",
+      "status": "PASS",
+      "mensaje": "Directorio encontrado con 54 archivos",
+      "detalles": [
+        "Ruta: /workspace/enterprise_testing_suite"
+      ]
+    },
+    {
+      "test": "Install.sh",
+      "status": "PASS",
+      "mensaje": "Script encontrado (12744 bytes, 335 líneas)",
+      "detalles": [
+        "Ejecutable: Sí"
+      ]
+    },
+    {
+      "test": "Install.sh contiene #!/bin/bash",
+      "status": "PASS",
+      "mensaje": "Keyword encontrado",
+      "detalles": []
+    },
+    {
+      "test": "Install.sh contiene python",
+      "status": "PASS",
+      "mensaje": "Keyword encontrado",
+      "detalles": []
+    },
+    {
+      "test": "Install.sh contiene pip",
+      "status": "PASS",
+      "mensaje": "Keyword encontrado",
+      "detalles": []
+    },
+    {
+      "test": "Install.sh contiene node",
+      "status": "WARN",
+      "mensaje": "Keyword no encontrado",
+      "detalles": []
+    },
+    {
+      "test": "Install.sh contiene npm",
+      "status": "WARN",
+      "mensaje": "Keyword no encontrado",
+      "detalles": []
+    },
+    {
+      "test": "Python Version",
+      "status": "PASS",
+      "mensaje": "Python 3.12.5 disponible",
+      "detalles": [
+        "3.12.5 (main, Sep  5 2024, 00:16:34) [GCC 12.2.0]"
+      ]
+    },
+    {
+      "test": "Comando node",
+      "status": "PASS",
+      "mensaje": "Disponible: v18.19.0",
+      "detalles": []
+    },
+    {
+      "test": "Comando npm",
+      "status": "PASS",
+      "mensaje": "Disponible: 9.2.0",
+      "detalles": []
+    },
+    {
+      "test": "Comando pip",
+      "status": "PASS",
+      "mensaje": "Disponible: pip 24.2 from /usr/local/lib/python3.12/site-packages/pip (python 3.12)",
+      "detalles": []
+    },
+    {
+      "test": "Comando git",
+      "status": "PASS",
+      "mensaje": "Disponible: git version 2.39.2",
+      "detalles": []
+    }
+  ]
+}

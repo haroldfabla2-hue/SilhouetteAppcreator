@@ -1,0 +1,167 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: mcp-core-alerts
+  namespace: mcp-core-superior
+  labels:
+    app: mcp-core
+    component: alerting
+spec:
+  groups:
+  - name: mcp-core.rules
+    rules:
+    # === ALERTAS CRÍTICAS ===
+    - alert: MCPHighErrorRate
+      expr: rate(http_requests_total{job="mcp-core",status=~"5.."}[5m]) > 0.1
+      for: 5m
+      labels:
+        severity: critical
+        service: mcp-core
+      annotations:
+        summary: "Alta tasa de errores en MCP Core"
+        description: "La tasa de errores 5xx es {{ $value }} req/s en los últimos 5 minutos"
+        runbook_url: "https://wiki.mcp-core-superior.com/runbooks/high-error-rate"
+        
+    - alert: MCPDatabaseDown
+      expr: up{job="mcp-core",instance="postgres-service"} == 0
+      for: 1m
+      labels:
+        severity: critical
+        service: database
+      annotations:
+        summary: "Base de datos PostgreSQL no disponible"
+        description: "El servicio PostgreSQL ha estado inactivo por más de 1 minuto"
+        runbook_url: "https://wiki.mcp-core-superior.com/runbooks/database-down"
+        
+    - alert: MCPRedisDown
+      expr: up{job="mcp-core",instance="redis-service"} == 0
+      for: 1m
+      labels:
+        severity: critical
+        service: cache
+      annotations:
+        summary: "Redis no disponible"
+        description: "El servicio Redis ha estado inactivo por más de 1 minuto"
+        runbook_url: "https://wiki.mcp-core-superior.com/runbooks/redis-down"
+        
+    - alert: MCPHighLatency
+      expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{job="mcp-core"}[5m])) > 2
+      for: 5m
+      labels:
+        severity: critical
+        service: mcp-core
+      annotations:
+        summary: "Alta latencia en MCP Core"
+        description: "El 95% de las requests toman más de {{ $value }}s"
+        runbook_url: "https://wiki.mcp-core-superior.com/runbooks/high-latency"
+        
+    - alert: MCPMemoryUsageHigh
+      expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes > 0.9
+      for: 5m
+      labels:
+        severity: critical
+        service: infrastructure
+      annotations:
+        summary: "Uso de memoria alto"
+        description: "El uso de memoria del nodo es {{ $value | humanizePercentage }}"
+        runbook_url: "https://wiki.mcp-core-superior.com/runbooks/high-memory-usage"
+        
+    - alert: MCPCPUUsageHigh
+      expr: 100 - (avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 90
+      for: 5m
+      labels:
+        severity: critical
+        service: infrastructure
+      annotations:
+        summary: "Uso de CPU alto"
+        description: "El uso de CPU del nodo es {{ $value }}%"
+        runbook_url: "https://wiki.mcp-core-superior.com/runbooks/high-cpu-usage"
+        
+    # === ALERTAS DE WARNING ===
+    - alert: MCPHighThroughput
+      expr: rate(http_requests_total{job="mcp-core"}[5m]) > 200
+      for: 5m
+      labels:
+        severity: warning
+        service: mcp-core
+      annotations:
+        summary: "Alto throughput en MCP Core"
+        description: "El throughput actual es {{ $value }} req/s"
+        runbook_url: "https://wiki.mcp-core-superior.com/runbooks/high-throughput"
+        
+    - alert: MCPHighDiskUsage
+      expr: (node_filesystem_size_bytes{fstype!="tmpfs"} - node_filesystem_free_bytes{fstype!="tmpfs"}) / node_filesystem_size_bytes{fstype!="tmpfs"} > 0.8
+      for: 10m
+      labels:
+        severity: warning
+        service: infrastructure
+      annotations:
+        summary: "Alto uso de disco"
+        description: "El uso de disco es {{ $value | humanizePercentage }}"
+        runbook_url: "https://wiki.mcp-core-superior.com/runbooks/high-disk-usage"
+        
+    - alert: MCPHighConnectionCount
+      expr: postgres_stat_activity_count > 80
+      for: 10m
+      labels:
+        severity: warning
+        service: database
+      annotations:
+        summary: "Alto número de conexiones PostgreSQL"
+        description: "PostgreSQL tiene {{ $value }} conexiones activas"
+        runbook_url: "https://wiki.mcp-core-superior.com/runbooks/high-connections"
+        
+    - alert: MCPSlowQueries
+      expr: rate(postgres_stat_database_blk_read_time[5m]) > 100
+      for: 10m
+      labels:
+        severity: warning
+        service: database
+      annotations:
+        summary: "Consultas lentas en PostgreSQL"
+        description: "El tiempo de lectura promedio por bloque es {{ $value }}ms"
+        runbook_url: "https://wiki.mcp-core-superior.com/runbooks/slow-queries"
+        
+    - alert: MCPRedisMemoryUsageHigh
+      expr: redis_memory_used_bytes / redis_memory_max_bytes > 0.8
+      for: 10m
+      labels:
+        severity: warning
+        service: cache
+      annotations:
+        summary: "Alto uso de memoria en Redis"
+        description: "Redis está usando {{ $value | humanizePercentage }} de su memoria"
+        runbook_url: "https://wiki.mcp-core-superior.com/runbooks/redis-memory"
+        
+    - alert: MCPPodCrashLooping
+      expr: rate(kube_pod_container_status_restarts_total{job="mcp-core"}[10m]) > 0
+      for: 2m
+      labels:
+        severity: warning
+        service: kubernetes
+      annotations:
+        summary: "Pod de MCP Core reiniciándose frecuentemente"
+        description: "El pod {{ $labels.pod }} se ha reiniciado {{ $value }} veces en los últimos 10 minutos"
+        runbook_url: "https://wiki.mcp-core-superior.com/runbooks/pod-crash-looping"
+        
+    # === ALERTAS DE INFORMACIÓN ===
+    - alert: MCPDeploymentUpdate
+      expr: kube_deployment_status_observed_generation != kube_deployment_status_updated_generation
+      for: 30s
+      labels:
+        severity: info
+        service: kubernetes
+      annotations:
+        summary: "Deployment de MCP Core actualizándose"
+        description: "El deployment mcp-core se está actualizando (generación {{ $value }})"
+        
+    - alert: MCPNodeNotReady
+      expr: kube_node_status_condition{condition="Ready",status="true"} == 0
+      for: 5m
+      labels:
+        severity: warning
+        service: kubernetes
+      annotations:
+        summary: "Nodo no listo"
+        description: "El nodo {{ $labels.node }} no está listo"
+        runbook_url: "https://wiki.mcp-core-superior.com/runbooks/node-not-ready"

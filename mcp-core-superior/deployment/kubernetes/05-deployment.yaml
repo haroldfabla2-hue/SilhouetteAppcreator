@@ -1,0 +1,273 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mcp-core
+  namespace: mcp-core-superior
+  labels:
+    app: mcp-core
+    component: application
+    version: v1
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  selector:
+    matchLabels:
+      app: mcp-core
+      component: application
+  template:
+    metadata:
+      labels:
+        app: mcp-core
+        component: application
+        version: v1
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9090"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: mcp-core
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+      containers:
+      - name: mcp-core
+        image: mcp-core-superior:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+          name: http
+          protocol: TCP
+        - containerPort: 8081
+          name: mcp
+          protocol: TCP
+        - containerPort: 9090
+          name: metrics
+          protocol: TCP
+        env:
+        # Configuración de base de datos
+        - name: DATABASE_URL
+          value: "postgresql://mcpuser:$(POSTGRES_PASSWORD)@postgres-service:5432/mcp_core"
+        - name: VECTOR_DB_URL
+          value: "postgresql://mcpuser:$(VECTOR_POSTGRES_PASSWORD)@vector-postgres-service:5432/vector_db"
+        - name: REDIS_URL
+          value: "redis://:$(REDIS_PASSWORD)@redis-service:6379/0"
+        
+        # Variables de configuración
+        - name: ENVIRONMENT
+          value: "production"
+        - name: DEBUG
+          value: "false"
+        - name: LOG_LEVEL
+          value: "WARNING"
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: mcp-core-secrets
+              key: jwt_secret
+        
+        # ContextForge
+        - name: CONTEXTFORGE_URL
+          value: "http://contextforge:8001"
+        - name: CONTEXTFORGE_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: mcp-core-secrets
+              key: contextforge_api_key
+        
+        # Referencias a secretos
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mcp-core-secrets
+              key: postgres_password
+        - name: VECTOR_POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mcp-core-secrets
+              key: vector_postgres_password
+        - name: REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mcp-core-secrets
+              key: redis_password
+        
+        # Configuración de rendimiento
+        - name: MCP_CORE_MAX_CONCURRENT_TASKS
+          value: "50"
+        - name: MCP_CORE_MAX_CONCURRENT_TOOLS
+          value: "10"
+        - name: MCP_CORE_AGENT_TIMEOUT_SECONDS
+          value: "300"
+        - name: MCP_CORE_EXECUTOR_MAX_WORKERS
+          value: "8"
+        - name: MCP_CORE_MEMORY_CACHE_SIZE
+          value: "2000"
+        - name: MCP_CORE_VERIFICATION_QUALITY_THRESHOLD
+          value: "0.9"
+        
+        # Configuración de monitoreo
+        - name: MCP_CORE_METRICS_ENABLED
+          value: "true"
+        - name: MCP_CORE_TRACING_ENABLED
+          value: "true"
+        - name: MCP_CORE_METRICS_PORT
+          value: "9090"
+        
+        # Rate limiting
+        - name: MCP_CORE_RATE_LIMIT_ENABLED
+          value: "true"
+        - name: MCP_CORE_RATE_LIMIT_REQUESTS
+          value: "100"
+        - name: MCP_CORE_RATE_LIMIT_WINDOW
+          value: "60"
+        
+        # Streaming
+        - name: MCP_CORE_STREAMING_ENABLED
+          value: "true"
+        - name: MCP_CORE_STREAMING_FREQUENCY
+          value: "1.0"
+        - name: MCP_CORE_STREAMING_MAX_DURATION
+          value: "3600"
+        
+        # CORS
+        - name: MCP_CORE_CORS_ENABLED
+          value: "true"
+        - name: MCP_CORE_CORS_ORIGINS
+          value: '["https://mcp-core-superior.com"]'
+        
+        resources:
+          limits:
+            memory: 2Gi
+            cpu: 2
+          requests:
+            memory: 512Mi
+            cpu: 500m
+        
+        # Health checks
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 60
+          periodSeconds: 30
+          timeoutSeconds: 15
+          failureThreshold: 5
+          successThreshold: 1
+        
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 10
+          failureThreshold: 3
+          successThreshold: 1
+        
+        # Startup probe
+        startupProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 30
+          successThreshold: 1
+        
+        # Volume mounts
+        volumeMounts:
+        - name: logs-volume
+          mountPath: /app/logs
+        - name: uploads-volume
+          mountPath: /app/uploads
+        - name: config-volume
+          mountPath: /app/config
+          readOnly: true
+        
+        # Security context
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          runAsUser: 1000
+          capabilities:
+            drop:
+            - ALL
+        
+        # Lifecycle hooks
+        lifecycle:
+          preStop:
+            exec:
+              command:
+              - /bin/sh
+              - -c
+              - |
+                echo "Starting graceful shutdown..."
+                # Send SIGTERM to allow clean shutdown
+                kill -TERM $(pgrep -f "uvicorn.*fastmcp_server") || true
+                sleep 30
+                echo "Graceful shutdown completed"
+      
+      # Volumes
+      volumes:
+      - name: logs-volume
+        persistentVolumeClaim:
+          claimName: logs-pvc
+      - name: uploads-volume
+        persistentVolumeClaim:
+          claimName: uploads-pvc
+      - name: config-volume
+        configMap:
+          name: mcp-core-config
+      
+      # Tolerations para nodes especiales
+      tolerations:
+      - key: "mcp-core-workload"
+        operator: "Equal"
+        value: "true"
+        effect: "NoSchedule"
+      
+      # Affinity rules
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - mcp-core
+              topologyKey: kubernetes.io/hostname
+        
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 50
+            preference:
+              matchExpressions:
+              - key: node-type
+                operator: In
+                values:
+                - compute-optimized
+      
+      # Imagen pull secrets
+      imagePullSecrets:
+      - name: mcp-core-registry
+      
+      # DNS configuration
+      dnsPolicy: ClusterFirst
+      dnsConfig:
+        nameservers:
+        - 8.8.8.8
+        - 8.8.4.4
+        options:
+        - name: ndots
+          value: "2"
+        - name: edns0

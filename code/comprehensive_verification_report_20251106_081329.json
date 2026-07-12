@@ -1,0 +1,308 @@
+{
+  "timestamp": "2025-11-06T08:13:28.695065",
+  "verification_version": "1.0.0",
+  "systems_checked": 10,
+  "systems_healthy": 5,
+  "systems_degraded": 0,
+  "systems_failed": 5,
+  "overall_health_score": 60.0,
+  "detailed_results": {
+    "original_systems": {
+      "port_8001": {
+        "name": "SilhouetteMCP Unified",
+        "type": "core",
+        "port": 8001,
+        "status": "healthy",
+        "response_time": 1.019063949584961,
+        "health_data": {
+          "status": "healthy",
+          "server": "SilhouetteMCP-Enhanced",
+          "version": "5.0.0",
+          "timestamp": "2025-11-06T08:13:29.713440",
+          "uptime": 190.71095299720764,
+          "agents_status": {
+            "maps_agent": "active",
+            "finance_agent": "active",
+            "social_travel_agent": "active",
+            "content_agent": "active",
+            "supabase_agent": "active",
+            "research_agent": "active"
+          },
+          "enhanced_services": {
+            "security": true,
+            "auto_healing": true,
+            "load_balancing": true,
+            "auto_scaling": true
+          },
+          "system_health": {
+            "cpu_usage": 26.0,
+            "memory_usage": 55.8,
+            "disk_usage": 47.7,
+            "issues": []
+          },
+          "tools_summary": {
+            "total_tools": 51,
+            "maps_tools": 6,
+            "finance_tools": 9,
+            "social_travel_tools": 13,
+            "content_tools": 8,
+            "supabase_tools": 13,
+            "research_tools": 2
+          }
+        },
+        "last_check": "2025-11-06T08:13:29.714258"
+      },
+      "port_8002": {
+        "name": "Hierarchical Architecture",
+        "type": "architecture",
+        "port": 8002,
+        "status": "healthy",
+        "response_time": 0.001768350601196289,
+        "health_data": {
+          "status": "healthy",
+          "timestamp": "2025-11-06T08:13:29.715819",
+          "version": "1.0.0",
+          "components": {
+            "coordinator": "active",
+            "raft": "follower",
+            "teams": 6,
+            "resources": 12,
+            "pending_tasks": 0
+          }
+        },
+        "last_check": "2025-11-06T08:13:29.716239"
+      },
+      "port_8003": {
+        "name": "Dashboard",
+        "type": "ui",
+        "port": 8003,
+        "status": "error",
+        "response_time": 0.0007405281066894531,
+        "error": "Cannot connect to host localhost:8003 ssl:default [Multiple exceptions: [Errno 111] Connect call failed ('::1', 8003, 0, 0), [Errno 111] Connect call failed ('127.0.0.1', 8003)]",
+        "last_check": "2025-11-06T08:13:29.717095"
+      },
+      "port_8004": {
+        "name": "Testing Suite",
+        "type": "testing",
+        "port": 8004,
+        "status": "error",
+        "response_time": 0.0006046295166015625,
+        "error": "Cannot connect to host localhost:8004 ssl:default [Multiple exceptions: [Errno 111] Connect call failed ('::1', 8004, 0, 0), [Errno 111] Connect call failed ('127.0.0.1', 8004)]",
+        "last_check": "2025-11-06T08:13:29.717716"
+      },
+      "port_8005": {
+        "name": "Metrics",
+        "type": "monitoring",
+        "port": 8005,
+        "status": "error",
+        "response_time": 0.0005855560302734375,
+        "error": "Cannot connect to host localhost:8005 ssl:default [Multiple exceptions: [Errno 111] Connect call failed ('::1', 8005, 0, 0), [Errno 111] Connect call failed ('127.0.0.1', 8005)]",
+        "last_check": "2025-11-06T08:13:29.718316"
+      },
+      "port_8006": {
+        "name": "WebSocket",
+        "type": "realtime",
+        "port": 8006,
+        "status": "error",
+        "response_time": 0.0007736682891845703,
+        "error": "Cannot connect to host localhost:8006 ssl:default [Multiple exceptions: [Errno 111] Connect call failed ('::1', 8006, 0, 0), [Errno 111] Connect call failed ('127.0.0.1', 8006)]",
+        "last_check": "2025-11-06T08:13:29.719103"
+      },
+      "port_8007": {
+        "name": "Diagnostic System",
+        "type": "diagnostic",
+        "port": 8007,
+        "status": "healthy",
+        "response_time": 0.0012493133544921875,
+        "health_data": {
+          "status": "healthy",
+          "service": "SilhouetteMCP Robust Diagnostic",
+          "timestamp": "2025-11-06T08:13:29.720012",
+          "version": "1.0.0"
+        },
+        "last_check": "2025-11-06T08:13:29.720385"
+      }
+    },
+    "enhanced_systems": {
+      "port_8010": {
+        "name": "Enhanced Architecture",
+        "type": "architecture",
+        "port": 8010,
+        "status": "healthy",
+        "response_time": 0.0012853145599365234,
+        "health_data": {
+          "status": "healthy",
+          "enhanced_architecture": "active",
+          "version": "5.1.0",
+          "timestamp": "2025-11-06T08:13:29.721414",
+          "details": {
+            "system_status": "healthy",
+            "agents": {
+              "total": 30,
+              "active": 30,
+              "inactive": 0,
+              "overloaded": 0,
+              "failed": 0
+            },
+            "tasks": {
+              "pending": 0,
+              "running": 0,
+              "completed": 0,
+              "failed": 0
+            },
+            "circuit_breakers": {
+              "coordination_service": {
+                "state": "closed",
+                "failure_count": 0,
+                "success_count": 0
+              },
+              "load_balancer_service": {
+                "state": "closed",
+                "failure_count": 0,
+                "success_count": 0
+              },
+              "auto_healing_service": {
+                "state": "closed",
+                "failure_count": 0,
+                "success_count": 0
+              },
+              "health_monitor_service": {
+                "state": "closed",
+                "failure_count": 0,
+                "success_count": 0
+              },
+              "task_dispatcher_service": {
+                "state": "closed",
+                "failure_count": 0,
+                "success_count": 0
+              }
+            },
+            "auto_healing": {
+              "enabled": true,
+              "actions_today": 0,
+              "success_rate": 0.0
+            },
+            "load_balancing": {
+              "enabled": true,
+              "strategy": "adaptive",
+              "distribution_map": {}
+            },
+            "system_metrics": {
+              "start_time": "2025-11-06T08:11:08.302756",
+              "total_tasks_processed": 0,
+              "successful_tasks": 0,
+              "failed_tasks": 0,
+              "auto_healing_actions": 0,
+              "circuit_breaker_trips": 0,
+              "load_balancing_actions": 0,
+              "avg_response_time": 0,
+              "system_availability": 100.0
+            },
+            "timestamp": "2025-11-06T08:13:29.721404"
+          }
+        },
+        "last_check": "2025-11-06T08:13:29.721892"
+      },
+      "port_8015": {
+        "name": "Enhanced Security",
+        "type": "security",
+        "port": 8015,
+        "status": "error",
+        "response_time": 0.0005583763122558594,
+        "error": "Cannot connect to host localhost:8015 ssl:default [Multiple exceptions: [Errno 111] Connect call failed ('::1', 8015, 0, 0), [Errno 111] Connect call failed ('127.0.0.1', 8015)]",
+        "last_check": "2025-11-06T08:13:29.722533"
+      },
+      "port_8020": {
+        "name": "Enhanced Scalability",
+        "type": "scalability",
+        "port": 8020,
+        "status": "healthy",
+        "response_time": 0.0012502670288085938,
+        "health_data": {
+          "status": "limited",
+          "enhanced_scalability": "active",
+          "version": "3.0.0",
+          "scalability_score": 60.66413672803805,
+          "timestamp": "2025-11-06T08:13:29.723458"
+        },
+        "last_check": "2025-11-06T08:13:29.723817"
+      }
+    }
+  },
+  "performance_analysis": {
+    "total_systems_monitored": 5,
+    "avg_response_time": 0.2049234390258789,
+    "min_response_time": 0.0012493133544921875,
+    "max_response_time": 1.019063949584961,
+    "systems_within_1s": 4,
+    "systems_within_5s": 5,
+    "performance_score": 94.0,
+    "performance_rating": "EXCELLENT"
+  },
+  "security_assessment": {
+    "security_score": 40,
+    "enhanced_security_system": false,
+    "security_files_present": true,
+    "jwt_implementation": false,
+    "ddos_protection": false,
+    "api_key_management": false,
+    "monitoring_system": false,
+    "encryption_enabled": false,
+    "security_rating": "NEEDS_IMPROVEMENT"
+  },
+  "scalability_assessment": {
+    "scalability_score": 100,
+    "enhanced_scalability_system": true,
+    "scalability_files_present": true,
+    "auto_scaling": true,
+    "load_balancing": true,
+    "resource_management": true,
+    "performance_monitoring": true,
+    "horizontal_scaling": true,
+    "scalability_rating": "EXCELLENT"
+  },
+  "architecture_assessment": {
+    "architecture_score": 160,
+    "enhanced_architecture": true,
+    "original_architecture": true,
+    "architecture_files_present": true,
+    "hierarchical_structure": true,
+    "agents_implementation": true,
+    "coordination_algorithms": true,
+    "communication_protocols": true,
+    "architecture_rating": "EXCELLENT"
+  },
+  "integration_status": {
+    "integration_score": 70.0,
+    "original_systems_healthy": 5,
+    "enhanced_systems_healthy": 2,
+    "total_systems": 10,
+    "integration_health": "degraded",
+    "cross_system_communication": true,
+    "system_coordination": false,
+    "integration_rating": "GOOD"
+  },
+  "recommendations": [
+    {
+      "priority": "HIGH",
+      "category": "security",
+      "recommendation": "Activar y utilizar el sistema de seguridad mejorado",
+      "rationale": "Puntuaci\u00f3n de seguridad baja: 40/100"
+    },
+    {
+      "priority": "MEDIUM",
+      "category": "integration",
+      "recommendation": "Mejorar coordinaci\u00f3n entre sistemas",
+      "rationale": "Integraci\u00f3n por debajo del \u00f3ptimo: 70.0/100"
+    },
+    {
+      "priority": "LOW",
+      "category": "monitoring",
+      "recommendation": "Implementar monitoreo continuo automatizado",
+      "rationale": "Mantener visibilidad constante del estado del sistema"
+    }
+  ],
+  "verification_duration": 1.0298209190368652,
+  "combined_score": 84.7,
+  "final_rating": "GOOD"
+}

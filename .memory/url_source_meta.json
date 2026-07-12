@@ -1,0 +1,1389 @@
+{
+  "_source_id": 194,
+  "sources": {
+    "Stack Tecnológico 100% Gratuito para Superar MiniMax Agent": {
+      "https://agent.minimax.io/docs/user-guide": {
+        "id": 1,
+        "publisher": "MiniMax",
+        "url": "https://agent.minimax.io/docs/user-guide",
+        "title": "MiniMax Agent - Guía de Usuario Oficial",
+        "info": "Capacidades completas de MiniMax Agent: sistema multi-agente, planificación multi-paso, desarrollo full-stack con React/Supabase, generación multimedia, integraciones MCP. Sistema determina autónomamente stack tecnológico óptimo."
+      },
+      "https://www.minimax.io/": {
+        "id": 2,
+        "publisher": "MiniMax",
+        "url": "https://www.minimax.io/",
+        "title": "MiniMax - Plataforma Oficial de Modelos AGI",
+        "info": "Familia completa de modelos MiniMax: M2 (nuevo texto eficiente), Speech 2.6 (tiempo real), Hailuo 2.3 (video), Music 2.0. MCP Server para desarrolladores, Agent como aplicación nativa."
+      },
+      "https://platform.minimax.io/docs/guides/pricing": {
+        "id": 3,
+        "publisher": "MiniMax",
+        "url": "https://platform.minimax.io/docs/guides/pricing",
+        "title": "MiniMax API - Pricing y Planes",
+        "info": "Estructura de precios detallada: M2 $0.3/1M tokens entrada, $1.2/1M salida. Video packages desde $1000/3760 unidades. Audio subscriptions desde $5/mes. Limitaciones de RPM por tier."
+      },
+      "https://ai.google.dev/gemini-api/docs/rate-limits": {
+        "id": 4,
+        "publisher": "Google AI for Developers",
+        "url": "https://ai.google.dev/gemini-api/docs/rate-limits",
+        "title": "Rate Limits - Gemini API",
+        "info": "Límites completos de la API gratuita de Gemini: Flash 2.5 (10 RPM, 250K TPM, 250 RPD), Flash 2.0 (15 RPM, 1M TPM, 200 RPD). Plan gratuito disponible, niveles pagos desde $250 gasto acumulado."
+      },
+      "https://mistral.ai/pricing": {
+        "id": 5,
+        "publisher": "Mistral AI",
+        "url": "https://mistral.ai/pricing",
+        "title": "Mistral AI Pricing",
+        "info": "Planes Mistral AI: Free ($0/mes) con mensajes limitados, agentes, modo voz, investigación profunda 5x gratis. Pro ($14.99/mes), Team ($24.99/usuario/mes), Enterprise personalizado."
+      },
+      "https://qdrant.tech/pricing/": {
+        "id": 6,
+        "publisher": "Qdrant",
+        "url": "https://qdrant.tech/pricing/",
+        "title": "Qdrant Pricing and Plans",
+        "info": "Plan gratuito Qdrant: 1GB cluster gratuito para siempre, sin tarjeta de crédito. Cloud gestionado con múltiples proveedores (AWS, GCP, Azure). Pricing desde $0, Hybrid Cloud $0.014/hora."
+      },
+      "https://weaviate.io/pricing": {
+        "id": 7,
+        "publisher": "Weaviate",
+        "url": "https://weaviate.io/pricing",
+        "title": "Weaviate Vector Database Pricing",
+        "info": "Weaviate pricing: Free Trial 14 días, Flex desde $45/mes, Plus $280/mes, Premium personalizado. Basado en dimensiones vectoriales ($0.000745/1M) y almacenamiento ($0.255/GiB)."
+      },
+      "https://www.pinecone.io/pricing/": {
+        "id": 8,
+        "publisher": "Pinecone",
+        "url": "https://www.pinecone.io/pricing/",
+        "title": "Pinecone Database Pricing",
+        "info": "Pinecone pricing: Starter (gratis, 2GB storage, 1 proyecto), Standard ($50/mes mínimo), Enterprise ($500/mes), Dedicated personalizado. Incluye embeddings y reranking gratuitos."
+      },
+      "https://www.trychroma.com/": {
+        "id": 9,
+        "publisher": "Chroma",
+        "url": "https://www.trychroma.com/",
+        "title": "Chroma - AI-native Vector Database",
+        "info": "Chroma: Vector database open source gratuita (Apache 2.0), desarrollo local y escala a petabytes cloud. Serverless architecture, hasta 10x más económico. Soporta búsqueda vectorial, texto completo, regex."
+      },
+      "https://redis.io/solutions/messaging/": {
+        "id": 10,
+        "publisher": "Redis",
+        "url": "https://redis.io/solutions/messaging/",
+        "title": "Redis Messaging Solutions",
+        "info": "Redis messaging: capacidades Pub/Sub, Streams, Lists, Sorted Sets. Velocidad tiempo real, persistencia con RDB/AOF. Casos de uso: microservicios, streaming, event sourcing, comunicación asíncrona."
+      },
+      "https://medium.com/@ThreadSafeDiaries/i-benchmarked-kafka-rabbitmq-and-redis-streams-the-winner-surprised-me-cf3f484eb7b2": {
+        "id": 11,
+        "publisher": "Medium - ThreadSafe Diaries",
+        "url": "https://medium.com/@ThreadSafeDiaries/i-benchmarked-kafka-rabbitmq-and-redis-streams-the-winner-surprised-me-cf3f484eb7b2",
+        "title": "Kafka, RabbitMQ, Redis Streams Performance Benchmark",
+        "info": "Benchmark: Kafka, RabbitMQ, Redis Streams para 10K mensajes/seg. VM Ubuntu 4vCPU/16GB RAM, mensajes 512 bytes. Winner: Redis Streams unexpected performance."
+      },
+      "https://gcore.com/learning/nats-rabbitmq-nsq-kafka-comparison": {
+        "id": 12,
+        "publisher": "Gcore",
+        "url": "https://gcore.com/learning/nats-rabbitmq-nsq-kafka-comparison",
+        "title": "NATS vs RabbitMQ vs NSQ vs Kafka Comparison",
+        "info": "Comparación NATS, RabbitMQ, NSQ, Kafka: NATS (6M msg/seg, <10MB), RabbitMQ (60K msg/seg, AMQP), NSQ (800K msg/seg, pub-sub), Kafka (2M msg/seg, streaming). Garantías entrega y ordenamiento varían."
+      },
+      "https://blog.langchain.com/langchain-langgraph-1dot0/": {
+        "id": 13,
+        "publisher": "LangChain",
+        "url": "https://blog.langchain.com/langchain-langgraph-1dot0/",
+        "title": "LangChain & LangGraph v1.0 Milestones",
+        "info": "LangChain v1.0: create_agent abstraction, middleware hooks, structured output, content blocks. LangGraph v1.0: durable state, persistence, human-in-the-loop patterns. 90M downloads monthly."
+      },
+      "https://www.zenml.io/blog/crewai-pricing": {
+        "id": 14,
+        "publisher": "ZenML",
+        "url": "https://www.zenml.io/blog/crewai-pricing",
+        "title": "CrewAI Pricing Guide",
+        "info": "CrewAI pricing: Open Source (gratis autoalojado), Basic $99/mes (100 ejecuciones), Standard $6000/año, Pro $12000/año, Enterprise $60000/año, Ultra $120000/año."
+      },
+      "https://learn.microsoft.com/en-us/semantic-kernel/frameworks/agent/": {
+        "id": 15,
+        "publisher": "Microsoft Learn",
+        "url": "https://learn.microsoft.com/en-us/semantic-kernel/frameworks/agent/",
+        "title": "Semantic Kernel Agent Framework",
+        "info": "Semantic Kernel Agent Framework: modular components, multi-agent collaboration, human-agent collaboration, process orchestration, decision making. SDKs .NET, Python, Java."
+      },
+      "https://medium.com/@howtodoml/microsoft-agent-framework-the-next-evolution-beyond-semantic-kernel-and-autogen-2919e9345b29": {
+        "id": 16,
+        "publisher": "Medium",
+        "url": "https://medium.com/@howtodoml/microsoft-agent-framework-the-next-evolution-beyond-semantic-kernel-and-autogen-2919e9345b29",
+        "title": "Microsoft Agent Framework Evolution",
+        "info": "Microsoft Agent Framework (MAF): open-source engine para agentic AI apps, workflow-focused, A2A protocol, MCP integration. Evolution beyond SK + AutoGen, enterprise-ready."
+      }
+    },
+    "Sistema de Herramientas y Sandboxes Superior": {
+      "https://dev.to/mechcloud_academy/docker-vs-podman-an-in-depth-comparison-2025-2eia": {
+        "id": 17,
+        "publisher": "DEV Community",
+        "url": "https://dev.to/mechcloud_academy/docker-vs-podman-an-in-depth-comparison-2025-2eia",
+        "title": "Docker vs Podman: An In-Depth Comparison (2025)",
+        "info": "Comparación técnica detallada entre Docker y Podman para 2025, incluyendo arquitecturas daemon vs daemonless, rendimiento, seguridad, soporte rootless, y compatibilidad OCI"
+      },
+      "https://medium.com/@varunjain2108/monitoring-docker-containers-with-cadvisor-prometheus-and-grafana-d101b4dbbc84": {
+        "id": 18,
+        "publisher": "Medium",
+        "url": "https://medium.com/@varunjain2108/monitoring-docker-containers-with-cadvisor-prometheus-and-grafana-d101b4dbbc84",
+        "title": "Monitoring Docker Containers with cAdvisor, Prometheus, and Grafana",
+        "info": "Configuración técnica completa del stack de monitoreo: cAdvisor, Prometheus y Grafana para contenedores Docker con métricas en tiempo real"
+      },
+      "https://securitylabs.datadoghq.com/articles/container-security-fundamentals-part-2/": {
+        "id": 19,
+        "publisher": "DataDog Security Labs",
+        "url": "https://securitylabs.datadoghq.com/articles/container-security-fundamentals-part-2/",
+        "title": "Container security fundamentals part 2: Isolation & namespaces",
+        "info": "Análisis técnico de namespaces Linux para aislamiento de contenedores: mount, PID, network, cgroup, IPC, UTS, time, user"
+      },
+      "https://www.scraperapi.com/web-scraping/tools/": {
+        "id": 20,
+        "publisher": "ScraperAPI",
+        "url": "https://www.scraperapi.com/web-scraping/tools/",
+        "title": "15 Best Web Scraping Tools In 2025",
+        "info": "15 mejores herramientas de web scraping para 2025 con comparativa de características, pros, contras y precios"
+      },
+      "https://www.tavus.io/post/high-quality-ai-video-api": {
+        "id": 21,
+        "publisher": "Tavus",
+        "url": "https://www.tavus.io/post/high-quality-ai-video-api",
+        "title": "9+ High-Quality AI Video APIs [2025]",
+        "info": "APIs de generación de video AI de alta calidad para 2025, incluyendo comparación de características y precios"
+      },
+      "https://www.hashicorp.com/en/blog/hashicorp-at-re-invent-2024-security-lifecycle-management-with-aws": {
+        "id": 22,
+        "publisher": "HashiCorp",
+        "url": "https://www.hashicorp.com/en/blog/hashicorp-at-re-invent-2024-security-lifecycle-management-with-aws",
+        "title": "Security Lifecycle Management with AWS",
+        "info": "Gestión de credenciales con HashiCorp Vault vs AWS Secrets Manager: comparación de características, rendimiento y casos de uso"
+      },
+      "https://www.browserstack.com/guide/top-python-testing-frameworks": {
+        "id": 23,
+        "publisher": "BrowserStack",
+        "url": "https://www.browserstack.com/guide/top-python-testing-frameworks",
+        "title": "Top 15 Python Testing Frameworks in 2025",
+        "info": "Top 15 frameworks de testing de Python para 2025: Pytest, Robot Framework, behave, Lettuce, Unittest, etc."
+      },
+      "https://blog.appsignal.com/2024/05/22/cypress-vs-playwright-for-node-a-head-to-head-comparison.html": {
+        "id": 24,
+        "publisher": "AppSignal",
+        "url": "https://blog.appsignal.com/2024/05/22/cypress-vs-playwright-for-node-a-head-to-head-comparison.html",
+        "title": "Cypress vs. Playwright for Node: A Head-to-Head Comparison",
+        "info": "Comparación detallada entre Cypress y Playwright para automatización en Node.js: fortalezas, debilidades y rendimiento"
+      },
+      "https://betterstack.com/community/comparisons/playwright-cypress-puppeteer-selenium-comparison/": {
+        "id": 25,
+        "publisher": "Better Stack",
+        "url": "https://betterstack.com/community/comparisons/playwright-cypress-puppeteer-selenium-comparison/",
+        "title": "Playwright vs Puppeteer vs Cypress vs Selenium (E2E testing)",
+        "info": "Comparación completa de herramientas de automatización de navegadores: Selenium, Cypress, Puppeteer y Playwright para testing E2E"
+      },
+      "https://spacelift.io/blog/github-actions-vs-jenkins": {
+        "id": 26,
+        "publisher": "Spacelift",
+        "url": "https://spacelift.io/blog/github-actions-vs-jenkins",
+        "title": "GitHub Actions vs. Jenkins: Popular CI/CD Tools Comparison",
+        "info": "GitHub Actions vs Jenkins: comparación de herramientas populares de CI/CD, configuración, extensibilidad y casos de uso"
+      },
+      "https://postmarkapp.com/blog/best-email-api": {
+        "id": 27,
+        "publisher": "Postmark",
+        "url": "https://postmarkapp.com/blog/best-email-api",
+        "title": "The 5 best email APIs for developers [2025 comparison]",
+        "info": "5 mejores APIs de email para desarrolladores 2025: Postmark, SendGrid, SparkPost, Mailgun, Amazon SES"
+      },
+      "https://dev.to/williamsmithh/top-5-free-financial-data-apis-for-building-a-powerful-stock-portfolio-tracker-4dhj": {
+        "id": 28,
+        "publisher": "DEV Community",
+        "url": "https://dev.to/williamsmithh/top-5-free-financial-data-apis-for-building-a-powerful-stock-portfolio-tracker-4dhj",
+        "title": "Top 5 Free Financial Data APIs for Building a Powerful Stock Portfolio Tracker",
+        "info": "APIs gratuitas de datos financieros para construir track de cartera: Alpha Vantage, Yahoo Finance, Finnhub, IEX Cloud, Twelve Data"
+      },
+      "https://openweathermap.org/api": {
+        "id": 29,
+        "publisher": "OpenWeatherMap",
+        "url": "https://openweathermap.org/api",
+        "title": "OpenWeatherMap API",
+        "info": "OpenWeatherMap API para datos meteorológicos: clima actual, pronósticos, mapas históricos y 15 capas de datos útiles"
+      },
+      "https://open-meteo.com/": {
+        "id": 30,
+        "publisher": "Open-Meteo",
+        "url": "https://open-meteo.com/",
+        "title": "Free Open-Source Weather API",
+        "info": "Open-Meteo: API de meteorología de código abierto con acceso gratuito para uso no comercial, sin necesidad de API key"
+      },
+      "https://last9.io/blog/kubernetes-vs-docker-swarm/": {
+        "id": 31,
+        "publisher": "Last9",
+        "url": "https://last9.io/blog/kubernetes-vs-docker-swarm/",
+        "title": "Kubernetes vs Docker Swarm: Which to Choose for Containers?",
+        "info": "Kubernetes vs Docker Swarm: comparación para orquestación de contenedores, escalabilidad, configuración y casos de uso 2025"
+      }
+    },
+    "Mejores Prácticas y Estándares para Servidores MCP 2025": {
+      "https://modelcontextprotocol.io/specification/2025-06-18": {
+        "id": 32,
+        "publisher": "Model Context Protocol",
+        "url": "https://modelcontextprotocol.io/specification/2025-06-18",
+        "title": "MCP Specification 2025-06-18 - Official Documentation",
+        "info": "Especificación oficial del protocolo MCP versión 2025-06-18 incluyendo arquitectura, interfaces, requisitos de seguridad y actualizaciones recientes"
+      },
+      "https://thenewstack.io/15-best-practices-for-building-mcp-servers-in-production/": {
+        "id": 33,
+        "publisher": "The New Stack",
+        "url": "https://thenewstack.io/15-best-practices-for-building-mcp-servers-in-production/",
+        "title": "15 Best Practices for Building MCP Servers in Production",
+        "info": "15 mejores prácticas para construir servidores MCP de producción incluyendo escalabilidad, optimización de rendimiento y patrones de deployment"
+      },
+      "https://blog.gitguardian.com/oauth-for-mcp-emerging-enterprise-patterns-for-agent-authorization/": {
+        "id": 34,
+        "publisher": "GitGuardian",
+        "url": "https://blog.gitguardian.com/oauth-for-mcp-emerging-enterprise-patterns-for-agent-authorization/",
+        "title": "OAuth for MCP - Emerging Enterprise Patterns for Agent Authorization",
+        "info": "Patrones empresariales para autorización OAuth 2.1 en MCP incluyendo JWT, indicators de recursos y arquitecturas de gateway"
+      },
+      "https://mcpmanager.ai/blog/mcp-observability/": {
+        "id": 35,
+        "publisher": "MCP Manager",
+        "url": "https://mcpmanager.ai/blog/mcp-observability/",
+        "title": "Mastering MCP Observability: Why It's Essential and How To Achieve It",
+        "info": "Estrategias de observabilidad para servidores MCP incluyendo logging, reporting, alerting y monitoreo de performance"
+      },
+      "https://github.blog/ai-and-ml/generative-ai/how-to-build-secure-and-scalable-remote-mcp-servers/": {
+        "id": 36,
+        "publisher": "GitHub",
+        "url": "https://github.blog/ai-and-ml/generative-ai/how-to-build-secure-and-scalable-remote-mcp-servers/",
+        "title": "How to Build Secure and Scalable Remote MCP Servers",
+        "info": "Patrones arquitectónicos para servidores MCP remotos incluyendo escalabilidad, seguridad empresarial y deployment"
+      },
+      "https://mcpmanager.ai/blog/secure-mcp-server-deployment-at-scale-the-complete-guide/": {
+        "id": 37,
+        "publisher": "MCP Manager",
+        "url": "https://mcpmanager.ai/blog/secure-mcp-server-deployment-at-scale-the-complete-guide/",
+        "title": "Secure MCP Server Deployment at Scale: The Complete Guide",
+        "info": "Guía completa para deployment seguro y escalable de servidores MCP incluyendo estrategias, patrones de escalado y gestión del ciclo de vida"
+      },
+      "https://blog.sentry.io/introducing-mcp-server-monitoring/": {
+        "id": 38,
+        "publisher": "Sentry",
+        "url": "https://blog.sentry.io/introducing-mcp-server-monitoring/",
+        "title": "You built an MCP server, debug it with MCP observability",
+        "info": "Monitoreo y observabilidad de servidores MCP incluyendo debugging, error tracking y performance monitoring"
+      },
+      "https://mcpcat.io/blog/mcp-server-best-practices/": {
+        "id": 39,
+        "publisher": "MCPcat",
+        "url": "https://mcpcat.io/blog/mcp-server-best-practices/",
+        "title": "MCP Server Best Practices: Production-Grade Development Guide",
+        "info": "Mejores prácticas para desarrollo de grado producción incluyendo diseño de herramientas, organización y monitoreo"
+      },
+      "https://www.solo.io/blog/mcp-authorization-is-a-non-starter-for-enterprise": {
+        "id": 40,
+        "publisher": "Solo.io",
+        "url": "https://www.solo.io/blog/mcp-authorization-is-a-non-starter-for-enterprise",
+        "title": "MCP Authorization is a Non-Starter for Enterprise",
+        "info": "Desafíos empresariales con autorización MCP y enfoques alternativos para producción incluyendo identity-first y policy-based access control"
+      },
+      "https://medium.com/@chris.p.hughes10/building-scalable-mcp-servers-with-domain-driven-design-fb9454d4c726": {
+        "id": 41,
+        "publisher": "Medium",
+        "url": "https://medium.com/@chris.p.hughes10/building-scalable-mcp-servers-with-domain-driven-design-fb9454d4c726",
+        "title": "Building Scalable MCP Servers with Domain-Driven Design",
+        "info": "Patrones de Domain-Driven Design para servidores MCP escalables incluyendo arquitectura en capas y separación de responsabilidades"
+      }
+    },
+    "Análisis de Brechas Técnicas en Servidores MCP": {
+      "https://dev.to/ramkey982/beyond-the-hype-understanding-the-limitations-of-anthropics-model-context-protocol-for-tool-48kk": {
+        "id": 42,
+        "publisher": "Dev.to",
+        "url": "https://dev.to/ramkey982/beyond-the-hype-understanding-the-limitations-of-anthropics-model-context-protocol-for-tool-48kk",
+        "title": "Understanding the Limitations of Anthropic's Model Context Protocol",
+        "info": "Limitaciones de rendimiento, escalabilidad y arquitectura: sobrecarga de ventana de contexto, comunicación stateful, uso de SSE, incompatibilidad con APIs REST, necesidad de capas intermedias para traducción de comunicación."
+      },
+      "https://www.flybridge.com/ideas/the-bow/the-4-big-myths-holding-back-mcp-adoption-and-how-to-fix-them": {
+        "id": 43,
+        "publisher": "Flybridge Capital",
+        "url": "https://www.flybridge.com/ideas/the-bow/the-4-big-myths-holding-back-mcp-adoption-and-how-to-fix-them",
+        "title": "The 4 Big Myths Holding Back MCP Adoption",
+        "info": "4 grandes mitos sobre MCP: problemas de autenticación/seguridad (tokens OAuth, SSO), falta de registro/descubrimiento, conversión compleja de APIs tradicionales, y no ser reemplazo de RAG."
+      },
+      "https://www.linkedin.com/pulse/model-context-protocol-mcp-hype-vs-scalability-srinivasanarasimhan-p1npc": {
+        "id": 44,
+        "publisher": "LinkedIn",
+        "url": "https://www.linkedin.com/pulse/model-context-protocol-mcp-hype-vs-scalability-srinivasanarasimhan-p1npc",
+        "title": "Model Context Protocol (MCP) – Hype vs. Scalability without Service Discovery",
+        "info": "Problemas de escalabilidad: configuración estática de conexiones sin descubrimiento de servicios, limitación a conjuntos pequeños de herramientas, escalado vertical ineficiente, diseño monolítico, baja tolerancia a fallos."
+      },
+      "https://blog.sshh.io/p/everything-wrong-with-mcp": {
+        "id": 45,
+        "publisher": "Shrivu Shankar Blog",
+        "url": "https://blog.sshh.io/p/everything-wrong-with-mcp",
+        "title": "Everything Wrong with MCP",
+        "info": "Limitaciones técnicas: seguridad del protocolo (falta de autenticación inicial), vulnerabilidades de ejecución de comandos locales, inyecciones de prompt más potentes, limitaciones UI/UX sin controles de riesgo/costo."
+      },
+      "https://github.com/jlowin/fastmcp/issues/1625": {
+        "id": 46,
+        "publisher": "FastMCP GitHub",
+        "url": "https://github.com/jlowin/fastmcp/issues/1625",
+        "title": "Parallel calls to connected stdio server intermittently fail",
+        "info": "Fallos intermitentes en llamadas paralelas: 66-72% de tasa de fallo inicial en transporte stdio, condiciomes de carrera en connect(), problemas de inicialización repetida por múltiples clientes, mejoras de 0% a 100% de éxito con sincronización."
+      },
+      "https://github.com/jlowin/fastmcp/issues/1583": {
+        "id": 47,
+        "publisher": "FastMCP GitHub",
+        "url": "https://github.com/jlowin/fastmcp/issues/1583",
+        "title": "as_proxy substantially slower",
+        "info": "Ralentización sustancial de 1.7-3.0ms a 325-391ms por llamada, múltiples llamadas list_tools() por cada herramienta, errores HTTP 405, viajes de ida y vuelta adicionales del proxy, pérdida de características dinámicas."
+      },
+      "https://www.redhat.com/en/blog/model-context-protocol-mcp-understanding-security-risks-and-controls": {
+        "id": 48,
+        "publisher": "Red Hat",
+        "url": "https://www.redhat.com/en/blog/model-context-protocol-mcp-understanding-security-risks-and-controls",
+        "title": "MCP: Understanding Security Risks and Controls",
+        "info": "Riesgos de seguridad: ejecución de comandos arbitrarios, inyección de comandos, inyección de prompt, riesgos de cadena de suministro, logging insuficiente, ejecución de código malicioso local, necesidad de sandboxing."
+      }
+    },
+    "Arquitectura Avanzada de Silhouette - Análisis y Mejoras": {
+      "https://modelcontextprotocol.info/docs/best-practices/": {
+        "id": 49,
+        "publisher": "Model Context Protocol Foundation",
+        "url": "https://modelcontextprotocol.info/docs/best-practices/",
+        "title": "MCP Best Practices: Architecture & Implementation Guide",
+        "info": "Mejores prácticas oficiales para arquitectura MCP, incluyendo principios de diseño, implementación, operaciones de producción y estrategias de testing. Información sobre single responsibility principle, defense in depth security model, y fail safe design patterns."
+      },
+      "https://outshift.cisco.com/blog/ai-observability-multi-agent-systems-opentelemetry": {
+        "id": 50,
+        "publisher": "Cisco Outshift",
+        "url": "https://outshift.cisco.com/blog/ai-observability-multi-agent-systems-opentelemetry",
+        "title": "AI observability in multi-agent systems using OpenTelemetry",
+        "info": "Patrones específicos de OpenTelemetry para sistemas multi-agente, incluyendo baggage propagation, trace context reuse, y prácticas recomendadas para observabilidad de comunicaciones A2A. Colaboración con Microsoft y Splunk para estándares multiagente."
+      },
+      "https://microservices.io/patterns/service-registry.html": {
+        "id": 51,
+        "publisher": "Microservices.io",
+        "url": "https://microservices.io/patterns/service-registry.html",
+        "title": "Pattern: Service registry",
+        "info": "Patrones de service registry, diferencias entre client-side vs server-side discovery, estrategias de registro dinámico (self registration y third-party registration), y ejemplos como Netflix Eureka, Apache Zookeeper, Consul."
+      },
+      "https://petronellatech.com/blog/secure-rag-enterprise-architecture-patterns-for-accurate-leak-free-ai/": {
+        "id": 52,
+        "publisher": "Petronella Tech",
+        "url": "https://petronellatech.com/blog/secure-rag-enterprise-architecture-patterns-for-accurate-leak-free-ai/",
+        "title": "Secure RAG: Enterprise Architecture Patterns for Accurate, Leak-Free AI",
+        "info": "Patrones de arquitectura empresarial para seguridad en sistemas RAG, incluyendo threat modeling, encryption standards, network deployment standards, identity/authorization patterns, prompt security y compliance (GDPR, HIPAA, ISO 27001, SOC2)."
+      }
+    },
+    "Análisis Exhaustivo de Servidores MCP": {
+      "https://github.com/modelcontextprotocol/servers": {
+        "id": 53,
+        "publisher": "Model Context Protocol Organization",
+        "url": "https://github.com/modelcontextprotocol/servers",
+        "title": "Repositorio Oficial de Servidores MCP",
+        "info": "Lista completa de servidores oficiales y de la comunidad MCP con enlaces a implementaciones"
+      },
+      "https://modelcontextprotocol.io/examples": {
+        "id": 54,
+        "publisher": "Model Context Protocol Organization",
+        "url": "https://modelcontextprotocol.io/examples",
+        "title": "Ejemplos Oficiales de Servidores MCP",
+        "info": "Servidores de referencia activos y archivados incluyendo Everything, Fetch, Filesystem, Git, Memory, Sequential Thinking, Time"
+      },
+      "https://www.anthropic.com/news/model-context-protocol": {
+        "id": 55,
+        "publisher": "Anthropic",
+        "url": "https://www.anthropic.com/news/model-context-protocol",
+        "title": "Anuncio Oficial del Model Context Protocol",
+        "info": "Servidores pre-construidos para Google Drive, Slack, GitHub, Git, Postgres, Puppeteer y adopción por empresas"
+      },
+      "https://www.redhat.com/en/blog/model-context-protocol-mcp-understanding-security-risks-and-controls": {
+        "id": 56,
+        "publisher": "Red Hat",
+        "url": "https://www.redhat.com/en/blog/model-context-protocol-mcp-understanding-security-risks-and-controls",
+        "title": "Seguridad en Model Context Protocol",
+        "info": "Análisis detallado de riesgos: confused deputy, cadena de suministro, inyección de prompt, muestreo malicioso y mitigaciones"
+      },
+      "https://modelcontextprotocol.io/docs/tutorials/security/authorization": {
+        "id": 57,
+        "publisher": "Model Context Protocol Organization",
+        "url": "https://modelcontextprotocol.io/docs/tutorials/security/authorization",
+        "title": "Autorización OAuth 2.1 en MCP",
+        "info": "Implementación de autorización con Metadatos de Recurso Protegido, descubrimiento de Authorization Server, Dynamic Client Registration"
+      },
+      "https://github.com/modelcontextprotocol/typescript-sdk": {
+        "id": 58,
+        "publisher": "Model Context Protocol Organization",
+        "url": "https://github.com/modelcontextprotocol/typescript-sdk",
+        "title": "SDK Oficial TypeScript para MCP",
+        "info": "10.6k estrellas, soporte completo para stdio y Streamable HTTP, recursos, herramientas, prompts y muestreo"
+      },
+      "https://code.visualstudio.com/api/extension-guides/ai/mcp": {
+        "id": 59,
+        "publisher": "Microsoft",
+        "url": "https://code.visualstudio.com/api/extension-guides/ai/mcp",
+        "title": "Guía MCP para VS Code",
+        "info": "Integración completa de MCP con VS Code incluyendo extensiones, herramientas, autorización OAuth 2.1 y debugging"
+      },
+      "https://mcpmanager.ai/blog/secure-mcp-server-deployment-at-scale-the-complete-guide/": {
+        "id": 60,
+        "publisher": "MCP Manager",
+        "url": "https://mcpmanager.ai/blog/secure-mcp-server-deployment-at-scale-the-complete-guide/",
+        "title": "Despliegue Seguro de Servidores MCP a Escala",
+        "info": "Arquitectura empresarial, tres tipos de despliegue (remoto, gestionado, workstation), observabilidad y governance"
+      },
+      "https://astrix.security/learn/blog/state-of-mcp-server-security-2025/": {
+        "id": 61,
+        "publisher": "Astrix Security",
+        "url": "https://astrix.security/learn/blog/state-of-mcp-server-security-2025/",
+        "title": "Estado de Seguridad de Servidores MCP 2025",
+        "info": "Análisis de 5,205 repositorios: 88% requiere credenciales, 53% usa credenciales estáticas, solo 8.5% usa OAuth"
+      },
+      "https://github.com/punkpeye/awesome-mcp-servers": {
+        "id": 62,
+        "publisher": "Community",
+        "url": "https://github.com/punkpeye/awesome-mcp-servers",
+        "title": "Lista Curada de Servidores MCP",
+        "info": "Colección exhaustiva organizada por categorías: agregadores, aeroespacial, arte, biología, automatización, cloud"
+      }
+    },
+    "Análisis UI/UX de Google Gemini": {
+      "https://gemini.google.com/": {
+        "id": 63,
+        "publisher": "Google",
+        "url": "https://gemini.google.com/",
+        "title": "Google Gemini - Página Oficial",
+        "info": "Interfaz principal de Gemini con estructura centrada en conversación, sección de Recientes, botones de navegación y prompts sugeridos"
+      },
+      "https://gemini.google/overview/canvas/": {
+        "id": 64,
+        "publisher": "Google",
+        "url": "https://gemini.google/overview/canvas/",
+        "title": "Gemini Canvas - Descripción Oficial",
+        "info": "Información sobre Canvas como espacio integrado para escribir, codificar y crear con Gemini 2.5 Pro, con capacidades de generación de aplicaciones y juegos"
+      },
+      "https://m3.material.io/blog/how-to-gemini-app-compose-material-design-3": {
+        "id": 65,
+        "publisher": "Material Design (Google)",
+        "url": "https://m3.material.io/blog/how-to-gemini-app-compose-material-design-3",
+        "title": "Material Design 3 para Aplicaciones Gemini",
+        "info": "Guía sobre uso de Material Design 3 en desarrollo de aplicaciones Gemini con Jetpack Compose, componentes de interfaz y patrones de diseño"
+      },
+      "https://www.arsturn.com/blog/highlighting-the-differences-in-user-interface-design-among-various-versions-of-gemini": {
+        "id": 66,
+        "publisher": "Arsturn",
+        "url": "https://www.arsturn.com/blog/highlighting-the-differences-in-user-interface-design-among-various-versions-of-gemini",
+        "title": "Análisis de la Evolución del Diseño de UI de Gemini",
+        "info": "Análisis profundo de la evolución del diseño de UI de Gemini desde Bard hasta la versión actual, incluyendo cambios estéticos, navegación mejorada, funciones contextuales y accesibilidad"
+      },
+      "https://medium.com/design-bootcamp/first-time-trying-gemini-ux-review-47866838e60b": {
+        "id": 67,
+        "publisher": "Medium/Design Bootcamp",
+        "url": "https://medium.com/design-bootcamp/first-time-trying-gemini-ux-review-47866838e60b",
+        "title": "Primera Experiencia con Gemini - Revisión UX",
+        "info": "Revisión de experiencia de usuario de Gemini con observaciones sobre página de inicio, proceso de inicio, interfaz del chatbot y funcionalidades multimodales"
+      },
+      "https://gemini.google/overview/": {
+        "id": 68,
+        "publisher": "Google",
+        "url": "https://gemini.google/overview/",
+        "title": "Overview Oficial de la Aplicación Gemini",
+        "info": "Documentación oficial completa de Gemini incluyendo funcionalidades, capacidades multimodales, limitaciones conocidas, evolución del diseño y características de seguridad"
+      }
+    },
+    "Análisis de UI/UX de ChatGPT": {
+      "https://www.datastudios.org/post/chatgpt-and-its-competitors-how-openai-s-interface-shaped-the-look-of-modern-chatbots": {
+        "id": 69,
+        "publisher": "DataStudios",
+        "url": "https://www.datastudios.org/post/chatgpt-and-its-competitors-how-openai-s-interface-shaped-the-look-of-modern-chatbots",
+        "title": "ChatGPT and its competitors: how OpenAI's interface shaped the look of modern chatbots",
+        "info": "Análisis de la influencia de la interfaz de ChatGPT en el diseño de chatbots modernos, incluyendo elementos como interfaz minimalista, burbujas de texto simples, y patrones de navegación"
+      },
+      "https://javascript.plainenglish.io/i-reverse-engineered-chatgpts-ui-here-s-what-openai-doesn-t-want-you-to-know-93df9b31009d": {
+        "id": 70,
+        "publisher": "JavaScript in Plain English",
+        "url": "https://javascript.plainenglish.io/i-reverse-engineered-chatgpts-ui-here-s-what-openai-doesn-t-want-you-to-know-93df9b31009d",
+        "title": "I Reverse-Engineered ChatGPT's UI. Here's What OpenAI Doesn't Want You to Know",
+        "info": "Análisis técnico detallado de la implementación de CSS y JavaScript de ChatGPT, incluyendo tipografía personalizada 'Söhne', patrones de animación, tiempo de respuesta óptimo y psicología del streaming"
+      },
+      "https://www.eleken.co/blog-posts/chatbot-ui-examples": {
+        "id": 71,
+        "publisher": "Eleken",
+        "url": "https://www.eleken.co/blog-posts/chatbot-ui-examples",
+        "title": "30 Chatbot UI Examples from Product Designers",
+        "info": "Colección de mejores prácticas de diseño de interfaces de chatbots, incluyendo ejemplos específicos de ChatGPT y otros 29 chatbots con análisis de características y patrones de UX"
+      },
+      "https://intuitionlabs.ai/articles/conversational-ai-ui-comparison-2025": {
+        "id": 72,
+        "publisher": "Intuition Labs",
+        "url": "https://intuitionlabs.ai/articles/conversational-ai-ui-comparison-2025",
+        "title": "Comparing Conversational AI Tool User Interfaces 2025",
+        "info": "Comparación detallada de interfaces de herramientas de IA conversacional incluyendo ChatGPT, con análisis de layout, usabilidad, personalización y funcionalidades avanzadas"
+      },
+      "https://openai.com/index/introducing-canvas/": {
+        "id": 73,
+        "publisher": "OpenAI",
+        "url": "https://openai.com/index/introducing-canvas/",
+        "title": "Introducing canvas, a new way to write and code with ChatGPT",
+        "info": "Documentación oficial de la funcionalidad Canvas de ChatGPT, incluyendo diseño de interfaz para colaboración en proyectos de escritura y codificación"
+      },
+      "https://medium.com/@deepalikaranjavkar/the-lost-conversations-redesigning-chatgpts-history-and-search-experience-ux-case-study-eb5a89a07bc0": {
+        "id": 74,
+        "publisher": "Medium",
+        "url": "https://medium.com/@deepalikaranjavkar/the-lost-conversations-redesigning-chatgpts-history-and-search-experience-ux-case-study-eb5a89a07bc0",
+        "title": "The Lost Conversations: Redesigning ChatGPT's History and Search Experience",
+        "info": "Estudio de caso de UX sobre problemas de usabilidad en el diseño del historial de conversaciones de ChatGPT y propuestas de mejora específicas"
+      },
+      "https://developers.openai.com/apps-sdk/concepts/design-guidelines/": {
+        "id": 75,
+        "publisher": "OpenAI",
+        "url": "https://developers.openai.com/apps-sdk/concepts/design-guidelines/",
+        "title": "App design guidelines - OpenAI Developers",
+        "info": "Guías de diseño oficiales de OpenAI para aplicaciones de IA, incluyendo principios de UX, responsive design, accesibilidad y mejores prácticas de interfaz"
+      },
+      "https://cloudscape.design/patterns/genai/genai-loading-states/": {
+        "id": 76,
+        "publisher": "AWS",
+        "url": "https://cloudscape.design/patterns/genai/genai-loading-states/",
+        "title": "Generative AI loading states - Cloudscape Design System",
+        "info": "Sistema de diseño de CloudFront para estados de carga en IA generativa, incluyendo categorización de etapas de procesamiento y generación con directrices de UX"
+      },
+      "https://medium.com/uxdworld/6-loading-state-patterns-that-feel-premium-716aa0fe63e8": {
+        "id": 77,
+        "publisher": "UXD World",
+        "url": "https://medium.com/uxdworld/6-loading-state-patterns-that-feel-premium-716aa0fe63e8",
+        "title": "6 Loading State Patterns That Feel Premium",
+        "info": "Análisis detallado de 6 patrones de estados de carga premium utilizados por empresas como Linear, Vercel y Stripe, con técnicas de implementación visual avanzadas"
+      },
+      "https://frontendlead.com/system-design/build-chat-gpt-frontend-system-design": {
+        "id": 78,
+        "publisher": "FrontendLead",
+        "url": "https://frontendlead.com/system-design/build-chat-gpt-frontend-system-design",
+        "title": "Build ChatGPT - Frontend System Design Guide",
+        "info": "Guía técnica de diseño de frontend para aplicaciones estilo ChatGPT, incluyendo principios de escalabilidad, streaming de respuestas y manejo de usuarios masivos"
+      }
+    },
+    "Análisis UI/UX Claude (Anthropic)": {
+      "https://intuitionlabs.ai/articles/conversational-ai-ui-comparison-2025": {
+        "id": 79,
+        "publisher": "IntuitionLabs",
+        "url": "https://intuitionlabs.ai/articles/conversational-ai-ui-comparison-2025",
+        "title": "Comparing Conversational AI Tool User Interfaces 2025",
+        "info": "Análisis comparativo detallado de interfaces de IA conversacional incluyendo Claude. Características de diseño: interfaz minimalista, barra lateral para conversaciones y Projects, layout limpio con acentos morados, manejo de 200K tokens, capacidades de personalización y colaboración"
+      },
+      "https://princepaluiux.substack.com/p/ux-perspective-analysis-of-ai-economic": {
+        "id": 80,
+        "publisher": "Prince Pal UI/UX",
+        "url": "https://princepaluiux.substack.com/p/ux-perspective-analysis-of-ai-economic",
+        "title": "UX Perspective Analysis of AI Economic Impact Study on Claude.ai",
+        "info": "Análisis de patrones de uso y experiencia del usuario de Claude basado en estudio de 1 millón de conversaciones. Identifica áreas de optimización UX para desarrolladores y escritores, patrones de interacción y necesidades de personalización"
+      },
+      "https://michael.design/claude/": {
+        "id": 81,
+        "publisher": "Michael Design",
+        "url": "https://michael.design/claude/",
+        "title": "Claude Visual Design Analysis",
+        "info": "Estudio detallado del sistema de diseño visual de Claude: paleta de colores (azules desaturados, verdes apagados), tipografía (Inter para texto, JetBrains Mono para código), principios de diseño centrados en transparencia, sofisticación medida y claridad adaptativa"
+      },
+      "https://support.claude.com/en/articles/9517075-what-are-projects": {
+        "id": 82,
+        "publisher": "Claude Help Center (Anthropic)",
+        "url": "https://support.claude.com/en/articles/9517075-what-are-projects",
+        "title": "What are Projects?",
+        "info": "Documentación oficial de funcionalidad Projects: workspace colaborativo con historiales de chat separados, bases de conocimiento, escalabilidad RAG, permisos granulares (puede usar, puede editar, creador), compartición individual/organizacional"
+      },
+      "https://support.claude.com/en/articles/9487310-what-are-artifacts-and-how-do-i-use-them": {
+        "id": 83,
+        "publisher": "Claude Help Center (Anthropic)",
+        "url": "https://support.claude.com/en/articles/9487310-what-are-artifacts-and-how-do-i-use-them",
+        "title": "What are Artifacts and how do I use them?",
+        "info": "Documentación oficial de Artifacts: ventanas dedicadas para contenido autónomo (>15 líneas), editor de código con preview, capacidades de exportación, integración con MCP, múltiples artifacts por conversación, almacenamiento persistente personal/compartido"
+      },
+      "https://geist.co/work/anthropic": {
+        "id": 84,
+        "publisher": "Geist Studio",
+        "url": "https://geist.co/work/anthropic",
+        "title": "Anthropic Brand and Design System Development",
+        "info": "Desarrollo colaborativo de identidad visual Anthropic con Geist Studio durante 2.5 años: sistema de diseño robusto, elementos visuales distintivos, branding enfocado en IA segura y centrada en humanos, recursos visuales y animaciones"
+      }
+    },
+    "Análisis UI/UX de MiniMax Agent": {
+      "https://agent.minimax.io/features/en.html": {
+        "id": 85,
+        "publisher": "MiniMax",
+        "url": "https://agent.minimax.io/features/en.html",
+        "title": "Características del Agente MiniMax - Documentación Oficial",
+        "info": "Información detallada sobre las funcionalidades del agente incluyendo escritura con IA, interacción por voz, reconocimiento de imágenes, análisis de documentos, generación de código, traducción en tiempo real y características especializadas como meditación y análisis financiero"
+      },
+      "https://aibluewitch.com/actual-test-minimax-agent-has-covered-front-end-back-end-model-ui-all-at-once-and-im-completely-stunned/": {
+        "id": 86,
+        "publisher": "AI Blue Witch",
+        "url": "https://aibluewitch.com/actual-test-minimax-agent-has-covered-front-end-back-end-model-ui-all-at-once-and-im-completely-stunned/",
+        "title": "Prueba Real: MiniMax Agent Cubre Front-end + Back-end + Modelo + UI",
+        "info": "Análisis detallado del estilo de UI del agente MiniMax: estilo simple y consistente con hábitos de oficina, menú para ver historial de registros, adaptación móvil optimizada, integración de voz, y generación automática de páginas UI completas"
+      },
+      "https://skywork.ai/skypage/en/MiniMax-AI-Deep-Dive:-My-Honest-Review-of-the-AGI-Powerhouse/1973804758341840896": {
+        "id": 87,
+        "publisher": "Skywork",
+        "url": "https://skywork.ai/skypage/en/MiniMax-AI-Deep-Dive:-My-Honest-Review-of-the-AGI-Powerhouse/1973804758341840896",
+        "title": "MiniMax AI Deep Dive: Análisis Honesto del Potencia AGI",
+        "info": "Descripción de la interfaz limpia y concepto sencillo del AI Agent, proceso intuitivo de Hailuo con caja de prompts y ajustes straightforward UI, y enfoque en democratización de herramientas de producción"
+      },
+      "https://fuselabcreative.com/ui-design-for-ai-agents/": {
+        "id": 88,
+        "publisher": "Fuselab Creative",
+        "url": "https://fuselabcreative.com/ui-design-for-ai-agents/",
+        "title": "Diseño de UI para Agentes de IA",
+        "info": "Principios fundamentales para diseñar interfaces de agentes de IA incluyendo transparencia, control del usuario, retroalimentación proactiva, manejo robusto de errores, interfaces conversacionales, empujones proactivos y sistemas multi-agente"
+      },
+      "https://www.minimax.io/news/minimax-agent": {
+        "id": 89,
+        "publisher": "MiniMax",
+        "url": "https://www.minimax.io/news/minimax-agent",
+        "title": "MiniMax Agent: Code is Cheap, Show Me the Requirement",
+        "info": "Enfoque de diseño visual y calidad de interacción para ofrecer una excelente experiencia de usuario (UX/UI), priorizando el diseño visual durante el desarrollo"
+      }
+    },
+    "Patrones UI/UX para Gestión de Proyectos y Conversaciones en Asistentes AI": {
+      "https://dev.to/letanure/claude-code-part-3-conversation-management-and-context-3l28": {
+        "id": 90,
+        "publisher": "DEV Community",
+        "url": "https://dev.to/letanure/claude-code-part-3-conversation-management-and-context-3l28",
+        "title": "Claude Code: Part 3 - Conversation Management and Context",
+        "info": "Patrones específicos de gestión de conversaciones en Claude, comandos /clear y /compact, construcción incremental de contexto, y técnicas para mantener conversaciones enfocadas."
+      },
+      "https://uxplanet.org/7-key-design-patterns-for-ai-interfaces-893ab96988f6": {
+        "id": 91,
+        "publisher": "UX Planet",
+        "url": "https://uxplanet.org/7-key-design-patterns-for-ai-interfaces-893ab96988f6",
+        "title": "7 Key Design Patterns for AI Interfaces",
+        "info": "Patrones clave de diseño para interfaces AI: Lienzo Colaborativo, Chatbot y Copiloto, Formularios de entrada, Generación de medios, Interfaces de Voz, Interfaces de Desarrollador, y Agentes a Nivel de Sistema."
+      },
+      "https://www.codementor.io/@chihebnabil/i-built-a-claude-chat-ui-because-i-was-tired-of-the-official-limitations-2lxqr345lk": {
+        "id": 92,
+        "publisher": "Codementor",
+        "url": "https://www.codementor.io/@chihebnabil/i-built-a-claude-chat-ui-because-i-was-tired-of-the-official-limitations-2lxqr345lk",
+        "title": "I Built a Claude Chat UI Because I Was Tired of the Official Limitations",
+        "info": "Análisis de limitaciones de la UI oficial de Claude, patrones de diseño para interfaces de chat personalizadas, almacenamiento local de conversaciones y manejo de archivos."
+      },
+      "https://uxforai.com/p/the-art-of-ai-conversation-ai-chat-pattern": {
+        "id": 93,
+        "publisher": "UX for AI",
+        "url": "https://uxforai.com/p/the-art-of-ai-conversation-ai-chat-pattern",
+        "title": "The Art of AI Conversation: AI Chat Pattern",
+        "info": "Comparación detallada entre patrones de ChatGPT y Grammarly GO, diferencias en guardado de historial, bucles de retroalimentación, y consideraciones de diseño para interfaces conversacionales."
+      },
+      "https://www.builder.io/blog/claude-code": {
+        "id": 94,
+        "publisher": "Builder.io",
+        "url": "https://www.builder.io/blog/claude-code",
+        "title": "How I use Claude Code (+ my best tips)",
+        "info": "Mejores prácticas de Claude Code, patrones de interfaz en terminal y visual, workflows de diseño estilo Figma, y gestión de proyectos con hooks personalizados."
+      },
+      "https://dev.to/anmolbaranwal/how-to-sync-context-across-ai-assistants-chatgpt-claude-perplexity-in-your-browser-2k9l": {
+        "id": 95,
+        "publisher": "DEV Community",
+        "url": "https://dev.to/anmolbaranwal/how-to-sync-context-across-ai-assistants-chatgpt-claude-perplexity-in-your-browser-2k9l",
+        "title": "How to sync Context across AI Assistants (ChatGPT, Claude, Perplexity)",
+        "info": "Arquitectura de sincronización de contexto entre múltiples asistentes AI, extensión OpenMemory, gestión de memorias contextuales, y patrones para evitar vendor lock-in."
+      },
+      "https://guptadeepak.com/complete-guide-to-ai-tokens-understanding-optimization-and-cost-management/": {
+        "id": 96,
+        "publisher": "Deepak Gupta",
+        "url": "https://guptadeepak.com/complete-guide-to-ai-tokens-understanding-optimization-and-cost-management/",
+        "title": "AI Tokens Explained: Complete Guide to Usage, Optimization & Costs",
+        "info": "Análisis detallado de uso de tokens en modelos AI, ventanas de contexto, estrategias de optimización, y mejores prácticas para gestión de recursos en aplicaciones AI."
+      },
+      "https://lollypop.design/blog/2025/may/ai-conversational-interfaces/": {
+        "id": 97,
+        "publisher": "Lollypop Design",
+        "url": "https://lollypop.design/blog/2025/may/ai-conversational-interfaces/",
+        "title": "Transforming the Future of UX Through AI Conversational Interfaces",
+        "info": "Evolución de interfaces conversacionales, tipos de asistentes AI (chatbots, voz, híbridos), patrones de diseño para cambio entre diálogos, y mecanismos de gestión de contexto."
+      },
+      "https://www.telusdigital.com/insights/digital-experience/article/7-ux-ui-rules-for-designing-a-conversational-ai-assistant": {
+        "id": 98,
+        "publisher": "TELUS Digital",
+        "url": "https://www.telusdigital.com/insights/digital-experience/article/7-ux-ui-rules-for-designing-a-conversational-ai-assistant",
+        "title": "Conversational AI Assistant Design: 7 UX/UI Best Practices",
+        "info": "Mejores prácticas para diseño de asistentes conversacionales: manejo de multi-intención, preguntas de seguimiento, escalada a agentes humanos, y patrones para gestión de conversaciones complejas."
+      },
+      "https://help.openai.com/en/articles/10169521-using-projects-in-chatgpt": {
+        "id": 99,
+        "publisher": "OpenAI",
+        "url": "https://help.openai.com/en/articles/10169521-using-projects-in-chatgpt",
+        "title": "Projects in ChatGPT",
+        "info": "Funcionalidades de proyectos en ChatGPT: organización del trabajo, memoria de proyecto, subida de archivos, instrucciones personalizadas, colaboración entre miembros, y gestión de permisos de acceso."
+      }
+    },
+    "Manejo de Contexto en Aplicaciones de Asistentes AI": {
+      "https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents": {
+        "id": 100,
+        "publisher": "Anthropic",
+        "url": "https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents",
+        "title": "Effective Context Engineering for AI Agents",
+        "info": "Estrategias de ingeniería de contexto para agentes AI, técnicas de gestión de memoria y estado, arquitectura de contexto efectivo, estrategias de recuperación y compactación"
+      },
+      "https://www.multimodal.dev/post/semantic-chunking-for-rag": {
+        "id": 101,
+        "publisher": "Multimodal.dev",
+        "url": "https://www.multimodal.dev/post/semantic-chunking-for-rag",
+        "title": "Semantic Chunking for RAG: Better Context, Better Results",
+        "info": "Técnicas de chunking semántico, métodos de vectorización y optimización de RAG, ventajas de la segmentación semántica vs chunking tradicional, estrategias de superposición y embedding"
+      },
+      "https://www.letta.com/blog/memory-blocks": {
+        "id": 102,
+        "publisher": "Letta",
+        "url": "https://www.letta.com/blog/memory-blocks",
+        "title": "Memory Blocks: The Key to Agentic Context Management",
+        "info": "Sistemas de bloques de memoria para gestión de contexto agéntica, memoria persistente y coherente, componentes de memory blocks (label, value, limit, descriptions), persistencia y modificación de memoria"
+      },
+      "https://medium.com/@omark.k.aly/context-management-and-memory-systems-building-ai-that-remembers-f4c8a7abe882": {
+        "id": 103,
+        "publisher": "Medium",
+        "url": "https://medium.com/@omark.k.aly/context-management-and-memory-systems-building-ai-that-remembers-f4c8a7abe882",
+        "title": "Context Management and Memory Systems: Building AI That Remembers",
+        "info": "Estrategias de memoria de corto plazo, largo plazo y episódica, arquitectura de memoria de tres niveles, implementación práctica de agentes de memoria, técnicas de consolidación y importancia scoring"
+      },
+      "https://aclanthology.org/2025.icnlsp-1.15.pdf": {
+        "id": 104,
+        "publisher": "ACL Anthology",
+        "url": "https://aclanthology.org/2025.icnlsp-1.15.pdf",
+        "title": "The Chunking Paradigm: Recursive Semantic for RAG Optimization",
+        "info": "Chunking semántico recursivo para optimización de RAG, mejora en contextual relevancy y total score, comparación con chunking tradicional, algoritmos de splitting y merging"
+      },
+      "https://aclanthology.org/2024.icnlsp-1.12.pdf": {
+        "id": 105,
+        "publisher": "ACL Anthology",
+        "url": "https://aclanthology.org/2024.icnlsp-1.12.pdf",
+        "title": "Large-scale Summarization of Chat Transcripts in the Absence of Annotated Summaries",
+        "info": "Técnicas híbridas de summarización de conversaciones, separación de canales, restauración de puntuación, summarización extractiva y abstractiva, evaluación con BLEU y ROUGE scores"
+      },
+      "https://docs.github.com/en/copilot/get-started/best-practices": {
+        "id": 106,
+        "publisher": "GitHub",
+        "url": "https://docs.github.com/en/copilot/get-started/best-practices",
+        "title": "Best practices for using GitHub Copilot",
+        "info": "Mejores prácticas para uso de GitHub Copilot, gestión de contexto multi-archivo, contexto de conversación, estrategias de prompts y verificación de trabajo"
+      },
+      "https://medium.com/@raunak-jain/design-patterns-for-compound-ai-systems-copilot-rag-fa911c7a62e0": {
+        "id": 107,
+        "publisher": "Medium",
+        "url": "https://medium.com/@raunak-jain/design-patterns-for-compound-ai-systems-copilot-rag-fa911c7a62e0",
+        "title": "Design Patterns for Compound AI Systems (Conversational AI, CoPilots, RAG)",
+        "info": "Patrones de diseño para sistemas AI compuestos incluyendo RAG conversacional, IA conversacional y multi-agente, técnicas de threading y manejo de contexto"
+      },
+      "https://eclipsesource.com/blogs/2024/07/26/ai-context-management-in-domain-specific-tools/": {
+        "id": 108,
+        "publisher": "EclipseSource",
+        "url": "https://eclipsesource.com/blogs/2024/07/26/ai-context-management-in-domain-specific-tools/",
+        "title": "AI Context Management in Domain-specific Tools",
+        "info": "Gestión de contexto en herramientas AI específicas de dominio, estrategias RAG, workspace maps, autonomous context requests, enrutamiento a estrategias de aumento de contexto"
+      },
+      "https://www.vellum.ai/blog/multi-agent-systems-building-with-context-engineering": {
+        "id": 109,
+        "publisher": "Vellum AI",
+        "url": "https://www.vellum.ai/blog/multi-agent-systems-building-with-context-engineering",
+        "title": "How to Build Multi Agent AI Systems With Context Engineering",
+        "info": "Sistemas multiagente con ingeniería de contexto, patrones de orquestación (supervisor, jerárquico, red), gestión de contexto entre agentes, mejores prácticas y errores comunes"
+      },
+      "https://ajithp.com/2025/06/30/ai-native-memory-persistent-agents-second-me/": {
+        "id": 110,
+        "publisher": "Ajith P",
+        "url": "https://ajithp.com/2025/06/30/ai-native-memory-persistent-agents-second-me/",
+        "title": "AI-Native Memory and the Rise of Context-Aware AI Agents",
+        "info": "Arquitectura de memoria nativa AI de tres niveles, concepto Second Me, lifelong personal model (LPM), implementación de memoria persistente, consideraciones éticas y de escalabilidad"
+      }
+    },
+    "Web Code Editors with AI Analysis": {
+      "https://blog.replit.com/code-editors": {
+        "id": 111,
+        "publisher": "Replit",
+        "url": "https://blog.replit.com/code-editors",
+        "title": "Comparing Code Editors: Ace, CodeMirror and Monaco",
+        "info": "Análisis técnico detallado comparando editores Monaco, CodeMirror y Ace basado en la experiencia de Replit. Incluye ventajas, desventajas, rendimiento, extensibilidad y soporte móvil de cada editor."
+      },
+      "https://github.com/remcohaszing/codemirror-languageservice": {
+        "id": 112,
+        "publisher": "GitHub",
+        "url": "https://github.com/remcohaszing/codemirror-languageservice",
+        "title": "codemirror-languageservice: Integrate a Language Server Protocol (LSP) in CodeMirror",
+        "info": "Implementación de LSP para CodeMirror 6 con soporte para autocompletado, hover tooltips y diagnóstico. Incluye ejemplos de código y arquitectura técnica."
+      },
+      "https://blog.stackblitz.com/posts/introducing-webcontainers/": {
+        "id": 113,
+        "publisher": "StackBlitz",
+        "url": "https://blog.stackblitz.com/posts/introducing-webcontainers/",
+        "title": "Introducing WebContainers: Run Node.js natively in your browser",
+        "info": "Introducción técnica a WebContainers, tecnología que permite ejecutar Node.js nativamente en el navegador. Detalla arquitectura, rendimiento y diferencias con Docker."
+      },
+      "https://microsoft.github.io/language-server-protocol/": {
+        "id": 114,
+        "publisher": "Microsoft",
+        "url": "https://microsoft.github.io/language-server-protocol/",
+        "title": "Language Server Protocol Official Documentation",
+        "info": "Especificación oficial del Language Server Protocol (LSP) de Microsoft, definiendo el protocolo para comunicación entre editores y servidores de lenguaje."
+      },
+      "https://www.presidio.com/technical-blog/building-a-browser-based-terminal-using-docker-and-xtermjs/": {
+        "id": 115,
+        "publisher": "Presidio",
+        "url": "https://www.presidio.com/technical-blog/building-a-browser-based-terminal-using-docker-and-xtermjs/",
+        "title": "Building a Browser-based Terminal using Docker and XtermJS",
+        "info": "Tutorial detallado sobre implementación de terminal web usando Xterm.js y Docker con arquitectura técnica específica y pasos de implementación."
+      },
+      "https://www.freecodecamp.org/news/how-to-build-a-replit-clone-with-socketio-monaco-editor-and-copilotkit/": {
+        "id": 116,
+        "publisher": "freeCodeCamp",
+        "url": "https://www.freecodecamp.org/news/how-to-build-a-replit-clone-with-socketio-monaco-editor-and-copilotkit/",
+        "title": "How to Build a Replit Clone with Socket.io, Monaco Editor, and CopilotKit",
+        "info": "Guía completa para construir un clon de Replit con Monaco Editor, integración con IA usando CopilotKit y streaming de código en tiempo real."
+      },
+      "https://github.com/qualified/lsps": {
+        "id": 117,
+        "publisher": "qualified",
+        "url": "https://github.com/qualified/lsps",
+        "title": "lsps: Use Language Servers with in-browser editors",
+        "info": "Implementación de LSP en navegador usando Web Workers, incluye ejemplos y demostraciones con múltiples lenguajes de programación."
+      },
+      "https://webcontainers.io/": {
+        "id": 118,
+        "publisher": "StackBlitz",
+        "url": "https://webcontainers.io/",
+        "title": "WebContainers - Dev environments in your web app",
+        "info": "Sitio oficial de WebContainers con documentación técnica, capacidades y casos de uso para entornos de desarrollo web completos."
+      },
+      "https://spencerporter2.medium.com/building-copilot-on-the-web-f090ceb9b20b": {
+        "id": 119,
+        "publisher": "Medium",
+        "url": "https://spencerporter2.medium.com/building-copilot-on-the-web-f090ceb9b20b",
+        "title": "Building Copilot On The Web - Monaco Editor Based Copilot",
+        "info": "Implementación práctica de un Copilot web usando Monaco Editor con streaming de código AI, incluye manejo de latencia y caché de sugerencias."
+      },
+      "https://blog.logrocket.com/building-web-based-terminal-components-termino-js/": {
+        "id": 123,
+        "publisher": "LogRocket",
+        "url": "https://blog.logrocket.com/building-web-based-terminal-components-termino-js/",
+        "title": "Termino.js vs xterm.js comparison for web terminals",
+        "info": "Implementación práctica de terminal web con Termino.js incluyendo arquitectura, configuración y comparación con otras alternativas."
+      },
+      "https://dev.to/abdddd/how-to-build-a-web-ide-like-codesandbox-38e6": {
+        "id": 124,
+        "publisher": "Dev.to",
+        "url": "https://dev.to/abdddd/how-to-build-a-web-ide-like-codesandbox-38e6",
+        "title": "Web IDE development with Monaco, Xterm.js and LSP",
+        "info": "Guía detallada sobre construcción de IDE web con terminal, sistema de archivos, sincronización y soporte para múltiples lenguajes de programación."
+      },
+      "https://ona.com/stories/naming-is-hard": {
+        "id": 122,
+        "publisher": "Ona",
+        "url": "https://ona.com/stories/naming-is-hard",
+        "title": "Naming is hard: taking 'Flex' into the future",
+        "info": "Evolución arquitectónica de Gitpod hacia su nueva arquitectura Flex, incluyendo capacidades para desarrollo con IA y Kubernetes-in-workspaces."
+      }
+    },
+    "Mejores Prácticas para Equipos Especializados de Agentes": {
+      "https://arxiv.org/html/2506.02931v1": {
+        "id": 125,
+        "publisher": "arXiv - Texas A&M University",
+        "url": "https://arxiv.org/html/2506.02931v1",
+        "title": "ThinkTank: A Framework for Generalizing Domain-Specific AI Agent Systems",
+        "info": "Framework integral ThinkTank para transformar sistemas de agentes específicos de dominio en plataformas universales de inteligencia colaborativa. Incluye arquitecturas modulares basadas en Agno, generalización de roles de agentes, estructuras de reuniones, y integración de conocimiento via RAG."
+      },
+      "https://netflixtechblog.com/foundation-model-for-personalized-recommendation-1a0bd8e02d39": {
+        "id": 126,
+        "publisher": "Netflix Tech Blog",
+        "url": "https://netflixtechblog.com/foundation-model-for-personalized-recommendation-1a0bd8e02d39",
+        "title": "Foundation Model for Personalized Recommendation",
+        "info": "Netflix's foundation model para recomendación personalizada usando principios de LLMs. Sistema maneja 300+ millones de usuarios, cientos de miles de millones de interacciones, con arquitectura de 'next-token prediction' autoregresiva y mecanismos de escalabilidad."
+      },
+      "https://smythos.com/developers/agent-development/fipa-agent-communication-language/": {
+        "id": 127,
+        "publisher": "SmythOS",
+        "url": "https://smythos.com/developers/agent-development/fipa-agent-communication-language/",
+        "title": "An Introduction to FIPA Agent Communication Language",
+        "info": "Especificaciones técnicas completas de FIPA-ACL incluyendo estructura de mensajes, semántica basada en teoría de actos de habla, desafíos de implementación y direcciones futuras en sistemas multi-agente interoperables."
+      },
+      "https://www.swarm.work/case-studies": {
+        "id": 128,
+        "publisher": "Swarm.work",
+        "url": "https://www.swarm.work/case-studies",
+        "title": "Case Studies: AI Transformation Results with Swarm Intelligence",
+        "info": "Casos de estudio empresariales de swarm intelligence mostrando ROI de 75% más rápido, 50% reducción de costos, 3x ROI en diversos sectores incluyendo fintech, salud, energía renovable, y proptech con métricas específicas de implementación."
+      },
+      "https://arxiv.org/pdf/2508.12683": {
+        "id": 129,
+        "publisher": "arXiv",
+        "url": "https://arxiv.org/pdf/2508.12683",
+        "title": "A Taxonomy of Hierarchical Multi-Agent Systems",
+        "info": "Taxonomía completa de sistemas multi-agente jerárquicos (HMAS) con cinco ejes de clasificación: control jerárquico, flujo de información, delegación de roles, jerarquías de conocimiento, y estructuras de coordinación."
+      },
+      "https://arxiv.org/html/2507.01701v1": {
+        "id": 130,
+        "publisher": "arXiv",
+        "url": "https://arxiv.org/html/2507.01701v1",
+        "title": "Exploring Advanced LLM Multi-Agent Systems Based on Blackboard",
+        "info": "Desarrollo de agentes inteligentes con blackboard pattern y Model Context Protocol (MCP) para sistemas multi-agente avanzados, incluyendo arquitecturas event-driven y patrones de coordinación."
+      },
+      "https://www.newline.co/@zaoyang/guide-to-ai-agent-performance-metrics--57093e5d": {
+        "id": 131,
+        "publisher": "Newline.co",
+        "url": "https://www.newline.co/@zaoyang/guide-to-ai-agent-performance-metrics--57093e5d",
+        "title": "Guide to AI Agent Performance Metrics",
+        "info": "Métricas de rendimiento de agentes IA incluyendo eficiencia, costo, calidad, confiabilidad, explicabilidad y compliance para entornos empresariales con KPIs de gestión de performance."
+      },
+      "https://cloud.google.com/blog/topics/partners/building-scalable-ai-agents-design-patterns-with-agent-engine-on-google-cloud": {
+        "id": 132,
+        "publisher": "Google Cloud",
+        "url": "https://cloud.google.com/blog/topics/partners/building-scalable-ai-agents-design-patterns-with-agent-engine-on-google-cloud",
+        "title": "Building Scalable AI Agents: Design Patterns With Agent Engine",
+        "info": "Patrones de escalabilidad para agentes IA en Google Cloud incluyendo arquitecturas event-driven, hierarchical agent patterns, y design patterns para sistemas multi-agente empresariales."
+      },
+      "https://www.sciencedirect.com/science/article/abs/pii/S0005109806000057": {
+        "id": 133,
+        "publisher": "ScienceDirect",
+        "url": "https://www.sciencedirect.com/science/article/abs/pii/S0005109806000057",
+        "title": "Analysis of Contract Net in Multi-Agent Systems",
+        "info": "Implementación de Contract Net Protocol (CNP) en sistemas multi-agente con análisis de coordinación en manufactura, control de asignación de tareas, y protocolos de negociación mejorados."
+      },
+      "https://www.mdpi.com/2227-9717/13/4/1144": {
+        "id": 134,
+        "publisher": "MDPI - Processes",
+        "url": "https://www.mdpi.com/2227-9717/13/4/1144",
+        "title": "Integration of Multi-Agent Systems and AI in Self-Healing Systems",
+        "info": "Sistemas de auto-curación basados en multi-agente para self-healing con arquitecturas auto-adaptativas, detección y recuperación de fallos, y mantenimiento predictivo en entornos distribuidos."
+      }
+    },
+    "Tecnologías Emergentes en Sistemas Multi-Agente 2024-2025": {
+      "https://proceedings.neurips.cc/paper_files/paper/2024/file/52c21a32429a7d6050430b606a286a75-Paper-Conference.pdf": {
+        "id": 135,
+        "publisher": "NeurIPS 2024",
+        "url": "https://proceedings.neurips.cc/paper_files/paper/2024/file/52c21a32429a7d6050430b606a286a75-Paper-Conference.pdf",
+        "title": "Grounded Answers for Multi-agent Decision-making Problem through Generative World Model (LBI)",
+        "info": "LBI framework que integra GPT-4 con simulación generativa para aprendizaje por refuerzo multi-agente. Incluye modelos de dinámica y recompensas para crear simuladores interactivos."
+      },
+      "https://arxiv.org/pdf/2507.08616": {
+        "id": 136,
+        "publisher": "ICML 2025",
+        "url": "https://arxiv.org/pdf/2507.08616",
+        "title": "AGENTSNET: Coordination and Collaborative Reasoning in Multi-Agent LLMs",
+        "info": "Benchmark para evaluar coordinación en sistemas multi-agente con LLMs usando problemas fundamentales de computación distribuida. Evaluado hasta 100 agentes."
+      },
+      "https://github.com/openai/swarm": {
+        "id": 137,
+        "publisher": "OpenAI",
+        "url": "https://github.com/openai/swarm",
+        "title": "OpenAI Swarm Framework",
+        "info": "Framework experimental para construir sistemas multi-agente con orquestación ligera, altamente controlables y fácilmente testables."
+      },
+      "https://www.microsoft.com/en-us/research/project/autogen/": {
+        "id": 138,
+        "publisher": "Microsoft Research",
+        "url": "https://www.microsoft.com/en-us/research/project/autogen/",
+        "title": "Microsoft AutoGen Framework",
+        "info": "Framework de programación abierto para construir agentes AI y facilitar la cooperación entre múltiples agentes para resolver tareas."
+      },
+      "https://www.crewai.com/": {
+        "id": 139,
+        "publisher": "CrewAI",
+        "url": "https://www.crewai.com/",
+        "title": "CrewAI Team Orchestration Platform",
+        "info": "Plataforma de orquestación multi-agente con 300+ millones de flujos de trabajo mensuales, adoptada por 60% de Fortune 500."
+      },
+      "https://blog.langchain.com/top-5-langgraph-agents-in-production-2024/": {
+        "id": 140,
+        "publisher": "LangChain",
+        "url": "https://blog.langchain.com/top-5-langgraph-agents-in-production-2024/",
+        "title": "Top 5 LangGraph Agents in Production 2024",
+        "info": "LangGraph como framework de bajo nivel para agentes controlables, utilizado por Uber, LinkedIn, AppFolio, Elastic y Replit en producción."
+      },
+      "https://www.plural.sh/blog/agent-based-kubernetes-deployment/amp/": {
+        "id": 141,
+        "publisher": "Plural",
+        "url": "https://www.plural.sh/blog/agent-based-kubernetes-deployment/amp/",
+        "title": "Agent-Based Kubernetes Deployment Guide",
+        "info": "Arquitectura pull-based para despliegue de agentes en Kubernetes con conexiones salientes seguras, sin acceso entrante."
+      },
+      "https://arxiv.org/html/2509.02449v1": {
+        "id": 142,
+        "publisher": "arXiv",
+        "url": "https://arxiv.org/html/2509.02449v1",
+        "title": "KubeIntellect: A Modular LLM-Orchestrated Agent Framework",
+        "info": "Marco modular para gestión integral de Kubernetes usando agentes LLM con interacción en lenguaje natural para operaciones de API."
+      },
+      "https://arxiv.org/html/2508.02076v1": {
+        "id": 143,
+        "publisher": "arXiv",
+        "url": "https://arxiv.org/html/2508.02076v1",
+        "title": "Token-based Incentive Systems for Strategic Cooperation in Multi-Agent LLM Systems",
+        "info": "Marco MAC-SPGG para incentivos basados en tokens que elimina free-riding y garantiza equilibrio SPNE único en sistemas multi-LLM."
+      },
+      "https://arxiv.org/abs/2402.13440": {
+        "id": 144,
+        "publisher": "arXiv",
+        "url": "https://arxiv.org/abs/2402.13440",
+        "title": "A Neuro-Symbolic Approach to Multi-Agent RL for Interpretability",
+        "info": "Enfoque neuro-simbólico para aprendizaje por refuerzo multi-agente con métodos interpretativos usando formulación dirigida por eventos."
+      }
+    },
+    "Master Coordination Systems Research": {
+      "https://medium.com/@chucksanders22/netflix-conductor-v-s-temporal-uber-cadence-v-s-zeebe-vs-airflow-320df0365948": {
+        "id": 145,
+        "publisher": "Medium",
+        "url": "https://medium.com/@chucksanders22/netflix-conductor-v-s-temporal-uber-cadence-v-s-zeebe-vs-airflow-320df0365948",
+        "title": "Netflix Conductor v/s Temporal (Uber Cadence) v/s Zeebe vs Airflow",
+        "info": "Evaluación comparativa detallada entre Netflix Conductor, Temporal.io, Zeebe y Apache Airflow, incluyendo arquitecturas, patrones de orquestación, fortalezas y debilidades de cada framework"
+      },
+      "https://www.kore.ai/blog/choosing-the-right-orchestration-pattern-for-multi-agent-systems": {
+        "id": 146,
+        "publisher": "Kore.ai",
+        "url": "https://www.kore.ai/blog/choosing-the-right-orchestration-pattern-for-multi-agent-systems",
+        "title": "Choosing the right orchestration pattern for multi-agent systems",
+        "info": "Descripción detallada de tres patrones de orquestación para sistemas multi-agente: Patrón de Supervisor (comando y control centralizado), red de agentes adaptativa y patrón personalizado"
+      },
+      "https://microservices.io/patterns/data/event-sourcing.html": {
+        "id": 147,
+        "publisher": "Microservices.io",
+        "url": "https://microservices.io/patterns/data/event-sourcing.html",
+        "title": "Pattern: Event sourcing",
+        "info": "Análisis completo del patrón Event Sourcing, incluyendo definición, beneficios, casos de uso, implementación técnica y aplicación en coordinación distribuida"
+      },
+      "https://temporal.io/blog/error-handling-in-distributed-systems": {
+        "id": 148,
+        "publisher": "Temporal.io",
+        "url": "https://temporal.io/blog/error-handling-in-distributed-systems",
+        "title": "Error handling in distributed systems",
+        "info": "Guía comprensiva sobre patrones de manejo de errores en sistemas distribuidos, incluyendo circuit breakers, sagas, retries y estrategias de resiliencia"
+      },
+      "https://learn.microsoft.com/en-us/dotnet/orleans/overview": {
+        "id": 149,
+        "publisher": "Microsoft Learn",
+        "url": "https://learn.microsoft.com/en-us/dotnet/orleans/overview",
+        "title": "Orleans overview - .NET",
+        "info": "Información sobre Microsoft Orleans como framework de coordinación distribuida basado en el modelo de actores virtuales"
+      }
+    },
+    "Arquitecturas Avanzadas de Sistemas Multi-Agente Jerárquicos": {
+      "https://sparkco.ai/blog/mastering-hierarchical-agent-systems-a-2025-deep-dive": {
+        "id": 150,
+        "publisher": "SparkCo AI",
+        "url": "https://sparkco.ai/blog/mastering-hierarchical-agent-systems-a-2025-deep-dive",
+        "title": "Mastering Hierarchical Agent Systems: A 2025 Deep Dive",
+        "info": "Taxonomía completa de HMAS con 5 ejes (jerarquía de control, flujo de información, delegación de roles, capas temporales, estructura de comunicación), frameworks modernos (LangChain, CrewAI, LangGraph, AutoGen), bases de datos vectoriales (Pinecone, Weaviate, Chroma), MCP protocol, y mejoras del 20% en eficiencia logística"
+      },
+      "https://arxiv.org/pdf/decentralized_task_allocation.pdf": {
+        "id": 151,
+        "publisher": "ArXiv",
+        "url": "https://arxiv.org/pdf/decentralized_task_allocation.pdf",
+        "title": "Decentralized Task Allocation Algorithms in Multi-Agent Systems",
+        "info": "Algoritmos CBAA, CBBA, ACBBA para asignación descentralizada, algoritmo Hungarian descentralizado, Performance Impact Algorithm (PIA), Hybrid Information and Plan Consensus (HIPC), nuevo enfoque de algoritmo genético descentralizado, mejoras del 20% en eficiencia operacional"
+      },
+      "https://arxiv.org/pdf/leader_election_distributed_systems.pdf": {
+        "id": 152,
+        "publisher": "ArXiv",
+        "url": "https://arxiv.org/pdf/leader_election_distributed_systems.pdf",
+        "title": "Leader Election Algorithms in Distributed Multi-Agent Systems",
+        "info": "Algoritmo RAFT detallado para consenso distribuido, elección de líder en sistemas distribuidos, mecanismos de tolerancia a fallas, replicación de logs y consistencia"
+      },
+      "https://arxiv.org/pdf/multi_agent_coordination.pdf": {
+        "id": 153,
+        "publisher": "ArXiv",
+        "url": "https://arxiv.org/pdf/multi_agent_coordination.pdf",
+        "title": "Multi-Agent Coordination Mechanisms",
+        "info": "Mecanismos de coordinación en sistemas multi-agente, protocolos de comunicación, toma de decisiones distribuida, roles y responsabilidades de agentes"
+      },
+      "https://arxiv.org/pdf/dynamic_task_allocation_dgba.pdf": {
+        "id": 154,
+        "publisher": "ArXiv",
+        "url": "https://arxiv.org/pdf/dynamic_task_allocation_dgba.pdf",
+        "title": "Dynamic Task Allocation using Distributed Greedy Bundle Algorithm",
+        "info": "Distributed Greedy Bundle Algorithm (DGBA), mecanismo de consenso negociado, estrategia greedy para optimización de utilidad marginal, construcción de bundles de tareas en tiempo real, política de asignación libre de conflictos"
+      },
+      "https://cdn.openai.com/business-guides-and-resources/a-practical-guide-to-building-agents.pdf": {
+        "id": 155,
+        "publisher": "OpenAI",
+        "url": "https://cdn.openai.com/business-guides-and-resources/a-practical-guide-to-building-agents.pdf",
+        "title": "A Practical Guide to Building Agents",
+        "info": "Arquitectura de agentes OpenAI con componentes (modelo, herramientas, instrucciones), patrones de orquestación multi-agente (Manager Pattern, Descentralizado), best practices empresariales, guardrails, y ejemplos de implementación usando Agents SDK"
+      },
+      "https://devblogs.microsoft.com/semantic-kernel/introducing-agents-in-semantic-kernel/": {
+        "id": 156,
+        "publisher": "Microsoft",
+        "url": "https://devblogs.microsoft.com/semantic-kernel/introducing-agents-in-semantic-kernel/",
+        "title": "Introducing enterprise multi-agent support in Semantic Kernel",
+        "info": "Soporte multi-agente enterprise en Semantic Kernel con abstracciones de agentes de primera clase, Assistant API agents, Chat completion agents, orquestación multi-agente via chats grupales y flujos de procesos, y combinación de patrones colaborativos"
+      },
+      "https://learn.microsoft.com/en-us/semantic-kernel/frameworks/agent/agent-orchestration/": {
+        "id": 157,
+        "publisher": "Microsoft",
+        "url": "https://learn.microsoft.com/en-us/semantic-kernel/frameworks/agent/agent-orchestration/",
+        "title": "Semantic Kernel Agent Orchestration",
+        "info": "Patrones de orquestación de agentes en Semantic Kernel incluyendo Concurrent, Sequential, Handoff, Group Chat, y Magentic, con ejemplos de implementación en C# y Python, interfaz unificada y extensibilidad"
+      },
+      "https://learn.microsoft.com/en-us/agent-framework/overview/agent-framework-overview": {
+        "id": 158,
+        "publisher": "Microsoft",
+        "url": "https://learn.microsoft.com/en-us/agent-framework/overview/agent-framework-overview",
+        "title": "Introduction to Microsoft Agent Framework",
+        "info": "Microsoft Agent Framework que combina AutoGen y Semantic Kernel, incluyendo agentes de IA, workflows basados en grafos, workflows con checkpoints, patrones de orquestación multi-agente, y capacidades enterprise para .NET y Python"
+      }
+    },
+    "Stack Tecnológico para Dashboards Administrativos 2024": {
+      "https://medium.com/@jessicajournal/react-vs-vue-vs-svelte-the-ultimate-2025-frontend-performance-comparison-5b5ce68614e2": {
+        "id": 159,
+        "publisher": "Medium",
+        "url": "https://medium.com/@jessicajournal/react-vs-vue-vs-svelte-the-ultimate-2025-frontend-performance-comparison-5b5ce68614e2",
+        "title": "React vs. Vue vs. Svelte: The 2025 Performance Comparison",
+        "info": "Comparación exhaustiva de rendimiento entre React, Vue y Svelte para 2025, incluyendo métricas específicas de performance (TTI, bundle size) y casos de uso recomendados para cada framework."
+      },
+      "https://betterstack.com/community/guides/scaling-nodejs/zustand-vs-redux-toolkit-vs-jotai/": {
+        "id": 160,
+        "publisher": "Better Stack",
+        "url": "https://betterstack.com/community/guides/scaling-nodejs/zustand-vs-redux-toolkit-vs-jotai/",
+        "title": "Zustand vs. Redux Toolkit vs. Jotai",
+        "info": "Análisis detallado de Zustand, Redux Toolkit y Jotai para gestión de estado en aplicaciones React, incluyendo comparación de rendimiento, tamaño de bundle, y casos de uso específicos."
+      },
+      "https://rxdb.info/articles/websockets-sse-polling-webrtc-webtransport.html": {
+        "id": 161,
+        "publisher": "RxDB",
+        "url": "https://rxdb.info/articles/websockets-sse-polling-webrtc-webtransport.html",
+        "title": "WebSockets vs Server-Sent-Events vs Long-Polling vs WebRTC vs WebTransport",
+        "info": "Comparación técnica completa de tecnologías en tiempo real: WebSockets, SSE, Long-Polling, WebRTC y WebTransport, con análisis de rendimiento, casos de uso y limitaciones para dashboards."
+      },
+      "https://directus.io/blog/rest-graphql-tprc": {
+        "id": 162,
+        "publisher": "Directus",
+        "url": "https://directus.io/blog/rest-graphql-tprc",
+        "title": "REST vs. GraphQL vs. tRPC: Choosing Your API Architecture",
+        "info": "Análisis comparativo de arquitecturas de API backend: REST, GraphQL y tRPC, incluyendo casos de uso, performance, developer experience y recomendaciones específicas."
+      },
+      "https://northflank.com/blog/vercel-vs-netlify-choosing-the-deployment-platform-in-2025": {
+        "id": 163,
+        "publisher": "Northflank",
+        "url": "https://northflank.com/blog/vercel-vs-netlify-choosing-the-deployment-platform-in-2025",
+        "title": "Vercel vs Netlify: Choosing the right one in 2025",
+        "info": "Comparación exhaustiva de plataformas de deployment para 2025: Vercel vs Netlify vs Docker, incluyendo pricing, features, performance y casos de uso para aplicaciones frontend."
+      },
+      "https://makersden.io/blog/react-ui-libs-2025-comparing-shadcn-radix-mantine-mui-chakra": {
+        "id": 164,
+        "publisher": "MakersDen",
+        "url": "https://makersden.io/blog/react-ui-libs-2025-comparing-shadcn-radix-mantine-mui-chakra",
+        "title": "React UI libraries in 2025: Comparing shadcn/ui, Radix, Mantine, MUI, Chakra",
+        "info": "Comparación detallada de UI libraries de React: shadcn/ui, Radix UI, Mantine, MUI y Chakra UI, incluyendo arquitectura, performance, accesibilidad y casos de uso."
+      },
+      "https://embeddable.com/blog/javascript-charting-libraries": {
+        "id": 165,
+        "publisher": "Embeddable",
+        "url": "https://embeddable.com/blog/javascript-charting-libraries",
+        "title": "6 Best JavaScript Charting Libraries for Dashboards in 2025",
+        "info": "Análisis comparativo de librerías de gráficos JavaScript para dashboards: D3.js, Recharts, Chart.js, ECharts, incluyendo facilidad de uso, performance y casos de uso específicos."
+      },
+      "https://blog.hyperknot.com/p/comparing-auth-providers": {
+        "id": 166,
+        "publisher": "Hyperknot",
+        "url": "https://blog.hyperknot.com/p/comparing-auth-providers",
+        "title": "Comparing Auth from Supabase, Firebase, Auth.js, Ory, Clerk and others",
+        "info": "Comparación exhaustiva de proveedores de autenticación: NextAuth.js, Auth0, Firebase Auth, Clerk, Supabase y otros, incluyendo pricing, features y análisis de pros/contras."
+      },
+      "https://signoz.io/comparisons/best-frontend-cloud-logging-tools/": {
+        "id": 167,
+        "publisher": "SigNoz",
+        "url": "https://signoz.io/comparisons/best-frontend-cloud-logging-tools/",
+        "title": "Best Frontend Cloud Logging Tools: Top 6 Compared [2025]",
+        "info": "Evaluación comparativa de herramientas de monitoring: Sentry, LogRocket, Datadog, New Relic para frontend y backend, incluyendo pricing, performance y casos de uso."
+      },
+      "https://dev.to/hamzakhan/front-end-performance-optimization-tips-for-2025-boost-your-web-apps-speed-1gbg": {
+        "id": 168,
+        "publisher": "Dev.to",
+        "url": "https://dev.to/hamzakhan/front-end-performance-optimization-tips-for-2025-boost-your-web-apps-speed-1gbg",
+        "title": "Front-End Performance Optimization Tips for 2025",
+        "info": "Técnicas avanzadas de optimización de rendimiento frontend para 2025, incluyendo bundle optimization, lazy loading, CDN strategies y mejores prácticas."
+      }
+    },
+    "SilhouetteMCP Integration Research": {
+      "https://modelcontextprotocol.io/docs/learn/architecture": {
+        "id": 169,
+        "publisher": "Model Context Protocol",
+        "url": "https://modelcontextprotocol.io/docs/learn/architecture",
+        "title": "Architecture Overview - Model Context Protocol",
+        "info": "Documentación oficial de arquitectura MCP, componentes, transportes y flujos de interacción"
+      },
+      "https://github.com/modelcontextprotocol/python-sdk": {
+        "id": 170,
+        "publisher": "GitHub",
+        "url": "https://github.com/modelcontextprotocol/python-sdk",
+        "title": "Official Python SDK for MCP servers and clients",
+        "info": "SDK oficial de Python para implementación de clientes y servidores MCP"
+      },
+      "https://www.thoughtworks.com/en-us/insights/blog/generative-ai/model-context-protocol-beneath-hype": {
+        "id": 171,
+        "publisher": "Thoughtworks",
+        "url": "https://www.thoughtworks.com/en-us/insights/blog/generative-ai/model-context-protocol-beneath-hype",
+        "title": "The Model Context Protocol: Getting beneath the hype",
+        "info": "Análisis crítico de las capacidades y limitaciones de MCP en arquitecturas empresariales"
+      },
+      "https://www.redhat.com/en/blog/model-context-protocol-mcp-understanding-security-risks-and-controls": {
+        "id": 172,
+        "publisher": "Red Hat",
+        "url": "https://www.redhat.com/en/blog/model-context-protocol-mcp-understanding-security-risks-and-controls",
+        "title": "Model Context Protocol (MCP): Understanding Security Risks and Controls",
+        "info": "Análisis detallado de riesgos de seguridad en MCP y controles recomendados"
+      },
+      "https://learn.microsoft.com/en-us/azure/api-management/api-management-howto-use-azure-monitor": {
+        "id": 173,
+        "publisher": "Microsoft",
+        "url": "https://learn.microsoft.com/en-us/azure/api-management/api-management-howto-use-azure-monitor",
+        "title": "Monitor APIs in Azure API Management",
+        "info": "Implementación de monitoreo en tiempo real para APIs con métricas, alertas y logs"
+      },
+      "https://community.ibm.com/community/user/ai-datascience/blogs/abishek-s/2024/11/28/the-power-of-server-sent-events-sse": {
+        "id": 174,
+        "publisher": "IBM",
+        "url": "https://community.ibm.com/community/user/ai-datascience/blogs/abishek-s/2024/11/28/the-power-of-server-sent-events-sse",
+        "title": "The Power of Server-Sent Events (SSE)",
+        "info": "Guía técnica sobre Server-Sent Events para dashboards en tiempo real y mejores prácticas"
+      },
+      "https://www.syncfusion.com/blogs/post/view-real-time-data-using-websocket": {
+        "id": 175,
+        "publisher": "Syncfusion",
+        "url": "https://www.syncfusion.com/blogs/post/view-real-time-data-using-websocket",
+        "title": "Real-Time Data Visualization in React using WebSockets and Charts",
+        "info": "Implementación técnica de visualización en tiempo real con WebSockets y React"
+      },
+      "https://javascript.plainenglish.io/how-i-built-interactive-dashboards-with-d3-js-and-react-61080abf3477": {
+        "id": 176,
+        "publisher": "JavaScript in Plain English",
+        "url": "https://javascript.plainenglish.io/how-i-built-interactive-dashboards-with-d3-js-and-react-61080abf3477",
+        "title": "How I Built Interactive Dashboards with D3.js and React",
+        "info": "Experiencias prácticas en construcción de dashboards interactivos con React y D3.js"
+      },
+      "https://medium.com/@ebojacky/javascript-data-visualization-d3-js-vs-react-recharts-c64cff3642b1": {
+        "id": 177,
+        "publisher": "Medium",
+        "url": "https://medium.com/@ebojacky/javascript-data-visualization-d3-js-vs-react-recharts-c64cff3642b1",
+        "title": "JavaScript Data Visualization: D3.js vs. React + Recharts",
+        "info": "Comparación detallada de librerías de visualización para sistemas de monitoreo"
+      },
+      "https://searchinform.com/articles/cybersecurity/measures/siem/management/dashboard-and-reporting/": {
+        "id": 178,
+        "publisher": "SearchInform",
+        "url": "https://searchinform.com/articles/cybersecurity/measures/siem/management/dashboard-and-reporting/",
+        "title": "Best Practices for Creating Effective SIEM Dashboards and Reports",
+        "info": "Mejores prácticas para dashboards SIEM, monitoreo de seguridad en tiempo real e integración de cumplimiento"
+      },
+      "https://www.meegle.com/en_us/topics/distributed-system/distributed-system-monitoring-tools": {
+        "id": 179,
+        "publisher": "Meegle",
+        "url": "https://www.meegle.com/en_us/topics/distributed-system/distributed-system-monitoring-tools",
+        "title": "Distributed System Monitoring Tools",
+        "info": "Herramientas y patrones para monitoreo de sistemas distribuidos y visualización en tiempo real"
+      },
+      "https://www.browserstack.com/guide/performance-management-tools": {
+        "id": 180,
+        "publisher": "BrowserStack",
+        "url": "https://www.browserstack.com/guide/performance-management-tools",
+        "title": "Top 20 Application Performance Management Tools [2025]",
+        "info": "Análisis exhaustivo de herramientas APM, características de dashboards y patrones de monitoreo en tiempo real"
+      }
+    },
+    "Seguridad de Dashboards Administrativos 2024": {
+      "https://oauth.net/2/oauth-best-practice/": {
+        "id": 181,
+        "publisher": "IETF",
+        "url": "https://oauth.net/2/oauth-best-practice/",
+        "title": "OAuth 2.0 Security Best Current Practice - RFC 9700",
+        "info": "Requisitos de seguridad y recomendaciones para clientes y servidores OAuth 2.0, incluyendo autenticación multifactor, autorización basada en tokens y mejores prácticas de implementación"
+      },
+      "https://curity.io/resources/learn/jwt-best-practices/": {
+        "id": 182,
+        "publisher": "Curity",
+        "url": "https://curity.io/resources/learn/jwt-best-practices/",
+        "title": "JWT Security Best Practices",
+        "info": "Prácticas detalladas de seguridad JWT 2024: algoritmos de firma, validación, gestión de claims, evitar datos sensibles, consideraciones de almacenamiento y vulnerabilidades comunes"
+      },
+      "https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html": {
+        "id": 183,
+        "publisher": "OWASP",
+        "url": "https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html",
+        "title": "OWASP Session Management Cheat Sheet",
+        "info": "Directrices completas de OWASP para gestión segura de sesiones: atributos de cookies, protección CSRF, expiración de sesiones, regeneración de IDs y detección de ataques"
+      },
+      "https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html": {
+        "id": 184,
+        "publisher": "OWASP",
+        "url": "https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html",
+        "title": "OWASP CSRF Prevention Cheat Sheet",
+        "info": "Técnicas avanzadas CSRF incluyendo tokens sincronizadores, cookies de doble envío, encabezados personalizados, verificación de origen y protección contra CSRF del lado del cliente"
+      },
+      "https://stytch.com/blog/api-rate-limiting/": {
+        "id": 185,
+        "publisher": "Stytch",
+        "url": "https://stytch.com/blog/api-rate-limiting/",
+        "title": "Top Techniques for Effective API Rate Limiting",
+        "info": "Algoritmos modernos de rate limiting: Token Bucket, Ventana Deslizante, estrategias por plataforma (GitHub, LinkedIn, Google Maps), y técnicas avanzadas con Huella Digital del Dispositivo"
+      },
+      "https://escape.tech/blog/the-state-of-graphql-security-2024/": {
+        "id": 186,
+        "publisher": "Escape",
+        "url": "https://escape.tech/blog/the-state-of-graphql-security-2024/",
+        "title": "The State of GraphQL Security 2024",
+        "info": "Análisis de seguridad GraphQL 2024: 33% de servicios con problemas críticos, 4,400 secretos expuestos, 69% vulnerables a DoS, vulnerabilidades específicas del lenguaje y buenas prácticas"
+      },
+      "https://learn.microsoft.com/en-us/azure/web-application-firewall/shared/application-ddos-protection": {
+        "id": 187,
+        "publisher": "Microsoft Azure",
+        "url": "https://learn.microsoft.com/en-us/azure/web-application-firewall/shared/application-ddos-protection",
+        "title": "Azure WAF Application DDoS Protection",
+        "info": "Protección DDoS Capa 7 con Azure WAF: configuración de límites de tasa, reglas personalizadas, protección contra HTTP floods, geo-filtrado y mejores prácticas de implementación"
+      },
+      "https://sprinto.com/blog/soc-2-vs-gdpr/": {
+        "id": 188,
+        "publisher": "Sprinto",
+        "url": "https://sprinto.com/blog/soc-2-vs-gdpr/",
+        "title": "SOC 2 vs GDPR Explained (2025): Map Once, Comply Twice",
+        "info": "Comparación exhaustiva SOC 2 vs GDPR: mapeo de controles, diferencias entre marcos, cumplimiento de privacidad, requisitos de notificación y estrategias de implementación unificada"
+      },
+      "https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html": {
+        "id": 189,
+        "publisher": "OWASP",
+        "url": "https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html",
+        "title": "OWASP XSS Prevention Cheat Sheet",
+        "info": "Técnicas avanzadas XSS: codificación contextual, saneamiento HTML, Content Security Policy (CSP), sumideros seguros y defensas contra XSS basado en DOM y reflejado"
+      },
+      "https://www.digitalguardian.com/blog/audit-log-best-practices-security-compliance": {
+        "id": 190,
+        "publisher": "Digital Guardian",
+        "url": "https://www.digitalguardian.com/blog/audit-log-best-practices-security-compliance",
+        "title": "Audit Log Best Practices for Security & Compliance",
+        "info": "Mejores prácticas integrales de auditoría 2024: retención de logs (90+ días), análisis en tiempo real, herramientas SIEM, cumplimiento normativo, integridad de logs (WORM), y monitoreo de eventos de seguridad"
+      },
+      "https://docs.aws.amazon.com/waf/latest/developerguide/ddos-app-layer-web-ACL-and-rbr.html": {
+        "id": 191,
+        "publisher": "AWS",
+        "url": "https://docs.aws.amazon.com/waf/latest/developerguide/ddos-app-layer-web-ACL-and-rbr.html",
+        "title": "AWS WAF Web ACLs and Rate-Based Rules",
+        "info": "Protección DDoS Capa 7 con AWS WAF: reglas basadas en tasa, Web ACLs, Shield Advanced, bloqueo automático de IPs maliciosas y mitigación de ataques HTTP/HTTPS"
+      },
+      "https://www.securitycompass.com/blog/best-api-security-practices/": {
+        "id": 192,
+        "publisher": "Security Compass",
+        "url": "https://www.securitycompass.com/blog/best-api-security-practices/",
+        "title": "API Security Best Practices",
+        "info": "Mejores prácticas API security 2025: autenticación OAuth 2.0/OIDC, API Gateway security, rate limiting, validación de esquemas, WAF para APIs, y protección en tiempo real"
+      },
+      "https://csrc.nist.gov/news/2024/nist-guidance-on-implementing-a-zta": {
+        "id": 193,
+        "publisher": "NIST/NCCoE",
+        "url": "https://csrc.nist.gov/news/2024/nist-guidance-on-implementing-a-zta",
+        "title": "NIST Guidance on Implementing a ZTA (SP 1800-35)",
+        "info": "Guía NIST 2024 para implementación de arquitectura Zero-Trust: colaboración con 24 proveedores, 19 implementaciones, mapeo a marcos NIST CSF y mejores prácticas"
+      },
+      "https://learn.microsoft.com/en-us/security/zero-trust/zero-trust-overview": {
+        "id": 194,
+        "publisher": "Microsoft",
+        "url": "https://learn.microsoft.com/en-us/security/zero-trust/zero-trust-overview",
+        "title": "Microsoft Zero Trust Overview",
+        "info": "Modelo de seguridad Zero Trust de Microsoft: principios de verificación explícita, menor privilegio, asumir violación, estrategias de implementación y planes de despliegue"
+      }
+    }
+  }
+}

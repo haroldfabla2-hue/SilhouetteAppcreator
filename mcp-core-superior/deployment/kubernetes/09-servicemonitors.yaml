@@ -1,0 +1,94 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: mcp-core-metrics
+  namespace: mcp-core-superior
+  labels:
+    app: mcp-core
+    component: monitoring
+spec:
+  selector:
+    matchLabels:
+      app: mcp-core
+      component: application
+  endpoints:
+  - port: metrics
+    path: /metrics
+    interval: 30s
+    scrapeTimeout: 10s
+    honorLabels: true
+  namespaceSelector:
+    matchNames:
+    - mcp-core-superior
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: postgres-metrics
+  namespace: mcp-core-superior
+  labels:
+    app: postgres
+    component: monitoring
+spec:
+  selector:
+    matchLabels:
+      app: postgres
+      component: database
+  endpoints:
+  - port: metrics
+    path: /metrics
+    interval: 30s
+    scrapeTimeout: 10s
+  namespaceSelector:
+    matchNames:
+    - mcp-core-superior
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: redis-metrics
+  namespace: mcp-core-superior
+  labels:
+    app: redis
+    component: monitoring
+spec:
+  selector:
+    matchLabels:
+      app: redis
+      component: cache
+  endpoints:
+  - port: metrics
+    path: /metrics
+    interval: 30s
+    scrapeTimeout: 10s
+  namespaceSelector:
+    matchNames:
+    - mcp-core-superior
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: mcp-core-pod-metrics
+  namespace: mcp-core-superior
+  labels:
+    app: mcp-core
+    component: pod-monitoring
+spec:
+  selector:
+    matchLabels:
+      app: mcp-core
+      component: application
+  podMetricsEndpoints:
+  - port: http
+    path: /metrics
+    interval: 15s
+    scrapeTimeout: 5s
+    honorLabels: true
+  - port: metrics
+    path: /metrics
+    interval: 15s
+    scrapeTimeout: 5s
+    honorLabels: true
+  namespaceSelector:
+    matchNames:
+    - mcp-core-superior

@@ -1,0 +1,163 @@
+version: '3.8'
+
+services:
+  silhouettemcp:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: silhouettemcp-server
+    restart: unless-stopped
+    ports:
+      - "8001:8001"
+    volumes:
+      - ./data:/opt/silhouettemcp_v4_unified/data
+      - ./logs:/opt/silhouettemcp_v4_unified/logs
+      - ./uploads:/tmp/uploads
+      - ./server:/opt/silhouettemcp_v4_unified/server
+    environment:
+      - PYTHONPATH=/opt/silhouettemcp_v4_unified/server
+      - PORT=8001
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
+      - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
+      - SUPABASE_PROJECT_ID=${SUPABASE_PROJECT_ID}
+      - ADMIN_EMAIL=${ADMIN_EMAIL:-alberto.farahb@hotmail.com}
+      - ADMIN_PASSWORD_HASH=${ADMIN_PASSWORD_HASH}
+    networks:
+      - silhouettemcp-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Nginx reverse proxy (optional)
+  nginx:
+    image: nginx:alpine
+    container_name: silhouettemcp-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./config/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+      - ./logs/nginx:/var/log/nginx
+    depends_on:
+      - silhouettemcp
+    networks:
+      - silhouettemcp-network
+    profiles:
+      - proxy
+
+  # Redis cache (optional)
+  redis:
+    image: redis:alpine
+    container_name: silhouettemcp-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - silhouettemcp-network
+    command: redis-server --appendonly yes
+    profiles:
+      - cache
+
+  # PostgreSQL database (optional)
+  postgres:
+    image: postgres:15
+    container_name: silhouettemcp-postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    environment:
+      - POSTGRES_DB=silhouettemcp
+      - POSTGRES_USER=silhouettemcp
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-securepassword}
+    networks:
+      - silhouettemcp-network
+    profiles:
+      - database
+
+  # Monitoring with Prometheus (optional)
+  prometheus:
+    image: prom/prometheus
+    container_name: silhouettemcp-prometheus
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./config/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    networks:
+      - silhouettemcp-network
+    profiles:
+      - monitoring
+
+  # Grafana dashboard (optional)
+  grafana:
+    image: grafana/grafana
+    container_name: silhouettemcp-grafana
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./config/grafana:/etc/grafana/provisioning
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
+      - GF_USERS_ALLOW_SIGN_UP=false
+    depends_on:
+      - prometheus
+    networks:
+      - silhouettemcp-network
+    profiles:
+      - monitoring
+
+networks:
+  silhouettemcp-network:
+    driver: bridge
+    name: silhouettemcp-network
+
+volumes:
+  redis-data:
+    driver: local
+  postgres-data:
+    driver: local
+  prometheus-data:
+    driver: local
+  grafana-data:
+    driver: local
+
+# Extension profiles
+# Basic: docker-compose --profile basic up
+# Cache: docker-compose --profile cache up
+# Database: docker-compose --profile database up  
+# Monitoring: docker-compose --profile monitoring up
+# Full: docker-compose --profile basic --profile cache --profile database --profile monitoring up

@@ -1,0 +1,70 @@
+
+version: '3.8'
+
+services:
+  silhouettemcp-ultra:
+    image: silhouettemcp:110.0.0-ultra
+    build: .
+    ports:
+      - "8001:8001"
+      - "8002:8002"
+      - "8003:8003"
+    environment:
+      - PRODUCTION_MODE=true
+      - OPTIMIZATION_LEVEL=ULTRA
+      - TARGET_SCORE=110
+      - AUTO_SCALING=true
+    restart: unless-stopped
+    deploy:
+      replicas: 3
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 4G
+        reservations:
+          cpus: '0.5'
+          memory: 1G
+      update_config:
+        parallelism: 1
+        delay: 10s
+        failure_action: rollback
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - silhouettemcp-network
+
+  nginx-proxy:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+    depends_on:
+      - silhouettemcp-ultra
+    restart: unless-stopped
+    networks:
+      - silhouettemcp-network
+
+  ultra-monitoring:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring.yml:/etc/prometheus/prometheus.yml:ro
+    restart: unless-stopped
+    networks:
+      - silhouettemcp-network
+
+networks:
+  silhouettemcp-network:
+    driver: bridge

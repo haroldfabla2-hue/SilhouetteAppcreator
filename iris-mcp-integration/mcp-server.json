@@ -1,0 +1,31 @@
+{
+  "name": "agent_generated_iris_mcp_superior",
+  "exhibit_name": "IRIS MCP Superior Integration",
+  "type": 3,
+  "command": "sh /workspace/iris-mcp-integration/run_mcp_server.sh",
+  "args": [],
+  "env": {},
+  "description": "Sistema completo de gestión, monitoreo y automatización para agentes IRIS con dashboard en tiempo real, CLI avanzada, templates predefinidos y notificaciones multi-canal",
+  "description_for_agent": "Proporciona herramientas completas para gestionar agentes IRIS: dashboard con métricas en tiempo real, CLI para comandos de gestión, sistema de templates para automatización, notificaciones multi-canal, y servidor de métricas FastAPI con streaming SSE",
+  "user_params": {
+    "args": {},
+    "env": {
+      "IRIS_API_BASE": {
+        "required": false,
+        "description": "URL base de la API de IRIS (default: http://localhost:8000)"
+      },
+      "IRIS_DASHBOARD_PORT": {
+        "required": false,
+        "description": "Puerto del dashboard React (default: 3000)"
+      },
+      "IRIS_METRICS_PORT": {
+        "required": false,
+        "description": "Puerto del servidor de métricas (default: 8000)"
+      },
+      "IRIS_LOG_LEVEL": {
+        "required": false,
+        "description": "Nivel de logging (DEBUG, INFO, WARNING, ERROR)"
+      }
+    }
+  }
+}

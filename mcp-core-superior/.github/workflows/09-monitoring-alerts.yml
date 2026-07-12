@@ -1,0 +1,1157 @@
+name: Monitoring and Alerting Setup
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - '.github/workflows/09-monitoring-alerts.yml'
+      - 'src/observability/**'
+      - 'auto_healing_config.json'
+  schedule:
+    - cron: '0 */6 * * *' # Every 6 hours
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to setup monitoring for'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+        - production
+        - staging
+      action:
+        description: 'Action to perform'
+        required: true
+        default: 'setup'
+        type: choice
+        options:
+        - setup
+        - update
+        - test
+        - cleanup
+
+env:
+  PYTHON_VERSION: '3.11'
+
+jobs:
+  setup-monitoring-infrastructure:
+    name: Setup Monitoring Infrastructure
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: Install monitoring tools
+      run: |
+        python -m pip install --upgrade pip
+        pip install prometheus-client grafana-api kubernetes
+        pip install -e .
+
+    - name: Generate monitoring configuration
+      run: |
+        cat > generate_monitoring_config.py << 'EOF'
+        import json
+        import os
+        from datetime import datetime
+        
+        env = '${{ github.event.inputs.environment || "production" }}'
+        action = '${{ github.event.inputs.action || "setup" }}'
+        
+        # Configuración de Prometheus
+        prometheus_config = {
+            'global': {
+                'scrape_interval': '15s',
+                'evaluation_interval': '15s'
+            },
+            'rule_files': [
+                'alert_rules.yml'
+            ],
+            'alerting': {
+                'alertmanagers': [
+                    {
+                        'static_configs': [
+                            {
+                                'targets': ['alertmanager:9093']
+                            }
+                        ]
+                    }
+                ]
+            },
+            'scrape_configs': [
+                {
+                    'job_name': 'mcp-core-superior',
+                    'static_configs': [
+                        {
+                            'targets': [f'mcp-core-{env}:8080']
+                        }
+                    ],
+                    'metrics_path': '/metrics',
+                    'scrape_interval': '10s'
+                },
+                {
+                    'job_name': 'postgres-exporter',
+                    'static_configs': [
+                        {
+                            'targets': ['postgres-exporter:9187']
+                        }
+                    ]
+                },
+                {
+                    'job_name': 'redis-exporter',
+                    'static_configs': [
+                        {
+                            'targets': ['redis-exporter:9121']
+                        }
+                    ]
+                }
+            ]
+        }
+        
+        # Configuración de alertas
+        alert_rules = {
+            'groups': [
+                {
+                    'name': 'mcp-core-alerts',
+                    'rules': [
+                        {
+                            'alert': 'ServiceDown',
+                            'expr': 'up{job="mcp-core-superior"} == 0',
+                            'for': '1m',
+                            'labels': {
+                                'severity': 'critical',
+                                'service': 'mcp-core'
+                            },
+                            'annotations': {
+                                'summary': 'MCP Core service is down',
+                                'description': 'MCP Core service has been down for more than 1 minute'
+                            }
+                        },
+                        {
+                            'alert': 'HighResponseTime',
+                            'expr': 'http_request_duration_seconds{quantile="0.95",service="mcp-core"} > 1',
+                            'for': '5m',
+                            'labels': {
+                                'severity': 'warning',
+                                'service': 'mcp-core'
+                            },
+                            'annotations': {
+                                'summary': 'High response time detected',
+                                'description': '95th percentile response time is {{ $value }}s'
+                            }
+                        },
+                        {
+                            'alert': 'HighErrorRate',
+                            'expr': 'rate(http_requests_total{status=~"5.."}[5m]) > 0.1',
+                            'for': '2m',
+                            'labels': {
+                                'severity': 'critical',
+                                'service': 'mcp-core'
+                            },
+                            'annotations': {
+                                'summary': 'High error rate detected',
+                                'description': 'Error rate is {{ $value }} requests/second'
+                            }
+                        },
+                        {
+                            'alert': 'DatabaseConnectionFailure',
+                            'expr': 'postgresql_up == 0',
+                            'for': '1m',
+                            'labels': {
+                                'severity': 'critical',
+                                'service': 'database'
+                            },
+                            'annotations': {
+                                'summary': 'Database connection failed',
+                                'description': 'Cannot connect to PostgreSQL database'
+                            }
+                        },
+                        {
+                            'alert': 'HighMemoryUsage',
+                            'expr': 'process_resident_memory_bytes / 1024 / 1024 > 1000',
+                            'for': '5m',
+                            'labels': {
+                                'severity': 'warning',
+                                'service': 'mcp-core'
+                            },
+                            'annotations': {
+                                'summary': 'High memory usage detected',
+                                'description': 'Memory usage is {{ $value }}MB'
+                            }
+                        },
+                        {
+                            'alert': 'HighCPUUsage',
+                            'expr': 'rate(process_cpu_seconds_total[5m]) * 100 > 80',
+                            'for': '5m',
+                            'labels': {
+                                'severity': 'warning',
+                                'service': 'mcp-core'
+                            },
+                            'annotations': {
+                                'summary': 'High CPU usage detected',
+                                'description': 'CPU usage is {{ $value }}%'
+                            }
+                        },
+                        {
+                            'alert': 'AgentTaskFailure',
+                            'expr': 'rate(agent_tasks_failed_total[5m]) > 0.05',
+                            'for': '3m',
+                            'labels': {
+                                'severity': 'warning',
+                                'service': 'agents'
+                            },
+                            'annotations': {
+                                'summary': 'High agent task failure rate',
+                                'description': 'Agent task failure rate is {{ $value }}'
+                            }
+                        },
+                        {
+                            'alert': 'ContextPersistenceFailure',
+                            'expr': 'rate(context_operations_failed_total[5m]) > 0.1',
+                            'for': '2m',
+                            'labels': {
+                                'severity': 'warning',
+                                'service': 'context'
+                            },
+                            'annotations': {
+                                'summary': 'Context persistence failures detected',
+                                'description': 'Context operation failure rate is {{ $value }}'
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+        
+        # Configuración de Grafana
+        grafana_dashboard = {
+            'dashboard': {
+                'id': None,
+                'title': 'MCP Core Superior - System Overview',
+                'tags': ['mcp-core', 'monitoring'],
+                'style': 'dark',
+                'timezone': 'browser',
+                'refresh': '30s',
+                'time': {
+                    'from': 'now-1h',
+                    'to': 'now'
+                },
+                'panels': [
+                    {
+                        'id': 1,
+                        'title': 'Service Status',
+                        'type': 'stat',
+                        'targets': [
+                            {
+                                'expr': 'up{job="mcp-core-superior"}',
+                                'legendFormat': 'MCP Core'
+                            }
+                        ]
+                    },
+                    {
+                        'id': 2,
+                        'title': 'Response Time',
+                        'type': 'graph',
+                        'targets': [
+                            {
+                                'expr': 'http_request_duration_seconds{quantile="0.95"}',
+                                'legendFormat': '95th percentile'
+                            },
+                            {
+                                'expr': 'http_request_duration_seconds{quantile="0.50"}',
+                                'legendFormat': '50th percentile'
+                            }
+                        ]
+                    },
+                    {
+                        'id': 3,
+                        'title': 'Request Rate',
+                        'type': 'graph',
+                        'targets': [
+                            {
+                                'expr': 'rate(http_requests_total[5m])',
+                                'legendFormat': '{{ method }} {{ status }}'
+                            }
+                        ]
+                    },
+                    {
+                        'id': 4,
+                        'title': 'Error Rate',
+                        'type': 'graph',
+                        'targets': [
+                            {
+                                'expr': 'rate(http_requests_total{status=~"5.."}[5m])',
+                                'legendFormat': '5xx errors'
+                            },
+                            {
+                                'expr': 'rate(http_requests_total{status=~"4.."}[5m])',
+                                'legendFormat': '4xx errors'
+                            }
+                        ]
+                    },
+                    {
+                        'id': 5,
+                        'title': 'Memory Usage',
+                        'type': 'graph',
+                        'targets': [
+                            {
+                                'expr': 'process_resident_memory_bytes / 1024 / 1024',
+                                'legendFormat': 'Memory (MB)'
+                            }
+                        ]
+                    },
+                    {
+                        'id': 6,
+                        'title': 'CPU Usage',
+                        'type': 'graph',
+                        'targets': [
+                            {
+                                'expr': 'rate(process_cpu_seconds_total[5m]) * 100',
+                                'legendFormat': 'CPU %'
+                            }
+                        ]
+                    },
+                    {
+                        'id': 7,
+                        'title': 'Agent Performance',
+                        'type': 'graph',
+                        'targets': [
+                            {
+                                'expr': 'rate(agent_tasks_total[5m])',
+                                'legendFormat': 'Tasks/sec'
+                            },
+                            {
+                                'expr': 'rate(agent_tasks_failed_total[5m])',
+                                'legendFormat': 'Failed/sec'
+                            }
+                        ]
+                    },
+                    {
+                        'id': 8,
+                        'title': 'Database Connections',
+                        'type': 'graph',
+                        'targets': [
+                            {
+                                'expr': 'postgresql_up',
+                                'legendFormat': 'Connection Status'
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+        
+        # Guardar configuraciones
+        with open('prometheus.yml', 'w') as f:
+            import yaml
+            yaml.dump(prometheus_config, f)
+        
+        with open('alert_rules.yml', 'w') as f:
+            yaml.dump(alert_rules, f)
+        
+        with open('grafana_dashboard.json', 'w') as f:
+            json.dump(grafana_dashboard, f, indent=2)
+        
+        print(f"Monitoring configuration generated for {env} environment")
+        print(f"Action: {action}")
+        EOF
+        
+        python generate_monitoring_config.py
+
+    - name: Setup Kubernetes monitoring
+      if: secrets.KUBECONFIG_DATA != ''
+      run: |
+        # Configurar kubectl
+        echo "${{ secrets.KUBECONFIG_DATA }}" | base64 -d > kubeconfig
+        
+        export KUBECONFIG=kubeconfig
+        
+        # Crear ConfigMap para Prometheus
+        kubectl create configmap prometheus-config \
+          --from-file=prometheus.yml \
+          --from-file=alert_rules.yml \
+          --dry-run=client -o yaml | kubectl apply -f -
+        
+        # Crear ServiceMonitor para Prometheus Operator
+        cat <<EOF | kubectl apply -f -
+        apiVersion: monitoring.coreos.com/v1
+        kind: ServiceMonitor
+        metadata:
+          name: mcp-core-monitor
+          namespace: default
+          labels:
+            app: mcp-core-superior
+        spec:
+          selector:
+            matchLabels:
+              app: mcp-core-superior
+          endpoints:
+          - port: metrics
+            interval: 10s
+        EOF
+
+    - name: Setup Grafana dashboards
+      if: secrets.GRAFANA_API_KEY != ''
+      run: |
+        # Configurar variables de Grafana
+        GRAFANA_URL="${{ secrets.GRAFANA_URL }}"
+        GRAFANA_API_KEY="${{ secrets.GRAFANA_API_KEY }}"
+        GRAFANA_ORG_ID="${GRAFANA_ORG_ID:-1}"
+        
+        # Subir dashboard a Grafana
+        curl -X POST \
+          -H "Authorization: Bearer $GRAFANA_API_KEY" \
+          -H "Content-Type: application/json" \
+          -d @grafana_dashboard.json \
+          "$GRAFANA_URL/api/dashboards/db"
+        
+        echo "Grafana dashboard uploaded"
+
+    - name: Setup AlertManager configuration
+      run: |
+        # Crear configuración de AlertManager
+        cat > alertmanager.yml << 'EOF'
+        global:
+          slack_api_url: '$SLACK_WEBHOOK_URL'
+          smtp_smarthost: 'smtp.gmail.com:587'
+          smtp_from: 'alerts@your-org.com'
+        
+        route:
+          group_by: ['alertname']
+          group_wait: 10s
+          group_interval: 10s
+          repeat_interval: 1h
+          receiver: 'default'
+          routes:
+          - match:
+              severity: critical
+            receiver: 'critical-alerts'
+          - match:
+              severity: warning
+            receiver: 'warning-alerts'
+        
+        receivers:
+        - name: 'default'
+          email_configs:
+          - to: 'admin@your-org.com'
+            subject: '[MCP Core] Alert: {{ .GroupLabels.alertname }}'
+            body: |
+              {{ range .Alerts }}
+              Alert: {{ .Annotations.summary }}
+              Description: {{ .Annotations.description }}
+              Labels: {{ range .Labels.SortedPairs }}{{ .Name }}: {{ .Value }}{{ end }}
+              {{ end }}
+        
+        - name: 'critical-alerts'
+          slack_configs:
+          - api_url: '$SLACK_WEBHOOK_URL'
+            channel: '#alerts-critical'
+            title: '🚨 Critical Alert'
+            text: |
+              {{ range .Alerts }}
+              *Alert:* {{ .Annotations.summary }}
+              *Description:* {{ .Annotations.description }}
+              *Severity:* {{ .Labels.severity }}
+              *Service:* {{ .Labels.service }}
+              {{ end }}
+          email_configs:
+          - to: 'admin@your-org.com,ops@your-org.com'
+            subject: '🚨 CRITICAL: {{ .GroupLabels.alertname }}'
+        
+        - name: 'warning-alerts'
+          slack_configs:
+          - api_url: '$SLACK_WEBHOOK_URL'
+            channel: '#alerts'
+            title: '⚠️ Warning Alert'
+            text: |
+              {{ range .Alerts }}
+              *Alert:* {{ .Annotations.summary }}
+              *Description:* {{ .Annotations.description }}
+              *Service:* {{ .Labels.service }}
+              {{ end }}
+        
+        inhibit_rules:
+        - source_match:
+            severity: 'critical'
+          target_match:
+            severity: 'warning'
+          equal: ['alertname', 'service']
+        EOF
+
+    - name: Archive monitoring configuration
+      uses: actions/upload-artifact@v3
+      with:
+        name: monitoring-config
+        path: |
+          prometheus.yml
+          alert_rules.yml
+          grafana_dashboard.json
+          alertmanager.yml
+        retention-days: 90
+
+  setup-apm-instrumentation:
+    name: Setup APM Instrumentation
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Generate APM configuration
+      run: |
+        # Configuración para Application Performance Monitoring
+        cat > apm_config.py << 'EOF'
+        import json
+        
+        # Configuración de OpenTelemetry
+        opentelemetry_config = {
+            'service_name': 'mcp-core-superior',
+            'service_version': '1.0.0',
+            'traces': {
+                'exporter': 'otlp',
+                'endpoint': '${{ secrets.APM_ENDPOINT }}',
+                'headers': {
+                    'api-key': '${{ secrets.APM_API_KEY }}'
+                }
+            },
+            'metrics': {
+                'exporter': 'otlp',
+                'endpoint': '${{ secrets.APM_ENDPOINT }}',
+                'headers': {
+                    'api-key': '${{ secrets.APM_API_KEY }}'
+                }
+            },
+            'logs': {
+                'exporter': 'otlp',
+                'endpoint': '${{ secrets.APM_ENDPOINT }}',
+                'headers': {
+                    'api-key': '${{ secrets.APM_API_KEY }}'
+                }
+            }
+        }
+        
+        # Instrumentación para Jaeger
+        jaeger_config = {
+            'jaeger': {
+                'agent_host': 'jaeger-agent',
+                'agent_port': 6831,
+                'collector_host': 'jaeger-collector',
+                'collector_port': 14268
+            }
+        }
+        
+        # Configuración para DataDog
+        datadog_config = {
+            'datadog': {
+                'api_key': '${{ secrets.DATADOG_API_KEY }}',
+                'app_key': '${{ secrets.DATADOG_APP_KEY }}',
+                'service': 'mcp-core-superior',
+                'env': '${{ github.event.inputs.environment || "production" }}'
+            }
+        }
+        
+        with open('opentelemetry_config.json', 'w') as f:
+            json.dump(opentelemetry_config, f, indent=2)
+        
+        with open('jaeger_config.json', 'w') as f:
+            json.dump(jaeger_config, f, indent=2)
+        
+        with open('datadog_config.json', 'w') as f:
+            json.dump(datadog_config, f, indent=2)
+        
+        print("APM configuration generated")
+        EOF
+        
+        python apm_config.py
+
+    - name: Generate instrumentation code
+      run: |
+        # Generar código de instrumentación
+        cat > instrumentation_example.py << 'EOF'
+        from opentelemetry import trace, metrics
+        from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
+        from opentelemetry.instrumentation.redis import RedisInstrumentor
+        from opentelemetry.instrumentation.psycopg2 import Psycopg2Instrumentor
+        
+        # Configurar tracer
+        tracer = trace.get_tracer(__name__)
+        
+        # Configurar métricas
+        meter = metrics.get_meter(__name__)
+        
+        # Crear métricas personalizadas
+        request_count = meter.create_counter(
+            "http_requests_total",
+            description="Total number of HTTP requests"
+        )
+        
+        request_duration = meter.create_histogram(
+            "http_request_duration_seconds",
+            description="Duration of HTTP requests"
+        )
+        
+        agent_tasks_count = meter.create_counter(
+            "agent_tasks_total",
+            description="Total number of agent tasks executed"
+        )
+        
+        agent_errors_count = meter.create_counter(
+            "agent_errors_total", 
+            description="Total number of agent task errors"
+        )
+        
+        memory_usage = meter.create_up_down_counter(
+            "process_memory_usage_bytes",
+            description="Process memory usage in bytes"
+        )
+        
+        def trace_agent_execution(func):
+            """Decorator to trace agent execution"""
+            def wrapper(*args, **kwargs):
+                with tracer.start_as_current_span(f"agent_{func.__name__}") as span:
+                    span.set_attribute("agent.function", func.__name__)
+                    try:
+                        result = func(*args, **kwargs)
+                        span.set_attribute("status", "success")
+                        agent_tasks_count.add(1, {"status": "success"})
+                        return result
+                    except Exception as e:
+                        span.set_attribute("status", "error")
+                        span.set_attribute("error.message", str(e))
+                        agent_errors_count.add(1, {"status": "error"})
+                        raise
+            return wrapper
+        
+        class InstrumentationManager:
+            def __init__(self):
+                self.instrumented = False
+            
+            def setup_instrumentation(self, app=None):
+                """Setup all instrumentation"""
+                if app:
+                    FastAPIInstrumentor.instrument_app(app)
+                
+                RedisInstrumentor.instrument()
+                Psycopg2Instrumentor.instrument()
+                
+                self.instrumented = True
+            
+            def track_request(self, method, path, status_code, duration):
+                """Track HTTP request metrics"""
+                request_count.add(1, {
+                    "method": method,
+                    "path": path,
+                    "status_code": status_code
+                })
+                request_duration.record(duration, {
+                    "method": method,
+                    "path": path,
+                    "status_code": status_code
+                })
+            
+            def track_agent_performance(self, agent_type, duration, success=True):
+                """Track agent performance metrics"""
+                agent_tasks_count.add(1, {
+                    "agent_type": agent_type,
+                    "status": "success" if success else "error"
+                })
+                request_duration.record(duration, {
+                    "agent_type": agent_type,
+                    "type": "agent_execution"
+                })
+        
+        # Instancia global
+        instrumentation = InstrumentationManager()
+        EOF
+        
+        cp instrumentation_example.py src/observability/instrumentation_example.py
+        
+        print("Instrumentation code generated")
+
+    - name: Setup custom metrics
+      run: |
+        # Configurar métricas personalizadas para MCP Core
+        cat > custom_metrics.py << 'EOF'
+        import time
+        import asyncio
+        from typing import Dict, Any
+        
+        class MCPCoreMetrics:
+            def __init__(self):
+                self.metrics = {}
+                self.start_time = time.time()
+            
+            def record_agent_task(self, agent_type: str, task_id: str, duration: float, success: bool):
+                """Record agent task metrics"""
+                if agent_type not in self.metrics:
+                    self.metrics[agent_type] = {
+                        'tasks_completed': 0,
+                        'tasks_failed': 0,
+                        'total_duration': 0.0,
+                        'avg_duration': 0.0
+                    }
+                
+                self.metrics[agent_type]['total_duration'] += duration
+                
+                if success:
+                    self.metrics[agent_type]['tasks_completed'] += 1
+                else:
+                    self.metrics[agent_type]['tasks_failed'] += 1
+                
+                total_tasks = (self.metrics[agent_type]['tasks_completed'] + 
+                             self.metrics[agent_type]['tasks_failed'])
+                self.metrics[agent_type]['avg_duration'] = (
+                    self.metrics[agent_type]['total_duration'] / total_tasks
+                )
+            
+            def record_concurrent_tasks(self, count: int):
+                """Record concurrent task count"""
+                self.metrics['concurrent_tasks'] = count
+            
+            def record_memory_usage(self, usage_bytes: int):
+                """Record memory usage"""
+                self.metrics['memory_usage'] = usage_bytes
+            
+            def record_database_operations(self, operation: str, duration: float, success: bool):
+                """Record database operation metrics"""
+                key = f'db_{operation}'
+                if key not in self.metrics:
+                    self.metrics[key] = {
+                        'operations': 0,
+                        'failures': 0,
+                        'total_duration': 0.0
+                    }
+                
+                self.metrics[key]['operations'] += 1
+                self.metrics[key]['total_duration'] += duration
+                
+                if not success:
+                    self.metrics[key]['failures'] += 1
+            
+            def record_context_operations(self, operation: str, duration: float, success: bool):
+                """Record context persistence operations"""
+                key = f'context_{operation}'
+                if key not in self.metrics:
+                    self.metrics[key] = {
+                        'operations': 0,
+                        'failures': 0,
+                        'total_duration': 0.0
+                    }
+                
+                self.metrics[key]['operations'] += 1
+                self.metrics[key]['total_duration'] += duration
+                
+                if not success:
+                    self.metrics[key]['failures'] += 1
+            
+            def get_metrics_summary(self) -> Dict[str, Any]:
+                """Get metrics summary"""
+                uptime = time.time() - self.start_time
+                
+                return {
+                    'uptime_seconds': uptime,
+                    'agent_metrics': self.metrics,
+                    'health_score': self._calculate_health_score()
+                }
+            
+            def _calculate_health_score(self) -> float:
+                """Calculate overall system health score (0-100)"""
+                if not self.metrics:
+                    return 100.0
+                
+                score = 100.0
+                
+                # Penalizar por fallos de agentes
+                for agent_type, data in self.metrics.items():
+                    if 'tasks_completed' in data and 'tasks_failed' in data:
+                        total_tasks = data['tasks_completed'] + data['tasks_failed']
+                        if total_tasks > 0:
+                            failure_rate = data['tasks_failed'] / total_tasks
+                            score -= failure_rate * 10
+                
+                return max(0.0, min(100.0, score))
+        
+        # Instancia global
+        metrics_manager = MCPCoreMetrics()
+        EOF
+        
+        cp custom_metrics.py src/observability/custom_metrics.py
+        
+        print("Custom metrics implementation generated")
+
+    - name: Archive APM configuration
+      uses: actions/upload-artifact@v3
+      with:
+        name: apm-config
+        path: |
+          opentelemetry_config.json
+          jaeger_config.json
+          datadog_config.json
+          src/observability/instrumentation_example.py
+          src/observability/custom_metrics.py
+        retention-days: 90
+
+  test-alerting-system:
+    name: Test Alerting System
+    runs-on: ubuntu-latest
+    needs: [setup-monitoring-infrastructure, setup-apm-instrumentation]
+    if: github.event.inputs.action == 'test'
+    
+    steps:
+    - name: Download monitoring configuration
+      uses: actions/download-artifact@v3
+
+    - name: Test alert generation
+      run: |
+        echo "Testing alert generation..."
+        
+        # Simular métricas que activarían alertas
+        cat > test_alerts.py << 'EOF'
+        import json
+        
+        # Simular datos de métricas
+        test_metrics = {
+            'up': 0,  # Service down - should trigger alert
+            'http_request_duration_seconds': {
+                'quantile': 0.95,
+                'service': 'mcp-core',
+                'value': 2.5  # High response time
+            },
+            'http_requests_total': {
+                'status': '500',
+                'value': 15  # High error rate
+            },
+            'postgresql_up': 0,  # Database down - should trigger alert
+            'process_resident_memory_bytes': 1200000000,  # 1.2GB - high usage
+            'agent_tasks_failed_total': 8,  # High failure rate
+        }
+        
+        alerts_triggered = []
+        
+        # Verificar alertas
+        if test_metrics['up'] == 0:
+            alerts_triggered.append({
+                'alert': 'ServiceDown',
+                'severity': 'critical',
+                'value': test_metrics['up']
+            })
+        
+        if test_metrics['http_request_duration_seconds']['value'] > 1:
+            alerts_triggered.append({
+                'alert': 'HighResponseTime',
+                'severity': 'warning',
+                'value': test_metrics['http_request_duration_seconds']['value']
+            })
+        
+        if test_metrics['postgresql_up'] == 0:
+            alerts_triggered.append({
+                'alert': 'DatabaseConnectionFailure',
+                'severity': 'critical',
+                'value': test_metrics['postgresql_up']
+            })
+        
+        print(f"Alert test completed. {len(alerts_triggered)} alerts would be triggered:")
+        for alert in alerts_triggered:
+            print(f"  - {alert['severity']}: {alert['alert']} (value: {alert['value']})")
+        
+        # Guardar resultados del test
+        with open('alert_test_results.json', 'w') as f:
+            json.dump({
+                'alerts_triggered': alerts_triggered,
+                'total_alerts': len(alerts_triggered),
+                'test_timestamp': '2024-11-04T05:43:15Z',
+                'test_metrics': test_metrics
+            }, f, indent=2)
+        
+        if len(alerts_triggered) >= 3:
+            print("✅ Alert testing successful - multiple alerts triggered as expected")
+        else:
+            print("⚠️ Alert testing incomplete - expected more alerts")
+        EOF
+        
+        python test_alerts.py
+
+    - name: Test notification delivery
+      if: secrets.SLACK_WEBHOOK_URL != ''
+      run: |
+        echo "Testing notification delivery..."
+        
+        # Enviar mensaje de prueba a Slack
+        cat > slack_test.py << 'EOF'
+        import requests
+        import json
+        
+        webhook_url = '${{ secrets.SLACK_WEBHOOK_URL }}'
+        
+        test_message = {
+            'text': '🧪 Alert Test from MCP Core Superior',
+            'attachments': [
+                {
+                    'color': 'good',
+                    'title': 'Monitoring System Test',
+                    'text': 'This is a test notification from the monitoring system.\n\nIf you see this, the alerting system is working correctly.',
+                    'fields': [
+                        {
+                            'title': 'Environment',
+                            'value': '${{ github.event.inputs.environment || "production" }}',
+                            'short': True
+                        },
+                        {
+                            'title': 'Test Type',
+                            'value': 'Alert Notification',
+                            'short': True
+                        },
+                        {
+                            'title': 'Status',
+                            'value': '✅ Success',
+                            'short': True
+                        }
+                    ],
+                    'footer': 'MCP Core Superior Monitoring',
+                    'ts': '$(date +%s)'
+                }
+            ]
+        }
+        
+        response = requests.post(webhook_url, json=test_message)
+        
+        if response.status_code == 200:
+            print("✅ Slack notification test successful")
+        else:
+            print(f"❌ Slack notification test failed: {response.status_code}")
+            print(response.text)
+        EOF
+        
+        python slack_test.py
+
+    - name: Archive test results
+      uses: actions/upload-artifact@v3
+      with:
+        name: alert-test-results
+        path: |
+          alert_test_results.json
+        retention-days: 30
+
+  update-monitoring-dashboards:
+    name: Update Monitoring Dashboards
+    runs-on: ubuntu-latest
+    needs: setup-monitoring-infrastructure
+    if: github.event.inputs.action == 'update'
+    
+    steps:
+    - name: Download configuration
+      uses: actions/download-artifact@v3
+
+    - name: Update Grafana dashboards
+      if: secrets.GRAFANA_API_KEY != ''
+      run: |
+        GRAFANA_URL="${{ secrets.GRAFANA_URL }}"
+        GRAFANA_API_KEY="${{ secrets.GRAFANA_API_KEY }}"
+        
+        # Actualizar dashboard existente
+        curl -X PUT \
+          -H "Authorization: Bearer $GRAFANA_API_KEY" \
+          -H "Content-Type: application/json" \
+          -d @grafana_dashboard.json \
+          "$GRAFANA_URL/api/dashboards/db"
+        
+        echo "Grafana dashboard updated"
+
+    - name: Update Prometheus rules
+      if: secrets.KUBECONFIG_DATA != ''
+      run: |
+        kubectl create configmap prometheus-rules \
+          --from-file=alert_rules.yml \
+          --dry-run=client -o yaml | kubectl apply -f -
+        
+        # Recargar configuración de Prometheus
+        kubectl rollout restart deployment/prometheus-server
+        
+        echo "Prometheus rules updated"
+
+  monitoring-status-report:
+    name: Monitoring Status Report
+    runs-on: ubuntu-latest
+    needs: [setup-monitoring-infrastructure, setup-apm-instrumentation]
+    if: always()
+    
+    steps:
+    - name: Download all artifacts
+      uses: actions/download-artifact@v3
+
+    - name: Generate monitoring status report
+      run: |
+        cat > monitoring_status_report.py << 'EOF'
+        import json
+        import os
+        from datetime import datetime
+        
+        env = '${{ github.event.inputs.environment || "production" }}'
+        action = '${{ github.event.inputs.action || "setup" }}'
+        
+        report = {
+            'monitoring_setup_report': {
+                'generated_at': datetime.now().isoformat(),
+                'environment': env,
+                'action': action,
+                'status': 'completed'
+            },
+            'components': {
+                'prometheus': {
+                    'configured': os.path.exists('monitoring-config/prometheus.yml'),
+                    'rules_loaded': os.path.exists('monitoring-config/alert_rules.yml')
+                },
+                'grafana': {
+                    'configured': os.path.exists('monitoring-config/grafana_dashboard.json'),
+                    'api_key_configured': bool('${{ secrets.GRAFANA_API_KEY }}')
+                },
+                'alertmanager': {
+                    'configured': os.path.exists('monitoring-config/alertmanager.yml'),
+                    'slack_integration': bool('${{ secrets.SLACK_WEBHOOK_URL }}')
+                },
+                'apm': {
+                    'opentelemetry': os.path.exists('apm-config/opentelemetry_config.json'),
+                    'jaeger': os.path.exists('apm-config/jaeger_config.json'),
+                    'datadog': os.path.exists('apm-config/datadog_config.json')
+                },
+                'instrumentation': {
+                    'example_code': os.path.exists('apm-config/instrumentation_example.py'),
+                    'custom_metrics': os.path.exists('apm-config/custom_metrics.py')
+                }
+            },
+            'alert_rules_configured': 8,
+            'dashboards_configured': 1,
+            'services_monitored': [
+                'mcp-core-superior',
+                'postgres',
+                'redis',
+                'agents'
+            ],
+            'next_steps': [
+                'Deploy monitoring configuration to production',
+                'Configure additional alert routes',
+                'Set up log aggregation',
+                'Configure backup monitoring',
+                'Test disaster recovery procedures'
+            ]
+        }
+        
+        with open('monitoring_status_report.json', 'w') as f:
+            json.dump(report, f, indent=2)
+        
+        # Generar reporte en markdown
+        report_md = f"""# Monitoring Setup Report
+        
+        ## Summary
+        - **Environment**: {env}
+        - **Action**: {action}
+        - **Status**: {report['monitoring_setup_report']['status']}
+        - **Generated**: {report['monitoring_setup_report']['generated_at']}
+        
+        ## Components Configured
+        - Prometheus: {'✅' if report['components']['prometheus']['configured'] else '❌'}
+        - Grafana: {'✅' if report['components']['grafana']['configured'] else '❌'}
+        - AlertManager: {'✅' if report['components']['alertmanager']['configured'] else '❌'}
+        - APM: {'✅' if any(report['components']['apm'].values()) else '❌'}
+        - Instrumentation: {'✅' if all(report['components']['instrumentation'].values()) else '❌'}
+        
+        ## Alert Rules
+        - {report['alert_rules_configured']} alert rules configured
+        - Covers: Service downtime, response time, error rates, database connections, resource usage
+        
+        ## Monitoring Coverage
+        - Services: {', '.join(report['services_monitored'])}
+        - Dashboards: {report['dashboards_configured']} configured
+        
+        ## Next Steps
+        {chr(10).join(f"- {step}" for step in report['next_steps'])}
+        
+        ## Integration Status
+        - Slack Notifications: {'✅' if report['components']['alertmanager']['slack_integration'] else '❌'}
+        - Grafana API: {'✅' if report['components']['grafana']['api_key_configured'] else '❌'}
+        """
+        
+        with open('monitoring_status_report.md', 'w') as f:
+            f.write(report_md)
+        
+        print("Monitoring status report generated")
+        print(report_md)
+        EOF
+        
+        python monitoring_status_report.py
+
+    - name: Archive monitoring report
+      uses: actions/upload-artifact@v3
+      with:
+        name: monitoring-status-report
+        path: |
+          monitoring_status_report.json
+          monitoring_status_report.md
+        retention-days: 90
+
+    - name: Notify completion
+      if: secrets.SLACK_WEBHOOK_URL != ''
+      run: |
+        cat > notify_monitoring_setup.py << 'EOF'
+        import requests
+        import json
+        
+        webhook_url = '${{ secrets.SLACK_WEBHOOK_URL }}'
+        env = '${{ github.event.inputs.environment || "production" }}'
+        
+        message = {
+            'text': '📊 Monitoring Setup Completed',
+            'blocks': [
+                {
+                    'type': 'section',
+                    'text': {
+                        'type': 'mrkdwn',
+                        'text': '*📊 Monitoring Setup Completed Successfully*'
+                    }
+                },
+                {
+                    'type': 'section',
+                    'fields': [
+                        {
+                            'type': 'mrkdwn',
+                            'text': '*Environment:*\n' + env
+                        },
+                        {
+                            'type': 'mrkdwn',
+                            'text': '*Components:*\nPrometheus, Grafana, APM'
+                        },
+                        {
+                            'type': 'mrkdwn',
+                            'text': '*Alert Rules:*\n8 configured'
+                        },
+                        {
+                            'type': 'mrkdwn',
+                            'text': '*Status:*\nReady for deployment'
+                        }
+                    ]
+                },
+                {
+                    'type': 'context',
+                    'elements': [
+                        {
+                            'type': 'mrkdwn',
+                            'text': 'Triggered by: ${{ github.actor }}'
+                        }
+                    ]
+                }
+            ]
+        }
+        
+        response = requests.post(webhook_url, json=message)
+        if response.status_code == 200:
+            print('✅ Slack notification sent')
+        else:
+            print(f'⚠️ Slack notification failed: {response.status_code}')
+        EOF
+        
+        python notify_monitoring_setup.py

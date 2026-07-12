@@ -1,0 +1,3 @@
+2025-11-05 13:43:07,267 - IRISNotifications - INFO - [iris_notifications_robust.py:395] - Console notifications configured
+2025-11-05 13:43:07,272 - IRISNotifications - INFO - [iris_notifications_robust.py:998] - Test notification sent to console
+2025-11-05 13:43:07,272 - IRISNotifications - INFO - [iris_notifications_robust.py:961] - Notification manager shutdown complete

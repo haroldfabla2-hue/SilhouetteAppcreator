@@ -1,0 +1,54 @@
+{
+  "timestamp": "2025-11-05T14:07:39.980727",
+  "agents": [
+    {
+      "id": "sales_agent",
+      "agent": "Sales Agent",
+      "status": "active",
+      "tasksCompleted": 171,
+      "avgResponseTime": 1.5156005505070194,
+      "tokenUsage": 45100,
+      "successRate": 0.94,
+      "capabilities": [
+        "lead_qualification",
+        "proposal_generation",
+        "follow_up_automation"
+      ],
+      "lastActivity": "2025-11-05T14:07:39"
+    },
+    {
+      "id": "support_agent",
+      "agent": "Support Agent",
+      "status": "active",
+      "tasksCompleted": 92,
+      "avgResponseTime": 1.1130778496660112,
+      "tokenUsage": 34018,
+      "successRate": 0.96,
+      "capabilities": [
+        "ticket_classification",
+        "response_generation",
+        "escalation_management"
+      ],
+      "lastActivity": "2025-11-05T14:07:39"
+    },
+    {
+      "id": "consulting_agent",
+      "agent": "Consulting Agent",
+      "status": "active",
+      "tasksCompleted": 36,
+      "avgResponseTime": 2.446954854565111,
+      "tokenUsage": 67212,
+      "successRate": 0.91,
+      "capabilities": [
+        "data_analysis",
+        "report_generation",
+        "insight_generation"
+      ],
+      "lastActivity": "2025-11-05T14:07:39"
+    }
+  ],
+  "totalTokens": 146330,
+  "totalTasks": 299,
+  "systemStatus": "operational",
+  "version": "1.1.0"
+}

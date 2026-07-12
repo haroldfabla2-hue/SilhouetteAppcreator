@@ -1,0 +1,91 @@
+# Configuración del Performance Benchmarking Suite
+# Comparación vs MiniMax Agent
+
+global:
+  project_name: "MCP-Core-Superior vs MiniMax Agent"
+  test_duration: 300  # 5 minutos por test
+  warmup_duration: 30  # 30 segundos de warmup
+  concurrent_users: [1, 5, 10, 25, 50, 100]
+  iterations: 100
+  
+agents:
+  mcp_core_superior:
+    base_url: "http://localhost:8000"
+    endpoints:
+      - "/api/tasks"
+      - "/api/agents/execute"
+      - "/api/stream"
+    timeout: 30
+    
+  minimax_agent:
+    base_url: "http://localhost:8001"
+    endpoints:
+      - "/api/tasks"
+      - "/api/agents/execute"
+      - "/api/stream"
+    timeout: 30
+
+metrics:
+  latency:
+    enabled: true
+    percentiles: [50, 90, 95, 99]
+    
+  throughput:
+    enabled: true
+    measure_interval: 1  # segundos
+    
+  memory:
+    enabled: true
+    measure_interval: 5  # segundos
+    
+  scalability:
+    enabled: true
+    max_concurrent_users: 100
+    ramp_up_time: 60  # segundos
+    
+  accuracy:
+    enabled: true
+    test_scenarios: [
+      "simple_task",
+      "complex_workflow", 
+      "database_operation",
+      "web_scraping",
+      "git_operation"
+    ]
+    
+  cost_analysis:
+    enabled: true
+    cost_per_request: 0.001  # USD
+    
+  workflow_time:
+    enabled: true
+    workflows:
+      - "multi_step_processing"
+      - "parallel_execution"
+      - "data_pipeline"
+      
+  cold_start:
+    enabled: true
+    restart_between_tests: true
+    
+  database_performance:
+    enabled: true
+    query_types: ["SELECT", "INSERT", "UPDATE", "DELETE"]
+    
+  network_overhead:
+    enabled: true
+    measure_headers: true
+    measure_payload: true
+
+load_testing:
+  tool: "locust"  # o "artillery"
+  host: "http://localhost:8000"
+  users: 100
+  spawn_rate: 10
+  run_time: "5m"
+  
+reporting:
+  formats: ["json", "html", "csv"]
+  output_directory: "reports"
+  generate_dashboard: true
+  comparison_mode: true

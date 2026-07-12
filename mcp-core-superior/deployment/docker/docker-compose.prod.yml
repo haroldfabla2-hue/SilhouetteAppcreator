@@ -1,0 +1,396 @@
+version: '3.8'
+
+services:
+  # === BASE DE DATOS PRINCIPAL ===
+  postgres:
+    image: postgres:15-alpine
+    container_name: mcp-postgres-prod
+    environment:
+      POSTGRES_DB: mcp_core
+      POSTGRES_USER: mcpuser
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
+      POSTGRES_HOST_AUTH_METHOD: scram-sha-256
+    volumes:
+      - postgres_data_prod:/var/lib/postgresql/data
+      - ./database/init:/docker-entrypoint-initdb.d
+    networks:
+      - mcp-network-prod
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mcpuser -d mcp_core"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '2'
+        reservations:
+          memory: 512M
+          cpus: '0.5'
+    restart: always
+    secrets:
+      - postgres_password
+
+  # === VECTOR DATABASE ===
+  vector_postgres:
+    image: pgvector/pgvector:pg15
+    container_name: mcp-vector-postgres-prod
+    environment:
+      POSTGRES_DB: vector_db
+      POSTGRES_USER: mcpuser
+      POSTGRES_PASSWORD_FILE: /run/secrets/vector_postgres_password
+      POSTGRES_HOST_AUTH_METHOD: scram-sha-256
+    volumes:
+      - vector_data_prod:/var/lib/postgresql/data
+    networks:
+      - mcp-network-prod
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mcpuser -d vector_db"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+          cpus: '2'
+        reservations:
+          memory: 1G
+          cpus: '1'
+    restart: always
+    secrets:
+      - vector_postgres_password
+
+  # === REDIS CACHE ===
+  redis:
+    image: redis:7-alpine
+    container_name: mcp-redis-prod
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
+    volumes:
+      - redis_data_prod:/data
+    networks:
+      - mcp-network-prod
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '1'
+        reservations:
+          memory: 128M
+          cpus: '0.25'
+    restart: always
+    secrets:
+      - redis_password
+
+  # === APLICACIÓN PRINCIPAL ===
+  mcp-core:
+    image: mcp-core-superior:latest
+    container_name: mcp-core-prod
+    environment:
+      # Configuración de producción
+      ENVIRONMENT: production
+      DEBUG: "false"
+      LOG_LEVEL: WARNING
+      DATABASE_URL: postgresql://mcpuser@postgres:5432/mcp_core
+      VECTOR_DB_URL: postgresql://mcpuser@vector_postgres:5432/vector_db
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379/0
+      JWT_SECRET_FILE: /run/secrets/jwt_secret
+      METRICS_ENABLED: "true"
+      STREAMING_ENABLED: "true"
+      RATE_LIMIT_ENABLED: "true"
+      RATE_LIMIT_REQUESTS: "100"
+      RATE_LIMIT_WINDOW: "60"
+      CORS_ENABLED: "true"
+      CORS_ORIGINS: '${CORS_ORIGINS}'
+      MCP_CORE_MAX_CONCURRENT_TASKS: "10"
+      MCP_CORE_AGENT_TIMEOUT_SECONDS: "300"
+      MCP_CORE_STREAMING_FREQUENCY: "1.0"
+      MCP_CORE_MAX_CONCURRENT_TOOLS: "5"
+      MCP_CORE_MEMORY_CACHE_SIZE: "1000"
+      MCP_CORE_VERIFICATION_QUALITY_THRESHOLD: "0.8"
+    ports:
+      - "8080:8080"
+      - "8081:8081"
+      - "9090:9090"
+    volumes:
+      - logs_data_prod:/app/logs
+      - uploads_data_prod:/app/uploads
+    networks:
+      - mcp-network-prod
+    depends_on:
+      postgres:
+        condition: service_healthy
+      vector_postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 15s
+      retries: 5
+      start_period: 120s
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '2'
+        reservations:
+          memory: 512M
+          cpus: '0.5'
+    restart: always
+    user: "1000:1000"
+    secrets:
+      - jwt_secret
+    stop_grace_period: 60s
+
+  # === CONTEXTFORGE GATEWAY ===
+  contextforge:
+    image: contextforge/gateway:latest
+    container_name: mcp-contextforge-prod
+    environment:
+      PORT: 8001
+      CONTEXTFORGE_API_KEY_FILE: /run/secrets/contextforge_api_key
+    volumes:
+      - contextforge_cache_prod:/app/cache
+    networks:
+      - mcp-network-prod
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '1'
+        reservations:
+          memory: 128M
+          cpus: '0.25'
+    restart: always
+    secrets:
+      - contextforge_api_key
+
+  # === NGINX REVERSE PROXY ===
+  nginx:
+    image: nginx:alpine
+    container_name: mcp-nginx-prod
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/ssl:/etc/nginx/ssl
+      - nginx_logs_prod:/var/log/nginx
+    networks:
+      - mcp-network-prod
+    depends_on:
+      - mcp-core
+      - contextforge
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.5'
+        reservations:
+          memory: 64M
+          cpus: '0.1'
+    restart: always
+
+  # === MONITORING STACK ===
+
+  # Prometheus - Métricas
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: mcp-prometheus-prod
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=30d'
+      - '--storage.tsdb.retention.size=10GB'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--web.enable-lifecycle'
+    volumes:
+      - ./monitoring/prometheus-prod.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data_prod:/prometheus
+    networks:
+      - mcp-network-prod
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:9090/-/healthy"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '1'
+        reservations:
+          memory: 512M
+          cpus: '0.25'
+    restart: always
+
+  # Grafana - Dashboards
+  grafana:
+    image: grafana/grafana:latest
+    container_name: mcp-grafana-prod
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD_FILE: /run/secrets/grafana_admin_password
+      GF_SECURITY_DISABLE_GRAVATAR: "true"
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_USERS_ALLOW_ORG_CREATE: "false"
+      GF_INSTALL_PLUGINS: grafana-clock-panel
+      GF_METRICS_ENABLED: "true"
+      GF_METRICS_INTERVAL_SECONDS: "10"
+      GF_LOG_FILTERS: "rendering:debug"
+    volumes:
+      - grafana_data_prod:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
+    networks:
+      - mcp-network-prod
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3000/api/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+        reservations:
+          memory: 128M
+          cpus: '0.1'
+    restart: always
+    secrets:
+      - grafana_admin_password
+
+  # Jaeger - Distributed Tracing
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    container_name: mcp-jaeger-prod
+    environment:
+      COLLECTOR_OTLP_ENABLED: "true"
+      MEMORY_MAX_TRACES: 50000
+      SPAN_STORAGE_TYPE: elasticsearch
+      ES_SERVER_URLS_FILE: /run/secrets/elasticsearch_url
+    volumes:
+      - jaeger_data_prod:/tmp
+    networks:
+      - mcp-network-prod
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:16686/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '1'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
+    restart: always
+    secrets:
+      - elasticsearch_url
+
+  # AlertManager - Gestión de alertas
+  alertmanager:
+    image: prom/alertmanager:latest
+    container_name: mcp-alertmanager-prod
+    command:
+      - '--config.file=/etc/alertmanager/alertmanager.yml'
+      - '--storage.path=/alertmanager'
+      - '--web.external-url=http://localhost:9093'
+    volumes:
+      - ./monitoring/alertmanager.yml:/etc/alertmanager/alertmanager.yml
+      - alertmanager_data_prod:/alertmanager
+    networks:
+      - mcp-network-prod
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:9093/-/healthy"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.5'
+        reservations:
+          memory: 64M
+          cpus: '0.1'
+    restart: always
+
+# Volúmenes persistentes
+volumes:
+  postgres_data_prod:
+    driver: local
+  vector_data_prod:
+    driver: local
+  redis_data_prod:
+    driver: local
+  logs_data_prod:
+    driver: local
+  uploads_data_prod:
+    driver: local
+  contextforge_cache_prod:
+    driver: local
+  nginx_logs_prod:
+    driver: local
+  prometheus_data_prod:
+    driver: local
+  grafana_data_prod:
+    driver: local
+  jaeger_data_prod:
+    driver: local
+  alertmanager_data_prod:
+    driver: local
+
+# Red compartida
+networks:
+  mcp-network-prod:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.21.0.0/16
+
+# Secretos (se deben crear externamente con docker secret create)
+secrets:
+  postgres_password:
+    external: true
+  vector_postgres_password:
+    external: true
+  redis_password:
+    external: true
+  jwt_secret:
+    external: true
+  contextforge_api_key:
+    external: true
+  grafana_admin_password:
+    external: true
+  elasticsearch_url:
+    external: true

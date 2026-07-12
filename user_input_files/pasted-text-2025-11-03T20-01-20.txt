@@ -1,0 +1,338 @@
+Protocolo de Contexto de Modelo (MCP) y su implementación en Silhouette
+Introducción
+
+El Model Context Protocol (MCP) es un estándar abierto diseñado para conectar aplicaciones de IA con sistemas externos. Su objetivo es que asistentes como Claude o ChatGPT puedan acceder a fuentes de datos (archivos, bases de datos), herramientas (por ejemplo motores de búsqueda, calculadoras, APIs) y flujos de trabajo a través de un protocolo uniforme. La documentación oficial de MCP lo describe como un "puerto USB‑C para aplicaciones de IA" porque estandariza la forma en que se conectan al mundo externo
+modelcontextprotocol.io
+. Esta unificación reduce el tiempo y la complejidad necesarios para integrar IA con sistemas y brinda a los modelos acceso a un ecosistema de herramientas y datos
+modelcontextprotocol.io
+.
+
+¿Por qué es importante MCP?
+
+Facilita el desarrollo: el uso de un protocolo único reduce la complejidad de crear servidores de datos o clientes de IA
+modelcontextprotocol.io
+.
+
+Empodera a los agentes: los agentes de IA obtienen acceso a herramientas y datos que antes estaban aislados, como calendarios, bases de datos o aplicaciones de diseño
+modelcontextprotocol.io
+.
+
+Mejora la experiencia del usuario: al conectar a la IA con fuentes reales, los asistentes pueden realizar tareas más útiles y personalizadas
+modelcontextprotocol.io
+.
+
+Arquitectura general de MCP
+Participantes en la arquitectura
+
+MCP sigue una arquitectura cliente‑servidor:
+
+Host MCP: aplicación de IA (por ejemplo Visual Studio Code o Claude Desktop) que coordina a los clientes.
+
+Cliente MCP: mantiene una conexión uno‑a‑uno con un servidor MCP y solicita contexto en nombre del host
+modelcontextprotocol.io
+.
+
+Servidor MCP: programa que expone herramientas, recursos y prompts al cliente
+modelcontextprotocol.io
+. Puede ejecutarse localmente a través de stdio (para alta velocidad) o remotamente mediante HTTP con eventos tipo Server‑Sent Events
+modelcontextprotocol.io
+.
+
+Capas del protocolo
+
+MCP se divide en dos capas
+modelcontextprotocol.io
+:
+
+Capa de datos: implementa un protocolo basado en JSON‑RPC 2.0 para definir los mensajes, la gestión del ciclo de vida y los tipos de primitivos. Gestiona la inicialización de conexiones, la negociación de capacidades, la terminación y las operaciones sobre herramientas, recursos y prompts
+modelcontextprotocol.io
+.
+
+Capa de transporte: se encarga de establecer la conexión y de la autenticación. MCP soporta dos transportes: stdio para comunicación local y HTTP con streaming para servidores remotos; ambos utilizan el mismo formato de mensajes JSON‑RPC 2.0
+modelcontextprotocol.io
+.
+
+Primitivos de la capa de datos
+
+Los primitivos definen lo que servidores y clientes pueden ofrecer
+modelcontextprotocol.io
+:
+
+Herramientas (tools): funciones ejecutables que la IA invoca para realizar una acción, como escribir un archivo o consultar un API. Cada herramienta tiene un esquema JSON que describe sus parámetros y valores de retorno. El protocolo ofrece métodos como tools/list para descubrir herramientas y tools/call para ejecutarlas
+modelcontextprotocol.io
+. Las herramientas pueden requerir la aprobación del usuario y se recomienda mostrar su disponibilidad en la interfaz
+modelcontextprotocol.io
+.
+
+Recursos (resources): fuentes de datos de sólo lectura que proporcionan contexto (por ejemplo, el contenido de un documento o registros de una base de datos). Pueden ser recursos directos (URI fijos como calendar://events/2024) o plantillas parametrizadas (travel://activities/{city}/{category})
+modelcontextprotocol.io
+. Los métodos resources/list y resources/templates/list permiten descubrirlos
+modelcontextprotocol.io
+.
+
+Prompts: plantillas de instrucciones reutilizables que guían a la IA en la interacción con herramientas y datos. Permiten definir contextos o ejemplos de conversación
+modelcontextprotocol.io
+.
+
+MCP también define primitivos que los clientes pueden exponer a los servidores, como sampling/complete para pedir completaciones al modelo, elicitation/request para solicitar información adicional al usuario y logging/log para enviar registros
+modelcontextprotocol.io
+.
+
+Notificaciones y gestión del ciclo de vida
+
+Ciclo de vida: el cliente inicia la comunicación enviando un mensaje initialize que especifica la versión del protocolo, sus capacidades y la información del cliente
+modelcontextprotocol.io
+. La negociación continúa hasta acordar las capacidades y se pueden enviar shutdown y exit para terminar la conexión.
+
+Notificaciones: MCP soporta mensajes sin respuesta que permiten actualizaciones en tiempo real, como notificar cambios en las herramientas disponibles
+modelcontextprotocol.io
+.
+
+Conceptos de los servidores MCP
+
+Un servidor MCP proporciona funcionalidades mediante tres bloques
+modelcontextprotocol.io
+:
+
+Bloque	Explicación	Control por
+Herramientas	Funciones que el modelo invoca para actuar; pueden escribir bases de datos, llamar a APIs o modificar archivos
+modelcontextprotocol.io
+.	Definidas y controladas por el Modelo/usuario.
+Recursos	Fuentes pasivas de datos que permiten consultar información contextual
+modelcontextprotocol.io
+.	Gestionadas por la aplicación.
+Prompts	Plantillas de instrucciones que guían al modelo en tareas específicas, como planificar un viaje o redactar un correo
+modelcontextprotocol.io
+.	Generalmente creadas por el usuario.
+
+Las herramientas utilizan JSON Schema para validar entradas y salidas y pueden requerir el consentimiento del usuario antes de ejecutarse
+modelcontextprotocol.io
+. Los recursos se identifican mediante URIs y pueden declararse como plantillas parametrizadas
+modelcontextprotocol.io
+. Además, el protocolo fomenta la seguridad y el control mediante diálogos de aprobación y permisos predefinidos
+modelcontextprotocol.io
+.
+
+Implementación de MCP en Silhouette
+
+El proyecto Silhouette tiene como objetivo convertir la aplicación en un sistema multiagente basado en MCP. Para ello se ha elaborado un plan de acción con varias fases
+github.com
+.
+
+Fase 0 – Contratos y configuración inicial
+
+Unificación de la mensajería. Se define el DTO McpMessage con campos clave:
+
+trace_id (identificador único de la petición),
+
+parent_id (relación con mensajes padres),
+
+sender y receiver (agente que envía y recibe),
+
+intent (objetivo de alto nivel),
+
+capability (herramienta específica),
+
+context (información de configuración),
+
+payload (entrada principal),
+
+result (salida),
+
+attachments (datos adicionales),
+
+error (estructura normalizada de errores)
+github.com
+. Este objeto estandariza todas las interacciones entre agentes y herramientas.
+
+Generación de esquemas JSON. El proyecto Silhouette.Mcp.SchemaGen genera esquemas determinísticos para tipos .NET; se invoca con parámetros --type y --out para crear archivos de salida y permite comparar esquemas en CI
+github.com
+.
+
+Políticas iniciales. Se crea el archivo policies.yaml con definiciones de intents y sus políticas: cada intent tiene un scope, un tiempo de vida (ttl_s), un límite de peticiones por segundo (rps) y posibles campos como requires_approval. Por ejemplo, plan.create tiene scope agent.plan con TTL de 60 segundos y 10 RPS, mientras que tool.exec.ps requiere aprobación y una TTL de 300 s
+github.com
+. Estas políticas servirán para el router y el control de ejecución.
+
+Router y DTO básicos. Se implementa un router mínimo (McpRouter.cs) que en su versión inicial se limita a registrar la recepción de mensajes y devolver un error not_implemented
+github.com
+. Posteriormente, el router validará TTL y scopes, aplicará límites de tasa, realizará la resolución de intents a agentes, validará esquemas de entrada y salida, persistirá mensajes y resultados y gestionará reintentos y fallback
+github.com
+.
+
+Fase 1 – Router y registro de capacidades
+
+McpRouter como servicio central. El router se encargará de orquestar el enrutamiento de mensajes MCP:
+
+Validar políticas (TTL, scopes, rps),
+
+Consultar un registro de capacidades en SQLite para resolver qué agente o herramienta maneja cada intent y capability,
+
+Despachar el mensaje al agente apropiado y persistir resultados,
+
+Gestionar reintentos y fallback en caso de fallos
+github.com
+.
+
+Registro de capacidades. Se implementará una base de datos SQLite (capabilities.sql) con información de capacidades: nombre, versión, esquemas de entrada y salida, políticas y coste. Esto permitirá descubrir las capacidades disponibles y aplicarlas dinámicamente
+github.com
+.
+
+Fase 2 – Agentes Windows para omnipotencia segura
+
+Silhouette se ejecuta en una VM Windows con acceso a datos locales y a la interfaz gráfica. Para utilizar MCP de forma segura se crearán agentes adaptadores que actúen como proxies:
+
+HostPsAgent: ejecutará scripts de PowerShell en modo restringido, permitiendo usar herramientas de administración y automatización de Windows
+github.com
+.
+
+WebPlaywrightAgent: automatizará la navegación web mediante Playwright para obtener contenido de sitios externos
+github.com
+.
+
+UiAutomationAgent: gestionará clics, pulsación de teclas y OCR en aplicaciones Windows, permitiendo automatizar acciones dentro de la VM
+github.com
+.
+
+Todos estos agentes enviarán y recibirán mensajes a través del router, respetando las políticas y requisitos de seguridad.
+
+Fase 3 – Diseño offline‑first y observabilidad
+
+Para garantizar la resiliencia y la trazabilidad:
+
+Context Broker y persistencia: se implementará un broker que persistirá mensajes en SQLite con índices por sesión, intent y timestamp. Incluirá colas de estado PENDING y políticas de limpieza según el TTL
+github.com
+.
+
+QueueWorker: procesará colas offline, reintentará automáticamente mensajes fallidos y permitirá operaciones asincrónicas
+github.com
+.
+
+Instrumentación: se añadirá soporte para EventSource (ETW) y OpenTelemetry para recoger métricas (latencias, costes, violaciones de políticas). Se registrarán los mensajes con trace_id en logs para facilitar la depuración
+github.com
+.
+
+Fase 4 – Seguridad avanzada
+
+La implementación de MCP en Silhouette incluirá mecanismos de seguridad adicionales
+github.com
+:
+
+Redacción de datos sensibles: se definirá un archivo RedactionRules.yaml que especifique qué datos deben anonimizarse o eliminarse antes de enviarse al modelo.
+
+Políticas WDAC/AppLocker: se usarán políticas de Control de Aplicaciones de Windows (AppLocker o WDAC) para restringir qué binarios pueden ejecutarse en la VM
+github.com
+.
+
+Conexiones seguras: se configurará TLS o mTLS para cualquier puerto expuesto, y se usarán secretos protegidos mediante DPAPI o el administrador de credenciales de Windows
+github.com
+.
+
+Hardening de Windows: ejecutar PowerShell en Constrained Language Mode y deshabilitar RDP/WinRM salvo que sea necesario y esté protegido
+github.com
+.
+
+Integración con el plan actual y seguimiento
+
+El plan de acción para MCP se ejecutará después de completar el plan de implementación de AgentOps con SVC
+github.com
+. Para mantener la memoria del proyecto se gestionan diferentes archivos Markdown (BITACORA, PLAN_DE_ACCION, PROJECT_MEMORY) enumerados en MAPA_DE_MD.md, los cuales se deben actualizar al terminar cada sesión
+github.com
+.
+
+Componentes clave en el código de Silhouette
+Estructura del mensaje MCP (McpMessage)
+
+El archivo McpMessage.cs define la estructura base de un mensaje MCP en Silhouette. Los campos más importantes son
+github.com
+:
+
+Campo	Tipo / Descripción
+TraceId	Identificador único (GUID) para rastrear una petición completa
+github.com
+.
+ParentId	Referencia opcional al mensaje padre, útil para subtareas
+github.com
+.
+Sender	Identificador del agente o servicio que envía el mensaje
+github.com
+.
+Receiver	Identificador del agente o servicio receptor
+github.com
+.
+Intent	Objetivo de alto nivel de la operación (por ejemplo plan.create, tool.exec)
+github.com
+.
+Capability	Capacidad o herramienta específica que se invoca (puede ser nula)
+github.com
+.
+Context	Objeto JSON flexible con información contextual como configuraciones o preferencias
+github.com
+.
+Payload	Datos de entrada principales para la operación, estructurados como JSON
+github.com
+.
+Result	Resultado de la operación en formato JSON (rellenado por el receptor)
+github.com
+.
+Attachments	Diccionario opcional con datos adicionales o referencias a archivos
+github.com
+.
+Error	Objeto McpError que normaliza los errores con un código y mensaje descriptivo
+github.com
+.
+
+El tipo McpError encapsula un código de error (Code), un mensaje legible para humanos (Message) y detalles opcionales
+github.com
+.
+
+Servicio de enrutamiento (McpRouter)
+
+El archivo McpRouter.cs define un servicio central responsable de orquestar y enrutar los mensajes MCP
+github.com
+. Su constructor recibe un ILogger para registrar información. El método RouteAsync:
+
+Registra la ruta: escribe en los logs el identificador de trazabilidad, el intent y el receptor
+github.com
+.
+
+Validaciones y políticas (pendiente): los comentarios indican que debe validarse la vida útil (TTL), los scopes, los límites de tasa y el registry de capacidades
+github.com
+.
+
+Despacho y persistencia (pendiente): enviará el mensaje al agente o herramienta adecuada, persistirá el resultado y gestionará reintentos. Actualmente, el método devuelve un error not_implemented para indicar que aún no se ha completado la lógica
+github.com
+.
+
+Políticas iniciales (policies.yaml)
+
+El archivo de políticas define una lista de intents con sus configuraciones predeterminadas. Por ejemplo:
+
+plan.create: descripción "Create a new execution plan"; el scope es agent.plan, TTL de 60 s y 10 rps
+github.com
+.
+
+plan.review: scope agent.critique con TTL de 60 s y 10 rps
+github.com
+.
+
+tool.exec.ps: descripción "Execute a PowerShell command"; scope tool.powershell, TTL de 300 s, rps = 1 y requiere aprobación del usuario
+github.com
+.
+
+tool.exec.fs.read: lectura de archivos con scope tool.filesystem, TTL de 60 s y hasta 100 operaciones por segundo
+github.com
+.
+
+Estas políticas servirán como base para controlar la ejecución de herramientas y la delegación de tareas.
+
+Conclusiones
+
+El Model Context Protocol (MCP) proporciona un marco estandarizado para que las aplicaciones de IA se conecten de forma segura y flexible a herramientas y datos. Su arquitectura basada en JSON‑RPC permite la negociación de capacidades, la invocación de herramientas, el acceso a recursos y el uso de plantillas de prompts, manteniendo controles de seguridad y consentimiento
+modelcontextprotocol.io
+modelcontextprotocol.io
+.
+
+En el proyecto Silhouette, se planea utilizar MCP para transformar la aplicación en un sistema multiagente. Para ello se definió un plan en fases que incluye diseñar los contratos (McpMessage), implementar un router central (McpRouter), establecer un registro de capacidades, crear agentes adaptadores para Windows, asegurar persistencia offline y observabilidad, y reforzar la seguridad a través de políticas y redacción de datos
+github.com
+github.com
+. Aunque muchas partes aún son esqueléticas (el router devuelve un error not_implemented), el plan refleja una estrategia clara para adoptar MCP como columna vertebral de la comunicación entre agentes y herramientas en Silhouette.

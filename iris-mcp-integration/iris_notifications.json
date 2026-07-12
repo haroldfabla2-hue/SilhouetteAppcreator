@@ -1,0 +1,59 @@
+{
+  "version": "1.1.0",
+  "notifications": {
+    "email": {
+      "enabled": false,
+      "type": "email",
+      "settings": {
+        "smtp_server": "smtp.gmail.com",
+        "smtp_port": 587,
+        "email": "",
+        "password": "",
+        "security": "tls"
+      },
+      "events": [
+        "agent_error",
+        "system_critical"
+      ],
+      "rate_limit": 10
+    },
+    "webhook": {
+      "enabled": false,
+      "type": "webhook",
+      "settings": {
+        "url": "",
+        "method": "POST",
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "auth_token": ""
+      },
+      "events": [
+        "agent_status_change",
+        "metric_threshold"
+      ],
+      "rate_limit": 60
+    },
+    "console": {
+      "enabled": true,
+      "type": "console",
+      "settings": {
+        "show_colors": true,
+        "timestamps": true,
+        "verbose": false
+      },
+      "events": [
+        "all"
+      ],
+      "rate_limit": 1000
+    }
+  },
+  "global_settings": {
+    "batch_notifications": false,
+    "batch_interval": 300,
+    "retry_attempts": 3,
+    "retry_delay": 5,
+    "dead_letter_queue": true,
+    "max_history_size": 1000
+  }
+}

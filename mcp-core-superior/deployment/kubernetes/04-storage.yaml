@@ -1,0 +1,191 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: postgres-pv
+  namespace: mcp-core-superior
+  labels:
+    type: local
+    app: postgres
+spec:
+  storageClassName: standard
+  capacity:
+    storage: 50Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: "/data/postgres"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-pvc
+  namespace: mcp-core-superior
+  labels:
+    app: postgres
+    component: storage
+spec:
+  storageClassName: standard
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 50Gi
+  selector:
+    matchLabels:
+      type: local
+      app: postgres
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: vector-postgres-pv
+  namespace: mcp-core-superior
+  labels:
+    type: local
+    app: vector-postgres
+spec:
+  storageClassName: standard
+  capacity:
+    storage: 100Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: "/data/vector-postgres"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: vector-postgres-pvc
+  namespace: mcp-core-superior
+  labels:
+    app: vector-postgres
+    component: storage
+spec:
+  storageClassName: standard
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Gi
+  selector:
+    matchLabels:
+      type: local
+      app: vector-postgres
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: redis-pv
+  namespace: mcp-core-superior
+  labels:
+    type: local
+    app: redis
+spec:
+  storageClassName: standard
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: "/data/redis"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: redis-pvc
+  namespace: mcp-core-superior
+  labels:
+    app: redis
+    component: storage
+spec:
+  storageClassName: standard
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+  selector:
+    matchLabels:
+      type: local
+      app: redis
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: logs-pv
+  namespace: mcp-core-superior
+  labels:
+    type: local
+    app: mcp-core
+    component: logs
+spec:
+  storageClassName: standard
+  capacity:
+    storage: 20Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: "/data/logs"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: logs-pvc
+  namespace: mcp-core-superior
+  labels:
+    app: mcp-core
+    component: logs
+spec:
+  storageClassName: standard
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 20Gi
+  selector:
+    matchLabels:
+      type: local
+      component: logs
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: uploads-pv
+  namespace: mcp-core-superior
+  labels:
+    type: local
+    app: mcp-core
+    component: uploads
+spec:
+  storageClassName: standard
+  capacity:
+    storage: 30Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: "/data/uploads"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: uploads-pvc
+  namespace: mcp-core-superior
+  labels:
+    app: mcp-core
+    component: uploads
+spec:
+  storageClassName: standard
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 30Gi
+  selector:
+    matchLabels:
+      type: local
+      component: uploads

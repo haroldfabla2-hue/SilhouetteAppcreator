@@ -1,0 +1,472 @@
+{
+  "agents_directory": "/workspace/mcp-core-superior/src/agents",
+  "validation_results": [
+    {
+      "file": "/workspace/mcp-core-superior/src/agents/base_agent_wrapper.py",
+      "agent_name": "base_agent_wrapper",
+      "import_validation": {
+        "file": "/workspace/mcp-core-superior/src/agents/base_agent_wrapper.py",
+        "status": "warning",
+        "missing_imports": [],
+        "has_base_imports": false,
+        "file_size": 15886,
+        "line_count": 458
+      },
+      "structure_validation": {
+        "file": "/workspace/mcp-core-superior/src/agents/base_agent_wrapper.py",
+        "has_wrapper_class": false,
+        "missing_required_methods": [],
+        "structure_valid": false
+      },
+      "instantiation_test": {
+        "file": "/workspace/mcp-core-superior/src/agents/base_agent_wrapper.py",
+        "status": "error",
+        "error": "attempted relative import with no known parent package"
+      },
+      "overall_status": "error"
+    },
+    {
+      "file": "/workspace/mcp-core-superior/src/agents/config.py",
+      "agent_name": "config",
+      "import_validation": {
+        "file": "/workspace/mcp-core-superior/src/agents/config.py",
+        "status": "warning",
+        "missing_imports": [
+          "asyncio",
+          "logging",
+          "datetime",
+          "uuid",
+          "time"
+        ],
+        "has_base_imports": false,
+        "file_size": 11518,
+        "line_count": 253
+      },
+      "structure_validation": {
+        "file": "/workspace/mcp-core-superior/src/agents/config.py",
+        "has_wrapper_class": false,
+        "missing_required_methods": [
+          "async def _initialize",
+          "async def process_request",
+          "async def health_check"
+        ],
+        "structure_valid": false
+      },
+      "instantiation_test": {
+        "file": "/workspace/mcp-core-superior/src/agents/config.py",
+        "status": "warning",
+        "message": "No se encontraron clases wrapper"
+      },
+      "overall_status": "warning"
+    },
+    {
+      "file": "/workspace/mcp-core-superior/src/agents/database_helpers.py",
+      "agent_name": "database_helpers",
+      "import_validation": {
+        "file": "/workspace/mcp-core-superior/src/agents/database_helpers.py",
+        "status": "warning",
+        "missing_imports": [
+          "uuid",
+          "time"
+        ],
+        "has_base_imports": false,
+        "file_size": 22816,
+        "line_count": 699
+      },
+      "structure_validation": {
+        "file": "/workspace/mcp-core-superior/src/agents/database_helpers.py",
+        "has_wrapper_class": false,
+        "missing_required_methods": [
+          "async def _initialize",
+          "async def process_request",
+          "async def health_check"
+        ],
+        "structure_valid": false
+      },
+      "instantiation_test": {
+        "file": "/workspace/mcp-core-superior/src/agents/database_helpers.py",
+        "status": "error",
+        "error": "attempted relative import with no known parent package"
+      },
+      "overall_status": "error"
+    },
+    {
+      "file": "/workspace/mcp-core-superior/src/agents/database_operations_agent.py",
+      "agent_name": "database_operations_agent",
+      "import_validation": {
+        "file": "/workspace/mcp-core-superior/src/agents/database_operations_agent.py",
+        "status": "warning",
+        "missing_imports": [
+          "uuid"
+        ],
+        "has_base_imports": true,
+        "file_size": 72499,
+        "line_count": 1868
+      },
+      "structure_validation": {
+        "file": "/workspace/mcp-core-superior/src/agents/database_operations_agent.py",
+        "has_wrapper_class": false,
+        "missing_required_methods": [],
+        "structure_valid": false
+      },
+      "instantiation_test": {
+        "file": "/workspace/mcp-core-superior/src/agents/database_operations_agent.py",
+        "status": "error",
+        "error": "attempted relative import with no known parent package"
+      },
+      "overall_status": "error"
+    },
+    {
+      "file": "/workspace/mcp-core-superior/src/agents/executor_wrapper.py",
+      "agent_name": "executor_wrapper",
+      "import_validation": {
+        "file": "/workspace/mcp-core-superior/src/agents/executor_wrapper.py",
+        "status": "warning",
+        "missing_imports": [
+          "uuid",
+          "time"
+        ],
+        "has_base_imports": true,
+        "file_size": 4631,
+        "line_count": 120
+      },
+      "structure_validation": {
+        "file": "/workspace/mcp-core-superior/src/agents/executor_wrapper.py",
+        "has_wrapper_class": false,
+        "missing_required_methods": [
+          "async def health_check"
+        ],
+        "structure_valid": false
+      },
+      "instantiation_test": {
+        "file": "/workspace/mcp-core-superior/src/agents/executor_wrapper.py",
+        "status": "error",
+        "error": "attempted relative import with no known parent package"
+      },
+      "overall_status": "error"
+    },
+    {
+      "file": "/workspace/mcp-core-superior/src/agents/file_processing_agent.py",
+      "agent_name": "file_processing_agent",
+      "import_validation": {
+        "file": "/workspace/mcp-core-superior/src/agents/file_processing_agent.py",
+        "status": "warning",
+        "missing_imports": [
+          "asyncio",
+          "uuid",
+          "time"
+        ],
+        "has_base_imports": false,
+        "file_size": 52942,
+        "line_count": 1332
+      },
+      "structure_validation": {
+        "file": "/workspace/mcp-core-superior/src/agents/file_processing_agent.py",
+        "has_wrapper_class": false,
+        "missing_required_methods": [
+          "async def _initialize",
+          "async def process_request",
+          "async def health_check"
+        ],
+        "structure_valid": false
+      },
+      "instantiation_test": {
+        "file": "/workspace/mcp-core-superior/src/agents/file_processing_agent.py",
+        "status": "warning",
+        "message": "No se encontraron clases wrapper"
+      },
+      "overall_status": "warning"
+    },
+    {
+      "file": "/workspace/mcp-core-superior/src/agents/git_operations_agent.py",
+      "agent_name": "git_operations_agent",
+      "import_validation": {
+        "file": "/workspace/mcp-core-superior/src/agents/git_operations_agent.py",
+        "status": "warning",
+        "missing_imports": [
+          "uuid",
+          "time"
+        ],
+        "has_base_imports": true,
+        "file_size": 109277,
+        "line_count": 2846
+      },
+      "structure_validation": {
+        "file": "/workspace/mcp-core-superior/src/agents/git_operations_agent.py",
+        "has_wrapper_class": false,
+        "missing_required_methods": [],
+        "structure_valid": false
+      },
+      "instantiation_test": {
+        "file": "/workspace/mcp-core-superior/src/agents/git_operations_agent.py",
+        "status": "error",
+        "error": "No module named 'git'"
+      },
+      "overall_status": "error"
+    },
+    {
+      "file": "/workspace/mcp-core-superior/src/agents/memory_manager_wrapper.py",
+      "agent_name": "memory_manager_wrapper",
+      "import_validation": {
+        "file": "/workspace/mcp-core-superior/src/agents/memory_manager_wrapper.py",
+        "status": "warning",
+        "missing_imports": [
+          "uuid",
+          "time"
+        ],
+        "has_base_imports": true,
+        "file_size": 5589,
+        "line_count": 141
+      },
+      "structure_validation": {
+        "file": "/workspace/mcp-core-superior/src/agents/memory_manager_wrapper.py",
+        "has_wrapper_class": false,
+        "missing_required_methods": [
+          "async def health_check"
+        ],
+        "structure_valid": false
+      },
+      "instantiation_test": {
+        "file": "/workspace/mcp-core-superior/src/agents/memory_manager_wrapper.py",
+        "status": "error",
+        "error": "attempted relative import with no known parent package"
+      },
+      "overall_status": "error"
+    },
+    {
+      "file": "/workspace/mcp-core-superior/src/agents/multiagent_orchestrator_agent.py",
+      "agent_name": "multiagent_orchestrator_agent",
+      "import_validation": {
+        "file": "/workspace/mcp-core-superior/src/agents/multiagent_orchestrator_agent.py",
+        "status": "warning",
+        "missing_imports": [],
+        "has_base_imports": false,
+        "file_size": 47395,
+        "line_count": 1225
+      },
+      "structure_validation": {
+        "file": "/workspace/mcp-core-superior/src/agents/multiagent_orchestrator_agent.py",
+        "has_wrapper_class": false,
+        "missing_required_methods": [],
+        "structure_valid": false
+      },
+      "instantiation_test": {
+        "file": "/workspace/mcp-core-superior/src/agents/multiagent_orchestrator_agent.py",
+        "status": "error",
+        "error": "attempted relative import with no known parent package"
+      },
+      "overall_status": "error"
+    },
+    {
+      "file": "/workspace/mcp-core-superior/src/agents/planner_wrapper.py",
+      "agent_name": "planner_wrapper",
+      "import_validation": {
+        "file": "/workspace/mcp-core-superior/src/agents/planner_wrapper.py",
+        "status": "warning",
+        "missing_imports": [
+          "uuid",
+          "time"
+        ],
+        "has_base_imports": true,
+        "file_size": 19596,
+        "line_count": 488
+      },
+      "structure_validation": {
+        "file": "/workspace/mcp-core-superior/src/agents/planner_wrapper.py",
+        "has_wrapper_class": false,
+        "missing_required_methods": [
+          "async def health_check"
+        ],
+        "structure_valid": false
+      },
+      "instantiation_test": {
+        "file": "/workspace/mcp-core-superior/src/agents/planner_wrapper.py",
+        "status": "error",
+        "error": "attempted relative import with no known parent package"
+      },
+      "overall_status": "error"
+    },
+    {
+      "file": "/workspace/mcp-core-superior/src/agents/python_executor_agent.py",
+      "agent_name": "python_executor_agent",
+      "import_validation": {
+        "file": "/workspace/mcp-core-superior/src/agents/python_executor_agent.py",
+        "status": "ok",
+        "missing_imports": [],
+        "has_base_imports": true,
+        "file_size": 42062,
+        "line_count": 1034
+      },
+      "structure_validation": {
+        "file": "/workspace/mcp-core-superior/src/agents/python_executor_agent.py",
+        "has_wrapper_class": false,
+        "missing_required_methods": [
+          "async def health_check"
+        ],
+        "structure_valid": false
+      },
+      "instantiation_test": {
+        "file": "/workspace/mcp-core-superior/src/agents/python_executor_agent.py",
+        "status": "error",
+        "error": "No module named 'memory_profiler'"
+      },
+      "overall_status": "error"
+    },
+    {
+      "file": "/workspace/mcp-core-superior/src/agents/reasoner_wrapper.py",
+      "agent_name": "reasoner_wrapper",
+      "import_validation": {
+        "file": "/workspace/mcp-core-superior/src/agents/reasoner_wrapper.py",
+        "status": "warning",
+        "missing_imports": [
+          "uuid",
+          "time"
+        ],
+        "has_base_imports": true,
+        "file_size": 18857,
+        "line_count": 492
+      },
+      "structure_validation": {
+        "file": "/workspace/mcp-core-superior/src/agents/reasoner_wrapper.py",
+        "has_wrapper_class": false,
+        "missing_required_methods": [
+          "async def health_check"
+        ],
+        "structure_valid": false
+      },
+      "instantiation_test": {
+        "file": "/workspace/mcp-core-superior/src/agents/reasoner_wrapper.py",
+        "status": "error",
+        "error": "attempted relative import with no known parent package"
+      },
+      "overall_status": "error"
+    },
+    {
+      "file": "/workspace/mcp-core-superior/src/agents/search_engine_agent.py",
+      "agent_name": "search_engine_agent",
+      "import_validation": {
+        "file": "/workspace/mcp-core-superior/src/agents/search_engine_agent.py",
+        "status": "warning",
+        "missing_imports": [
+          "uuid"
+        ],
+        "has_base_imports": false,
+        "file_size": 30124,
+        "line_count": 811
+      },
+      "structure_validation": {
+        "file": "/workspace/mcp-core-superior/src/agents/search_engine_agent.py",
+        "has_wrapper_class": false,
+        "missing_required_methods": [
+          "async def _initialize",
+          "async def process_request",
+          "async def health_check"
+        ],
+        "structure_valid": false
+      },
+      "instantiation_test": {
+        "file": "/workspace/mcp-core-superior/src/agents/search_engine_agent.py",
+        "status": "warning",
+        "message": "No se encontraron clases wrapper"
+      },
+      "overall_status": "warning"
+    },
+    {
+      "file": "/workspace/mcp-core-superior/src/agents/validate_wrappers.py",
+      "agent_name": "validate_wrappers",
+      "import_validation": {
+        "file": "/workspace/mcp-core-superior/src/agents/validate_wrappers.py",
+        "status": "warning",
+        "missing_imports": [
+          "datetime",
+          "uuid",
+          "time"
+        ],
+        "has_base_imports": true,
+        "file_size": 11372,
+        "line_count": 313
+      },
+      "structure_validation": {
+        "file": "/workspace/mcp-core-superior/src/agents/validate_wrappers.py",
+        "has_wrapper_class": false,
+        "missing_required_methods": [],
+        "structure_valid": false
+      },
+      "instantiation_test": {
+        "file": "/workspace/mcp-core-superior/src/agents/validate_wrappers.py",
+        "status": "warning",
+        "message": "No se encontraron clases wrapper"
+      },
+      "overall_status": "warning"
+    },
+    {
+      "file": "/workspace/mcp-core-superior/src/agents/verifier_wrapper.py",
+      "agent_name": "verifier_wrapper",
+      "import_validation": {
+        "file": "/workspace/mcp-core-superior/src/agents/verifier_wrapper.py",
+        "status": "warning",
+        "missing_imports": [
+          "uuid",
+          "time"
+        ],
+        "has_base_imports": true,
+        "file_size": 5006,
+        "line_count": 133
+      },
+      "structure_validation": {
+        "file": "/workspace/mcp-core-superior/src/agents/verifier_wrapper.py",
+        "has_wrapper_class": false,
+        "missing_required_methods": [
+          "async def health_check"
+        ],
+        "structure_valid": false
+      },
+      "instantiation_test": {
+        "file": "/workspace/mcp-core-superior/src/agents/verifier_wrapper.py",
+        "status": "error",
+        "error": "attempted relative import with no known parent package"
+      },
+      "overall_status": "error"
+    },
+    {
+      "file": "/workspace/mcp-core-superior/src/agents/web_scraping_agent.py",
+      "agent_name": "web_scraping_agent",
+      "import_validation": {
+        "file": "/workspace/mcp-core-superior/src/agents/web_scraping_agent.py",
+        "status": "warning",
+        "missing_imports": [
+          "uuid"
+        ],
+        "has_base_imports": true,
+        "file_size": 44999,
+        "line_count": 1112
+      },
+      "structure_validation": {
+        "file": "/workspace/mcp-core-superior/src/agents/web_scraping_agent.py",
+        "has_wrapper_class": false,
+        "missing_required_methods": [],
+        "structure_valid": false
+      },
+      "instantiation_test": {
+        "file": "/workspace/mcp-core-superior/src/agents/web_scraping_agent.py",
+        "status": "ok",
+        "wrapper_classes_found": [
+          "WebScrapingAgentWrapper"
+        ],
+        "instantiation_results": {
+          "WebScrapingAgentWrapper": "created"
+        }
+      },
+      "overall_status": "warning"
+    }
+  ],
+  "summary": {
+    "total_agents": 16,
+    "ok_agents": 0,
+    "warning_agents": 5,
+    "error_agents": 11,
+    "success_rate": 0.0,
+    "status": "partial"
+  },
+  "timestamp": 488286.348579782
+}

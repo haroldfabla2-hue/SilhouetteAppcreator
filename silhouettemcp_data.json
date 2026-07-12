@@ -1,0 +1,66 @@
+{
+  "server_info": {
+    "name": "SilhouetteMCP Server",
+    "version": "2.0.0",
+    "domain": "silhouettemcp.albertofarah.com",
+    "created_at": "2025-11-05T14:40:09.376842",
+    "start_time": 1762324809.3768868
+  },
+  "applications": [
+    {
+      "id": "silhouettemcp_default",
+      "name": "SilhouetteMCP Dashboard",
+      "description": "Dashboard principal de gestión",
+      "api_key": "sk-d8RahMZH5B8RIeSiLYx_ktBy5c9Ic8VkuTXo_2JkVzc",
+      "owner_email": "alberto.farahb@hotmail.com",
+      "agents": [
+        {
+          "id": "dashboard_admin",
+          "name": "Dashboard Admin",
+          "app_id": "silhouettemcp_default",
+          "status": "active",
+          "tasks_completed": 132,
+          "avg_response_time": 0.0,
+          "token_usage": 33572,
+          "last_activity": "2025-11-05T14:56:16.751614",
+          "success_rate": 95.0,
+          "agent_type": "admin",
+          "created_at": "2025-11-05T14:40:09.376870"
+        },
+        {
+          "id": "system_monitor",
+          "name": "System Monitor",
+          "app_id": "silhouettemcp_default",
+          "status": "error",
+          "tasks_completed": 134,
+          "avg_response_time": 0.0,
+          "token_usage": 28293,
+          "last_activity": "2025-11-05T14:56:01.745814",
+          "success_rate": 95.0,
+          "agent_type": "monitoring",
+          "created_at": "2025-11-05T14:40:09.376876"
+        },
+        {
+          "id": "api_gateway",
+          "name": "API Gateway",
+          "app_id": "silhouettemcp_default",
+          "status": "active",
+          "tasks_completed": 143,
+          "avg_response_time": 0.0,
+          "token_usage": 29139,
+          "last_activity": "2025-11-05T14:55:46.727081",
+          "success_rate": 95.0,
+          "agent_type": "gateway",
+          "created_at": "2025-11-05T14:40:09.376880"
+        }
+      ],
+      "created_at": "2025-11-05T14:40:09.376884",
+      "is_active": true
+    }
+  ],
+  "metrics": {
+    "total_requests": 0,
+    "avg_response_time": 0.0,
+    "last_updated": "2025-11-05T14:40:09.376842"
+  }
+}

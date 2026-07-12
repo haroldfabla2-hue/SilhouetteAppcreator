@@ -1,0 +1,341 @@
+# Configuración de AlertManager para MCP Core Superior
+# Gestión de alertas y notificaciones
+
+global:
+  # Configuración SMTP para notificaciones por email
+  smtp_smarthost: 'smtp.gmail.com:587'
+  smtp_from: 'alerts@mcp-core-superior.com'
+  smtp_auth_username: 'alerts@mcp-core-superior.com'
+  smtp_auth_password: 'smtp_password_here'
+  smtp_require_tls: true
+  
+  # Configuración Slack (opcional)
+  slack_api_url: 'https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK'
+  
+  # Configuración de timeouts
+  resolve_timeout: 5m
+  http_config:
+    proxy_url: 'http://proxy.company.com:8080'
+
+# Plantillas de notificación
+templates:
+  - '/etc/alertmanager/templates/*.tmpl'
+
+# Configuración de enrutamiento de alertas
+route:
+  # Grupo de alertas por cluster y servicio
+  group_by: ['alertname', 'cluster', 'service', 'severity']
+  group_wait: 10s
+  group_interval: 10s
+  repeat_interval: 1h
+  
+  # Receptor por defecto
+  receiver: 'default-notifications'
+  
+  # Rutas específicas por severidad
+  routes:
+    # Alertas críticas - notificación inmediata
+    - match:
+        severity: critical
+      receiver: 'critical-alerts'
+      group_wait: 5s
+      repeat_interval: 15m
+      
+    # Alertas de warning
+    - match:
+        severity: warning
+      receiver: 'warning-alerts'
+      group_wait: 30s
+      repeat_interval: 2h
+      
+    # Alertas de info
+    - match:
+        severity: info
+      receiver: 'info-alerts'
+      group_wait: 2m
+      repeat_interval: 6h
+      
+    # Alertas específicas por servicio
+    - match:
+        service: mcp-core
+      receiver: 'mcp-core-alerts'
+      group_by: ['alertname', 'instance']
+      
+    - match:
+        service: database
+      receiver: 'database-alerts'
+      group_by: ['alertname', 'database']
+      
+    - match:
+        service: cache
+      receiver: 'cache-alerts'
+      group_by: ['alertname', 'cache_instance']
+      
+    - match:
+        service: infrastructure
+      receiver: 'infrastructure-alerts'
+      group_by: ['alertname', 'node']
+
+# Configuración de receptores (receivers)
+receivers:
+  # Receptor por defecto
+  - name: 'default-notifications'
+    email_configs:
+      - to: 'admin@mcp-core-superior.com'
+        subject: '[MCP] Alerta: {{ .GroupLabels.alertname }}'
+        body: |
+          {{ range .Alerts }}
+          Alerta: {{ .Annotations.summary }}
+          Descripción: {{ .Annotations.description }}
+          Severidad: {{ .Labels.severity }}
+          Servicio: {{ .Labels.service }}
+          Instancia: {{ .Labels.instance }}
+          Fecha: {{ .StartsAt.Format "2006-01-02 15:04:05" }}
+          {{ end }}
+
+  # Alertas críticas
+  - name: 'critical-alerts'
+    email_configs:
+      - to: 'ops-team@mcp-core-superior.com'
+        subject: '🚨 CRÍTICO: {{ .GroupLabels.alertname }}'
+        body: |
+          {{ range .Alerts }}
+          ⚠️ ALERTA CRÍTICA ⚠️
+          
+          Alerta: {{ .Annotations.summary }}
+          Descripción: {{ .Annotations.description }}
+          Severidad: {{ .Labels.severity }}
+          Servicio: {{ .Labels.service }}
+          Instancia: {{ .Labels.instance }}
+          Pod: {{ .Labels.pod }}
+          Nodo: {{ .Labels.node }}
+          Fecha: {{ .StartsAt.Format "2006-01-02 15:04:05" }}
+          
+          {{ if .Annotations.runbook_url }}
+          Guía de resolución: {{ .Annotations.runbook_url }}
+          {{ end }}
+          
+          {{ if .Annotations.dashboard_url }}
+          Dashboard: {{ .Annotations.dashboard_url }}
+          {{ end }}
+          
+          ---
+          {{ end }}
+        headers:
+          Priority: 'high'
+          X-Priority: '1'
+    slack_configs:
+      - channel: '#alerts-critical'
+        title: '🚨 Alerta Crítica: {{ .GroupLabels.alertname }}'
+        text: |
+          {{ range .Alerts }}
+          *Alerta:* {{ .Annotations.summary }}
+          *Servicio:* {{ .Labels.service }}
+          *Severidad:* {{ .Labels.severity }}
+          *Instancia:* {{ .Labels.instance }}
+          *Hora:* {{ .StartsAt.Format "15:04:05" }}
+          
+          {{ if .Annotations.runbook_url }}
+          *Guía:* {{ .Annotations.runbook_url }}
+          {{ end }}
+          {{ end }}
+    webhook_configs:
+      - url: 'http://webhook-service:5000/critical'
+        send_resolved: true
+
+  # Alertas de warning
+  - name: 'warning-alerts'
+    email_configs:
+      - to: 'dev-team@mcp-core-superior.com'
+        subject: '⚠️ Warning: {{ .GroupLabels.alertname }}'
+        body: |
+          {{ range .Alerts }}
+          ⚠️ ALERTA DE WARNING ⚠️
+          
+          Alerta: {{ .Annotations.summary }}
+          Descripción: {{ .Annotations.description }}
+          Severidad: {{ .Labels.severity }}
+          Servicio: {{ .Labels.service }}
+          Instancia: {{ .Labels.instance }}
+          Pod: {{ .Labels.pod }}
+          Fecha: {{ .StartsAt.Format "2006-01-02 15:04:05" }}
+          
+          {{ if .Annotations.runbook_url }}
+          Guía de resolución: {{ .Annotations.runbook_url }}
+          {{ end }}
+          {{ end }}
+    slack_configs:
+      - channel: '#alerts-warning'
+        title: '⚠️ Warning: {{ .GroupLabels.alertname }}'
+        text: |
+          {{ range .Alerts }}
+          *Alerta:* {{ .Annotations.summary }}
+          *Servicio:* {{ .Labels.service }}
+          *Severidad:* {{ .Labels.severity }}
+          *Instancia:* {{ .Labels.instance }}
+          {{ end }}
+
+  # Alertas informativas
+  - name: 'info-alerts'
+    email_configs:
+      - to: 'info@mcp-core-superior.com'
+        subject: 'ℹ️ Info: {{ .GroupLabels.alertname }}'
+        body: |
+          {{ range .Alerts }}
+          ℹ️ ALERTA INFORMATIVA ℹ️
+          
+          Alerta: {{ .Annotations.summary }}
+          Descripción: {{ .Annotations.description }}
+          Servicio: {{ .Labels.service }}
+          Instancia: {{ .Labels.instance }}
+          Fecha: {{ .StartsAt.Format "2006-01-02 15:04:05" }}
+          {{ end }}
+
+  # Alertas específicas de MCP Core
+  - name: 'mcp-core-alerts'
+    email_configs:
+      - to: 'mcp-team@mcp-core-superior.com'
+        subject: '🤖 MCP Core: {{ .GroupLabels.alertname }}'
+        body: |
+          {{ range .Alerts }}
+          🤖 ALERTA DE MCP CORE 🤖
+          
+          Alerta: {{ .Annotations.summary }}
+          Descripción: {{ .Annotations.description }}
+          Tipo: {{ .Labels.mcp_component }}
+          Versión: {{ .Labels.version }}
+          Pod: {{ .Labels.pod }}
+          Fecha: {{ .StartsAt.Format "2006-01-02 15:04:05" }}
+          
+          {{ if .Annotations.documentation_url }}
+          Documentación: {{ .Annotations.documentation_url }}
+          {{ end }}
+          {{ end }}
+
+  # Alertas de base de datos
+  - name: 'database-alerts'
+    email_configs:
+      - to: 'dba-team@mcp-core-superior.com'
+        subject: '🗄️ Database: {{ .GroupLabels.alertname }}'
+        body: |
+          {{ range .Alerts }}
+          🗄️ ALERTA DE BASE DE DATOS 🗄️
+          
+          Alerta: {{ .Annotations.summary }}
+          Descripción: {{ .Annotations.description }}
+          Base de datos: {{ .Labels.database }}
+          Host: {{ .Labels.instance }}
+          Fecha: {{ .StartsAt.Format "2006-01-02 15:04:05" }}
+          {{ end }}
+
+  # Alertas de cache
+  - name: 'cache-alerts'
+    email_configs:
+      - to: 'cache-team@mcp-core-superior.com'
+        subject: '⚡ Cache: {{ .GroupLabels.alertname }}'
+        body: |
+          {{ range .Alerts }}
+          ⚡ ALERTA DE CACHE ⚡
+          
+          Alerta: {{ .Annotations.summary }}
+          Descripción: {{ .Annotations.description }}
+          Instancia: {{ .Labels.instance }}
+          Fecha: {{ .StartsAt.Format "2006-01-02 15:04:05" }}
+          {{ end }}
+
+  # Alertas de infraestructura
+  - name: 'infrastructure-alerts'
+    email_configs:
+      - to: 'infra-team@mcp-core-superior.com'
+        subject: '🖥️ Infra: {{ .GroupLabels.alertname }}'
+        body: |
+          {{ range .Alerts }}
+          🖥️ ALERTA DE INFRAESTRUCTURA 🖥️
+          
+          Alerta: {{ .Annotations.summary }}
+          Descripción: {{ .Annotations.description }}
+          Nodo: {{ .Labels.node }}
+          Fecha: {{ .StartsAt.Format "2006-01-02 15:04:05" }}
+          {{ end }}
+    slack_configs:
+      - channel: '#infrastructure'
+        title: '🖥️ Infraestructura: {{ .GroupLabels.alertname }}'
+        text: |
+          {{ range .Alerts }}
+          *Alerta:* {{ .Annotations.summary }}
+          *Nodo:* {{ .Labels.node }}
+          *Severidad:* {{ .Labels.severity }}
+          {{ end }}
+
+# Configuración de inhibición (evitar alertas duplicadas)
+inhibit_rules:
+  # Inhibir alertas de warning cuando hay alertas críticas del mismo tipo
+  - source_match:
+      severity: 'critical'
+    target_match:
+      severity: 'warning'
+    equal: ['alertname', 'cluster', 'service']
+    
+  # Inhibitar alertas de info cuando hay alertas de warning o critical
+  - source_match:
+      severity: 'critical'
+    target_match:
+      severity: 'info'
+    equal: ['alertname', 'cluster']
+    
+  - source_match:
+      severity: 'warning'
+    target_match:
+      severity: 'info'
+    equal: ['alertname', 'cluster', 'service']
+
+# Configuración de mute (silenciar alertas por horarios)
+mute_time_intervals:
+  # Horarios de mantenimiento (silenciar alertas críticas)
+  - name: maintenance_hours
+    time_intervals:
+      - times:
+          - start_time: '02:00'
+            end_time: '04:00'
+        weekdays: ['monday:friday']
+        months: ['january:december']
+        years: ['2023:2100']
+        
+  # Fines de semana (solo alertas críticas)
+  - name: weekend
+    time_intervals:
+      - times:
+          - start_time: '00:00'
+            end_time: '23:59'
+        weekdays: ['saturday', 'sunday']
+
+# Configuración de time periods
+time_intervals:
+  # Horario laboral
+  - name: business_hours
+    time_intervals:
+      - times:
+          - start_time: '09:00'
+            end_time: '17:00'
+        weekdays: ['monday:friday']
+        
+  # Horario extendido
+  - name: extended_hours
+    time_intervals:
+      - times:
+          - start_time: '08:00'
+            end_time: '20:00'
+        weekdays: ['monday:friday']
+
+# Aplicar mute rules a rutas
+# route:
+#   routes:
+#     - match:
+#         severity: warning
+#       mute_time_intervals:
+#         - maintenance_hours
+#     - match:
+#         severity: info
+#       mute_time_intervals:
+#         - maintenance_hours
+#         - weekend

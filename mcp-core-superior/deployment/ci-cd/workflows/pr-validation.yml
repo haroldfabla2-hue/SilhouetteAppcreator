@@ -1,0 +1,400 @@
+# Workflow para Pull Requests - MCP Core Superior
+# Validaciones automáticas para cambios en PR
+
+name: MCP Core PR Validation
+
+on:
+  pull_request:
+    branches: [ main, develop, staging ]
+    types: [opened, synchronize, reopened]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+  NODE_VERSION: '18'
+  PYTHON_VERSION: '3.11'
+
+jobs:
+  # === VALIDACIÓN DE CÓDIGO ===
+  code-quality:
+    name: Calidad de Código
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configurar Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Instalar dependencias
+        run: |
+          pip install -r file_processing_requirements.txt
+          pip install -r src/security/requirements.txt
+          pip install flake8 black isort mypy bandit
+
+      - name: Formatear código con Black
+        run: |
+          black --check --diff src/ tests/ deployment/
+
+      - name: Ordenar imports con isort
+        run: |
+          isort --check-only --diff src/ tests/ deployment/
+
+      - name: Ejecutar flake8
+        run: |
+          flake8 src/ tests/ deployment/ --max-line-length=88 --extend-ignore=E203,W503
+
+      - name: Type checking con mypy
+        run: |
+          mypy src/ --ignore-missing-imports --no-strict-optional
+
+  # === TESTS AUTOMÁTICOS ===
+  run-tests:
+    name: Ejecutar Tests
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        python-version: ['3.9', '3.10', '3.11']
+        
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configurar Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+
+      - name: Instalar dependencias
+        run: |
+          pip install -r file_processing_requirements.txt
+          pip install -r src/security/requirements.txt
+          pip install pytest pytest-cov pytest-xdist
+
+      - name: Ejecutar tests
+        run: |
+          pytest tests/ \
+            --cov=src/ \
+            --cov-report=xml \
+            --cov-report=html \
+            --cov-report=term-missing \
+            -n auto \
+            --junitxml=pytest-results.xml
+
+      - name: Subir resultados de coverage
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./coverage.xml
+          fail_ci_if_error: true
+
+      - name: Subir artifact de resultados
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results-${{ matrix.python-version }}
+          path: |
+            pytest-results.xml
+            htmlcov/
+          retention-days: 30
+
+  # === ANÁLISIS ESTÁTICO ===
+  static-analysis:
+    name: Análisis Estático
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Instalar dependencias
+        run: |
+          pip install -r file_processing_requirements.txt
+          pip install bandit semgrep
+
+      - name: Escaneo de seguridad con Bandit
+        run: |
+          bandit -r src/ -f json -o bandit-report.json || true
+          bandit -r src/ || true
+
+      - name: Escaneo con Semgrep
+        uses: returntocorp/semgrep-action@v1
+        with:
+          config: >-
+            p/security-audit
+            p/secrets
+            p/owasp-top-ten
+          generateSarif: "1"
+
+      - name: Subir resultados de Semgrep
+        uses: github/codeql-action/upload-sarif@v2
+        if: always()
+        with:
+          sarif_file: semgrep.sarif
+
+  # === ANÁLISIS DE DEPENDENCIAS ===
+  dependency-check:
+    name: Análisis de Dependencias
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Configurar Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Instalar dependencias
+        run: |
+          npm ci
+          pip install safety pip-audit
+
+      - name: Verificar vulnerabilidades en Python
+        run: |
+          safety check --json --output safety-report.json || true
+          pip-audit --format=json --output=pip-audit-report.json || true
+
+      - name: Verificar vulnerabilidades en Node.js
+        run: |
+          npm audit --audit-level=moderate
+
+  # === BUILD DE DOCKER (OPCIONAL) ===
+  docker-build:
+    name: Build de Docker
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configurar Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Generar metadatos
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-pr-${{ github.event.number }}
+          tags: |
+            type=pr,value=${{ github.event.number }}
+            type=pr,value=pr-${{ github.event.number }}
+
+      - name: Build imagen Docker
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./deployment/docker/Dockerfile
+          push: false
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # === VALIDACIÓN DE KUBERNETES ===
+  k8s-validation:
+    name: Validación de Kubernetes
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configurar kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'latest'
+
+      - name: Instalar kubeval
+        run: |
+          curl -L https://github.com/instrumenta/kubeval/releases/latest/download/kubeval-linux-amd64.tar.gz | tar xz
+          sudo mv kubeval /usr/local/bin
+
+      - name: Validar manifests de Kubernetes
+        run: |
+          kubeval deployment/kubernetes/*.yaml --ignore-missing-schemas
+          kube-score score deployment/kubernetes/*.yaml
+
+      - name: Verificar syntax de Docker
+        run: |
+          hadolint deployment/docker/Dockerfile
+
+  # === TESTING DE RENDIMIENTO ===
+  performance-tests:
+    name: Tests de Rendimiento
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    # Solo ejecutar en repos propios para evitar spam
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configurar kubectl (modo local)
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'latest'
+
+      - name: Desplegar aplicación de test
+        run: |
+          echo "Desplegando en cluster de test local..."
+          # kubectl apply -f deployment/kubernetes/01-namespace.yaml
+          # kubectl apply -f deployment/kubernetes/02-configmaps.yaml
+          # kubectl apply -f deployment/kubernetes/05-deployment.yaml
+
+      - name: Instalar k6
+        run: |
+          sudo gpg --no-default-keyring --keyring /usr/share/keyrings/k6-archive-keyring.gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C5AD17C747E3415A3642D57D77C6C491D6AC1D69
+          echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
+          sudo apt-get update
+          sudo apt-get install k6
+
+      - name: Ejecutar tests de carga
+        run: |
+          echo "Ejecutando tests de carga..."
+          k6 run performance-tests/basic-load-test.js || true
+          k6 run performance-tests/stress-test.js || true
+
+  # === DOCUMENTATION BUILD ===
+  docs-build:
+    name: Build de Documentación
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Instalar dependencias
+        run: |
+          npm install -g @docusaurus/core@latest @docusaurus/preset-classic@latest react react-dom
+
+      - name: Build documentación
+        run: |
+          echo "Generando documentación..."
+          npm run docs:build || echo "Build de docs falló, continuando..."
+
+      - name: Verificar enlaces en documentación
+        run: |
+          npx broken-link-checker http://localhost:3000 --recursive --verbose || echo "Algunos enlaces rotos encontrados"
+
+  # === COMENTARIOS AUTOMÁTICOS ===
+  comment-on-pr:
+    name: Comentar en PR
+    runs-on: ubuntu-latest
+    needs: [code-quality, run-tests, static-analysis, dependency-check, docker-build, k8s-validation]
+    if: always() && github.event_name == 'pull_request'
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Preparar resumen de validación
+        id: summary
+        run: |
+          echo "### Resumen de Validaciones" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          # Estado de cada job
+          for job in code-quality run-tests static-analysis dependency-check docker-build k8s-validation; do
+            result="${{ needs.$job.result }}"
+            if [ "$result" == "success" ]; then
+              echo "✅ $job: PASSED" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "❌ $job: FAILED" >> $GITHUB_STEP_SUMMARY
+            fi
+          done
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Detalles" >> $GITHUB_STEP_SUMMARY
+          echo "- Pull Request: #${{ github.event.number }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Rama: ${{ github.head_ref }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Commit: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+
+      - name: Crear comentario en PR
+        uses: actions/github-script@v6
+        if: always()
+        with:
+          script: |
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number
+            });
+            
+            const validationComment = comments.find(comment => 
+              comment.body.includes('### Resumen de Validaciones')
+            );
+            
+            const summary = `${{ steps.summary.outputs.summary }}`;
+            
+            if (validationComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: validationComment.id,
+                body: summary
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: summary
+              });
+            }
+
+  # === APROBACIÓN AUTOMÁTICA ===
+  auto-approve:
+    name: Aprobación Automática
+    runs-on: ubuntu-latest
+    needs: [code-quality, run-tests, static-analysis, dependency-check, docker-build, k8s-validation]
+    if: |
+      always() &&
+      needs.code-quality.result == 'success' &&
+      needs.run-tests.result == 'success' &&
+      needs.static-analysis.result == 'success' &&
+      needs.dependency-check.result == 'success' &&
+      needs.docker-build.result == 'success' &&
+      needs.k8s-validation.result == 'success' &&
+      github.actor == 'dependabot[bot]'
+    
+    steps:
+      - name: Auto-approve dependencies
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.pulls.createReview({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number,
+              event: 'APPROVE',
+              body: '🤖 Auto-aprobación para dependencias de Dependabot'
+            });

@@ -1,0 +1,242 @@
+2025-11-06 04:23:58,445 - SilhouetteMCP-Enhanced-Scalability - INFO - Iniciando SilhouetteMCP Enhanced Scalability System...
+2025-11-06 04:23:58,445 - SilhouetteMCP-Enhanced-Scalability - INFO - Versión: 3.0.0
+2025-11-06 04:23:58,445 - SilhouetteMCP-Enhanced-Scalability - INFO - Capacidades de escalabilidad habilitadas:
+2025-11-06 04:23:58,445 - SilhouetteMCP-Enhanced-Scalability - INFO - - Auto-scaling automático: True
+2025-11-06 04:23:58,445 - SilhouetteMCP-Enhanced-Scalability - INFO - - Workers máximos: 128
+2025-11-06 04:23:58,447 - SilhouetteMCP-Enhanced-Scalability - INFO - - Algoritmo de load balancing: adaptive
+2025-11-06 04:23:58,447 - SilhouetteMCP-Enhanced-Scalability - INFO - - Pool de conexiones: 1000
+2025-11-06 04:23:58,450 - SilhouetteMCP-Enhanced-Scalability - INFO - Puertos disponibles:
+2025-11-06 04:23:58,453 - SilhouetteMCP-Enhanced-Scalability - INFO - - 8020: API de Escalabilidad Principal
+2025-11-06 04:23:58,456 - SilhouetteMCP-Enhanced-Scalability - INFO - - 8021: Auto-scaling Manager
+2025-11-06 04:23:58,458 - SilhouetteMCP-Enhanced-Scalability - INFO - - 8022: Load Balancer Central
+2025-11-06 04:23:58,461 - SilhouetteMCP-Enhanced-Scalability - INFO - - 8023: Resource Manager
+2025-11-06 04:23:58,461 - SilhouetteMCP-Enhanced-Scalability - INFO - - 8024: Performance Monitor Escalable
+2025-11-06 04:23:58,525 - SilhouetteMCP-Enhanced-Scalability - INFO - Inicializando sistema de escalabilidad mejorada...
+2025-11-06 04:23:58,526 - SilhouetteMCP-Enhanced-Scalability - INFO - Inicializando sistema de auto-scaling...
+2025-11-06 04:23:58,526 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker coordination_1 created for type coordination
+2025-11-06 04:23:58,526 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker coordination_2 created for type coordination
+2025-11-06 04:23:58,526 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker processing_1 created for type processing
+2025-11-06 04:23:58,528 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker processing_2 created for type processing
+2025-11-06 04:23:58,531 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker processing_3 created for type processing
+2025-11-06 04:23:58,539 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker processing_4 created for type processing
+2025-11-06 04:23:58,542 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker monitoring_1 created for type monitoring
+2025-11-06 04:23:58,544 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker monitoring_2 created for type monitoring
+2025-11-06 04:23:58,547 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker database_1 created for type database
+2025-11-06 04:23:58,547 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker api_gateway_1 created for type api_gateway
+2025-11-06 04:23:58,547 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker api_gateway_2 created for type api_gateway
+2025-11-06 04:23:58,547 - SilhouetteMCP-Enhanced-Scalability - INFO - Sistema de auto-scaling inicializado con 11 workers
+2025-11-06 04:23:58,548 - SilhouetteMCP-Enhanced-Scalability - INFO - Connection pool initialized with 1000 connections
+2025-11-06 04:23:58,551 - SilhouetteMCP-Enhanced-Scalability - INFO - Sistema de escalabilidad inicializado correctamente
+2025-11-06 04:24:30,560 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker coordination_auto_1762374270_0 created for type coordination
+2025-11-06 04:24:30,560 - SilhouetteMCP-Enhanced-Scalability - INFO - Scaling action executed: scale_up for coordination - High resource pressure detected (score: 9.01)
+2025-11-06 04:24:30,561 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker processing_auto_1762374270_0 created for type processing
+2025-11-06 04:24:30,561 - SilhouetteMCP-Enhanced-Scalability - INFO - Scaling action executed: scale_up for processing - High resource pressure detected (score: 9.01)
+2025-11-06 04:24:30,561 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker monitoring_auto_1762374270_0 created for type monitoring
+2025-11-06 04:24:30,561 - SilhouetteMCP-Enhanced-Scalability - INFO - Scaling action executed: scale_up for monitoring - High resource pressure detected (score: 9.01)
+2025-11-06 04:24:30,561 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker database_auto_1762374270_0 created for type database
+2025-11-06 04:24:30,564 - SilhouetteMCP-Enhanced-Scalability - INFO - Scaling action executed: scale_up for database - High resource pressure detected (score: 9.01)
+2025-11-06 04:24:30,564 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker api_gateway_auto_1762374270_0 created for type api_gateway
+2025-11-06 04:24:30,566 - SilhouetteMCP-Enhanced-Scalability - INFO - Scaling action executed: scale_up for api_gateway - High resource pressure detected (score: 9.01)
+2025-11-06 04:29:50,584 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker coordination_auto_1762374590_0 created for type coordination
+2025-11-06 04:29:50,586 - SilhouetteMCP-Enhanced-Scalability - INFO - Scaling action executed: scale_up for coordination - High resource pressure detected (score: 9.12)
+2025-11-06 04:29:50,586 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker processing_auto_1762374590_0 created for type processing
+2025-11-06 04:29:50,586 - SilhouetteMCP-Enhanced-Scalability - INFO - Scaling action executed: scale_up for processing - High resource pressure detected (score: 9.13)
+2025-11-06 04:29:50,586 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker monitoring_auto_1762374590_0 created for type monitoring
+2025-11-06 04:29:50,586 - SilhouetteMCP-Enhanced-Scalability - INFO - Scaling action executed: scale_up for monitoring - High resource pressure detected (score: 9.20)
+2025-11-06 04:29:50,586 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker database_auto_1762374590_0 created for type database
+2025-11-06 04:29:50,590 - SilhouetteMCP-Enhanced-Scalability - INFO - Scaling action executed: scale_up for database - High resource pressure detected (score: 9.21)
+2025-11-06 04:29:50,594 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker api_gateway_auto_1762374590_0 created for type api_gateway
+2025-11-06 04:29:50,597 - SilhouetteMCP-Enhanced-Scalability - INFO - Scaling action executed: scale_up for api_gateway - High resource pressure detected (score: 9.21)
+2025-11-06 04:35:10,613 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker coordination_auto_1762374910_0 created for type coordination
+2025-11-06 04:35:10,615 - SilhouetteMCP-Enhanced-Scalability - INFO - Scaling action executed: scale_up for coordination - High resource pressure detected (score: 9.20)
+2025-11-06 04:35:10,615 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker processing_auto_1762374910_0 created for type processing
+2025-11-06 04:35:10,618 - SilhouetteMCP-Enhanced-Scalability - INFO - Scaling action executed: scale_up for processing - High resource pressure detected (score: 9.17)
+2025-11-06 04:35:10,622 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker monitoring_auto_1762374910_0 created for type monitoring
+2025-11-06 04:35:10,625 - SilhouetteMCP-Enhanced-Scalability - INFO - Scaling action executed: scale_up for monitoring - High resource pressure detected (score: 9.20)
+2025-11-06 04:35:10,627 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker database_auto_1762374910_0 created for type database
+2025-11-06 04:35:10,637 - SilhouetteMCP-Enhanced-Scalability - INFO - Scaling action executed: scale_up for database - High resource pressure detected (score: 9.14)
+2025-11-06 04:35:10,640 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker api_gateway_auto_1762374910_0 created for type api_gateway
+2025-11-06 04:35:10,640 - SilhouetteMCP-Enhanced-Scalability - INFO - Scaling action executed: scale_up for api_gateway - High resource pressure detected (score: 9.17)
+2025-11-06 04:40:30,652 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker coordination_auto_1762375230_0 created for type coordination
+2025-11-06 04:40:30,654 - SilhouetteMCP-Enhanced-Scalability - INFO - Scaling action executed: scale_up for coordination - High resource pressure detected (score: 9.18)
+2025-11-06 04:40:30,654 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker processing_auto_1762375230_0 created for type processing
+2025-11-06 04:40:30,654 - SilhouetteMCP-Enhanced-Scalability - INFO - Scaling action executed: scale_up for processing - High resource pressure detected (score: 9.19)
+2025-11-06 04:40:30,655 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker monitoring_auto_1762375230_0 created for type monitoring
+2025-11-06 04:40:30,655 - SilhouetteMCP-Enhanced-Scalability - INFO - Scaling action executed: scale_up for monitoring - High resource pressure detected (score: 9.19)
+2025-11-06 04:40:30,655 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker database_auto_1762375230_0 created for type database
+2025-11-06 04:40:30,655 - SilhouetteMCP-Enhanced-Scalability - INFO - Scaling action executed: scale_up for database - High resource pressure detected (score: 9.17)
+2025-11-06 04:40:30,655 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker api_gateway_auto_1762375230_0 created for type api_gateway
+2025-11-06 04:40:30,655 - SilhouetteMCP-Enhanced-Scalability - INFO - Scaling action executed: scale_up for api_gateway - High resource pressure detected (score: 9.21)
+2025-11-06 04:45:50,670 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker coordination_auto_1762375550_0 created for type coordination
+2025-11-06 04:45:50,671 - SilhouetteMCP-Enhanced-Scalability - INFO - Scaling action executed: scale_up for coordination - High resource pressure detected (score: 9.15)
+2025-11-06 04:45:50,671 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker processing_auto_1762375550_0 created for type processing
+2025-11-06 04:45:50,671 - SilhouetteMCP-Enhanced-Scalability - INFO - Scaling action executed: scale_up for processing - High resource pressure detected (score: 9.19)
+2025-11-06 04:45:50,671 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker monitoring_auto_1762375550_0 created for type monitoring
+2025-11-06 04:45:50,671 - SilhouetteMCP-Enhanced-Scalability - INFO - Scaling action executed: scale_up for monitoring - High resource pressure detected (score: 9.13)
+2025-11-06 04:45:50,671 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker api_gateway_auto_1762375550_0 created for type api_gateway
+2025-11-06 04:45:50,671 - SilhouetteMCP-Enhanced-Scalability - INFO - Scaling action executed: scale_up for api_gateway - High resource pressure detected (score: 9.14)
+2025-11-06 04:51:10,685 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker coordination_auto_1762375870_0 created for type coordination
+2025-11-06 04:51:10,685 - SilhouetteMCP-Enhanced-Scalability - INFO - Scaling action executed: scale_up for coordination - High resource pressure detected (score: 9.18)
+2025-11-06 04:51:10,685 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker processing_auto_1762375870_0 created for type processing
+2025-11-06 04:51:10,685 - SilhouetteMCP-Enhanced-Scalability - INFO - Scaling action executed: scale_up for processing - High resource pressure detected (score: 9.15)
+2025-11-06 04:51:10,685 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker monitoring_auto_1762375870_0 created for type monitoring
+2025-11-06 04:51:10,685 - SilhouetteMCP-Enhanced-Scalability - INFO - Scaling action executed: scale_up for monitoring - High resource pressure detected (score: 9.19)
+2025-11-06 05:34:06,160 - SilhouetteMCP-Enhanced-Scalability - INFO - Iniciando SilhouetteMCP Enhanced Scalability System...
+2025-11-06 05:34:06,160 - SilhouetteMCP-Enhanced-Scalability - INFO - Versión: 3.0.0
+2025-11-06 05:34:06,160 - SilhouetteMCP-Enhanced-Scalability - INFO - Capacidades de escalabilidad habilitadas:
+2025-11-06 05:34:06,160 - SilhouetteMCP-Enhanced-Scalability - INFO - - Auto-scaling automático: True
+2025-11-06 05:34:06,160 - SilhouetteMCP-Enhanced-Scalability - INFO - - Workers máximos: 128
+2025-11-06 05:34:06,160 - SilhouetteMCP-Enhanced-Scalability - INFO - - Algoritmo de load balancing: adaptive
+2025-11-06 05:34:06,160 - SilhouetteMCP-Enhanced-Scalability - INFO - - Pool de conexiones: 1000
+2025-11-06 05:34:06,160 - SilhouetteMCP-Enhanced-Scalability - INFO - Puertos disponibles:
+2025-11-06 05:34:06,160 - SilhouetteMCP-Enhanced-Scalability - INFO - - 8020: API de Escalabilidad Principal
+2025-11-06 05:34:06,160 - SilhouetteMCP-Enhanced-Scalability - INFO - - 8021: Auto-scaling Manager
+2025-11-06 05:34:06,160 - SilhouetteMCP-Enhanced-Scalability - INFO - - 8022: Load Balancer Central
+2025-11-06 05:34:06,160 - SilhouetteMCP-Enhanced-Scalability - INFO - - 8023: Resource Manager
+2025-11-06 05:34:06,160 - SilhouetteMCP-Enhanced-Scalability - INFO - - 8024: Performance Monitor Escalable
+2025-11-06 05:34:06,264 - SilhouetteMCP-Enhanced-Scalability - INFO - Inicializando sistema de escalabilidad mejorada...
+2025-11-06 05:34:06,264 - SilhouetteMCP-Enhanced-Scalability - INFO - Inicializando sistema de auto-scaling...
+2025-11-06 05:34:06,264 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker coordination_1 created for type coordination
+2025-11-06 05:34:06,264 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker coordination_2 created for type coordination
+2025-11-06 05:34:06,264 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker processing_1 created for type processing
+2025-11-06 05:34:06,264 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker processing_2 created for type processing
+2025-11-06 05:34:06,264 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker processing_3 created for type processing
+2025-11-06 05:34:06,264 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker processing_4 created for type processing
+2025-11-06 05:34:06,267 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker monitoring_1 created for type monitoring
+2025-11-06 05:34:06,267 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker monitoring_2 created for type monitoring
+2025-11-06 05:34:06,271 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker database_1 created for type database
+2025-11-06 05:34:06,273 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker api_gateway_1 created for type api_gateway
+2025-11-06 05:34:06,276 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker api_gateway_2 created for type api_gateway
+2025-11-06 05:34:06,278 - SilhouetteMCP-Enhanced-Scalability - INFO - Sistema de auto-scaling inicializado con 11 workers
+2025-11-06 05:34:06,282 - SilhouetteMCP-Enhanced-Scalability - INFO - Connection pool initialized with 1000 connections
+2025-11-06 05:34:06,284 - SilhouetteMCP-Enhanced-Scalability - INFO - Sistema de escalabilidad inicializado correctamente
+2025-11-06 05:34:06,288 - SilhouetteMCP-Enhanced-Scalability - INFO - Apagando sistema de escalabilidad...
+2025-11-06 05:34:08,290 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker coordination_1 removed
+2025-11-06 05:34:10,290 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker coordination_2 removed
+2025-11-06 05:34:12,289 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker processing_1 removed
+2025-11-06 05:34:14,290 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker processing_2 removed
+2025-11-06 05:34:16,290 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker processing_3 removed
+2025-11-06 05:34:18,291 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker processing_4 removed
+2025-11-06 05:34:20,291 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker monitoring_1 removed
+2025-11-06 05:34:22,291 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker monitoring_2 removed
+2025-11-06 05:34:24,292 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker database_1 removed
+2025-11-06 05:34:26,292 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker api_gateway_1 removed
+2025-11-06 05:34:28,292 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker api_gateway_2 removed
+2025-11-06 05:34:28,292 - SilhouetteMCP-Enhanced-Scalability - INFO - Sistema de escalabilidad detenido
+2025-11-06 08:11:33,568 - SilhouetteMCP-Enhanced-Scalability - INFO - Iniciando SilhouetteMCP Enhanced Scalability System...
+2025-11-06 08:11:33,568 - SilhouetteMCP-Enhanced-Scalability - INFO - Versión: 3.0.0
+2025-11-06 08:11:33,568 - SilhouetteMCP-Enhanced-Scalability - INFO - Capacidades de escalabilidad habilitadas:
+2025-11-06 08:11:33,568 - SilhouetteMCP-Enhanced-Scalability - INFO - - Auto-scaling automático: True
+2025-11-06 08:11:33,568 - SilhouetteMCP-Enhanced-Scalability - INFO - - Workers máximos: 64
+2025-11-06 08:11:33,568 - SilhouetteMCP-Enhanced-Scalability - INFO - - Algoritmo de load balancing: adaptive
+2025-11-06 08:11:33,568 - SilhouetteMCP-Enhanced-Scalability - INFO - - Pool de conexiones: 1000
+2025-11-06 08:11:33,570 - SilhouetteMCP-Enhanced-Scalability - INFO - Puertos disponibles:
+2025-11-06 08:11:33,572 - SilhouetteMCP-Enhanced-Scalability - INFO - - 8020: API de Escalabilidad Principal
+2025-11-06 08:11:33,574 - SilhouetteMCP-Enhanced-Scalability - INFO - - 8021: Auto-scaling Manager
+2025-11-06 08:11:33,575 - SilhouetteMCP-Enhanced-Scalability - INFO - - 8022: Load Balancer Central
+2025-11-06 08:11:33,577 - SilhouetteMCP-Enhanced-Scalability - INFO - - 8023: Resource Manager
+2025-11-06 08:11:33,579 - SilhouetteMCP-Enhanced-Scalability - INFO - - 8024: Performance Monitor Escalable
+2025-11-06 08:11:33,621 - SilhouetteMCP-Enhanced-Scalability - INFO - Inicializando sistema de escalabilidad mejorada...
+2025-11-06 08:11:33,622 - SilhouetteMCP-Enhanced-Scalability - INFO - Inicializando sistema de auto-scaling...
+2025-11-06 08:11:33,622 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker coordination_1 created for type coordination
+2025-11-06 08:11:33,622 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker coordination_2 created for type coordination
+2025-11-06 08:11:33,622 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker processing_1 created for type processing
+2025-11-06 08:11:33,622 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker processing_2 created for type processing
+2025-11-06 08:11:33,624 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker processing_3 created for type processing
+2025-11-06 08:11:33,624 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker processing_4 created for type processing
+2025-11-06 08:11:33,626 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker monitoring_1 created for type monitoring
+2025-11-06 08:11:33,628 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker monitoring_2 created for type monitoring
+2025-11-06 08:11:33,631 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker database_1 created for type database
+2025-11-06 08:11:33,633 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker api_gateway_1 created for type api_gateway
+2025-11-06 08:11:33,635 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker api_gateway_2 created for type api_gateway
+2025-11-06 08:11:33,635 - SilhouetteMCP-Enhanced-Scalability - INFO - Sistema de auto-scaling inicializado con 11 workers
+2025-11-06 08:11:33,636 - SilhouetteMCP-Enhanced-Scalability - INFO - Connection pool initialized with 1000 connections
+2025-11-06 08:11:33,637 - SilhouetteMCP-Enhanced-Scalability - INFO - Sistema de escalabilidad inicializado correctamente
+2025-11-06 08:12:05,641 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker coordination_auto_1762387925_0 created for type coordination
+2025-11-06 08:12:05,642 - SilhouetteMCP-Enhanced-Scalability - INFO - Scaling action executed: scale_up for coordination - High resource pressure detected (score: 9.13)
+2025-11-06 08:12:05,642 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker processing_auto_1762387925_0 created for type processing
+2025-11-06 08:12:05,644 - SilhouetteMCP-Enhanced-Scalability - INFO - Scaling action executed: scale_up for processing - High resource pressure detected (score: 9.01)
+2025-11-06 08:12:05,647 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker monitoring_auto_1762387925_0 created for type monitoring
+2025-11-06 08:12:05,649 - SilhouetteMCP-Enhanced-Scalability - INFO - Scaling action executed: scale_up for monitoring - High resource pressure detected (score: 9.01)
+2025-11-06 08:12:05,651 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker database_auto_1762387925_0 created for type database
+2025-11-06 08:12:05,653 - SilhouetteMCP-Enhanced-Scalability - INFO - Scaling action executed: scale_up for database - High resource pressure detected (score: 9.01)
+2025-11-06 08:12:05,655 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker api_gateway_auto_1762387925_0 created for type api_gateway
+2025-11-06 08:12:05,655 - SilhouetteMCP-Enhanced-Scalability - INFO - Scaling action executed: scale_up for api_gateway - High resource pressure detected (score: 9.21)
+2025-11-06 08:17:25,669 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker coordination_auto_1762388245_0 created for type coordination
+2025-11-06 08:17:25,671 - SilhouetteMCP-Enhanced-Scalability - INFO - Scaling action executed: scale_up for coordination - High resource pressure detected (score: 9.17)
+2025-11-06 08:17:25,671 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker processing_auto_1762388245_0 created for type processing
+2025-11-06 08:17:25,671 - SilhouetteMCP-Enhanced-Scalability - INFO - Scaling action executed: scale_up for processing - High resource pressure detected (score: 9.18)
+2025-11-06 08:17:25,671 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker monitoring_auto_1762388245_0 created for type monitoring
+2025-11-06 08:17:25,671 - SilhouetteMCP-Enhanced-Scalability - INFO - Scaling action executed: scale_up for monitoring - High resource pressure detected (score: 9.18)
+2025-11-06 08:17:25,671 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker database_auto_1762388245_0 created for type database
+2025-11-06 08:17:25,671 - SilhouetteMCP-Enhanced-Scalability - INFO - Scaling action executed: scale_up for database - High resource pressure detected (score: 9.21)
+2025-11-06 08:17:25,671 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker api_gateway_auto_1762388245_0 created for type api_gateway
+2025-11-06 08:17:25,671 - SilhouetteMCP-Enhanced-Scalability - INFO - Scaling action executed: scale_up for api_gateway - High resource pressure detected (score: 9.21)
+2025-11-06 08:22:45,685 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker coordination_auto_1762388565_0 created for type coordination
+2025-11-06 08:22:45,686 - SilhouetteMCP-Enhanced-Scalability - INFO - Scaling action executed: scale_up for coordination - High resource pressure detected (score: 9.19)
+2025-11-06 08:22:45,686 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker processing_auto_1762388565_0 created for type processing
+2025-11-06 08:22:45,686 - SilhouetteMCP-Enhanced-Scalability - INFO - Scaling action executed: scale_up for processing - High resource pressure detected (score: 9.17)
+2025-11-06 08:22:45,686 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker monitoring_auto_1762388565_0 created for type monitoring
+2025-11-06 08:22:45,690 - SilhouetteMCP-Enhanced-Scalability - INFO - Scaling action executed: scale_up for monitoring - High resource pressure detected (score: 9.19)
+2025-11-06 08:22:45,696 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker database_auto_1762388565_0 created for type database
+2025-11-06 08:22:45,702 - SilhouetteMCP-Enhanced-Scalability - INFO - Scaling action executed: scale_up for database - High resource pressure detected (score: 9.18)
+2025-11-06 08:22:45,708 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker api_gateway_auto_1762388565_0 created for type api_gateway
+2025-11-06 08:22:45,732 - SilhouetteMCP-Enhanced-Scalability - INFO - Scaling action executed: scale_up for api_gateway - High resource pressure detected (score: 9.11)
+2025-11-06 08:28:05,749 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker coordination_auto_1762388885_0 created for type coordination
+2025-11-06 08:28:05,750 - SilhouetteMCP-Enhanced-Scalability - INFO - Scaling action executed: scale_up for coordination - High resource pressure detected (score: 9.19)
+2025-11-06 08:28:05,750 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker processing_auto_1762388885_0 created for type processing
+2025-11-06 08:28:05,750 - SilhouetteMCP-Enhanced-Scalability - INFO - Scaling action executed: scale_up for processing - High resource pressure detected (score: 9.19)
+2025-11-06 08:28:05,750 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker monitoring_auto_1762388885_0 created for type monitoring
+2025-11-06 08:28:05,752 - SilhouetteMCP-Enhanced-Scalability - INFO - Scaling action executed: scale_up for monitoring - High resource pressure detected (score: 9.13)
+2025-11-06 08:28:05,755 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker database_auto_1762388885_0 created for type database
+2025-11-06 08:28:05,758 - SilhouetteMCP-Enhanced-Scalability - INFO - Scaling action executed: scale_up for database - High resource pressure detected (score: 9.15)
+2025-11-06 08:28:05,758 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker api_gateway_auto_1762388885_0 created for type api_gateway
+2025-11-06 08:28:05,758 - SilhouetteMCP-Enhanced-Scalability - INFO - Scaling action executed: scale_up for api_gateway - High resource pressure detected (score: 9.20)
+2025-11-06 08:33:25,772 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker coordination_auto_1762389205_0 created for type coordination
+2025-11-06 08:33:25,773 - SilhouetteMCP-Enhanced-Scalability - INFO - Scaling action executed: scale_up for coordination - High resource pressure detected (score: 9.19)
+2025-11-06 08:33:25,773 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker processing_auto_1762389205_0 created for type processing
+2025-11-06 08:33:25,773 - SilhouetteMCP-Enhanced-Scalability - INFO - Scaling action executed: scale_up for processing - High resource pressure detected (score: 9.21)
+2025-11-06 08:33:25,774 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker monitoring_auto_1762389205_0 created for type monitoring
+2025-11-06 08:33:25,779 - SilhouetteMCP-Enhanced-Scalability - INFO - Scaling action executed: scale_up for monitoring - High resource pressure detected (score: 9.17)
+2025-11-06 08:33:25,782 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker api_gateway_auto_1762389205_0 created for type api_gateway
+2025-11-06 08:33:25,784 - SilhouetteMCP-Enhanced-Scalability - INFO - Scaling action executed: scale_up for api_gateway - High resource pressure detected (score: 9.13)
+2025-11-06 08:38:45,803 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker coordination_auto_1762389525_0 created for type coordination
+2025-11-06 08:38:45,804 - SilhouetteMCP-Enhanced-Scalability - INFO - Scaling action executed: scale_up for coordination - High resource pressure detected (score: 9.17)
+2025-11-06 08:38:45,804 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker processing_auto_1762389525_0 created for type processing
+2025-11-06 08:38:45,804 - SilhouetteMCP-Enhanced-Scalability - INFO - Scaling action executed: scale_up for processing - High resource pressure detected (score: 9.20)
+2025-11-06 08:38:45,804 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker monitoring_auto_1762389525_0 created for type monitoring
+2025-11-06 08:38:45,808 - SilhouetteMCP-Enhanced-Scalability - INFO - Scaling action executed: scale_up for monitoring - High resource pressure detected (score: 9.19)
+2025-11-06 08:38:45,816 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker api_gateway_auto_1762389525_0 created for type api_gateway
+2025-11-06 08:38:45,831 - SilhouetteMCP-Enhanced-Scalability - INFO - Scaling action executed: scale_up for api_gateway - High resource pressure detected (score: 9.18)
+2025-11-06 08:44:05,849 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker coordination_auto_1762389845_0 created for type coordination
+2025-11-06 08:44:05,853 - SilhouetteMCP-Enhanced-Scalability - INFO - Scaling action executed: scale_up for coordination - High resource pressure detected (score: 9.14)
+2025-11-06 08:44:05,853 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker processing_auto_1762389845_0 created for type processing
+2025-11-06 08:44:05,853 - SilhouetteMCP-Enhanced-Scalability - INFO - Scaling action executed: scale_up for processing - High resource pressure detected (score: 9.18)
+2025-11-06 08:44:05,853 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker api_gateway_auto_1762389845_0 created for type api_gateway
+2025-11-06 08:44:05,855 - SilhouetteMCP-Enhanced-Scalability - INFO - Scaling action executed: scale_up for api_gateway - High resource pressure detected (score: 9.14)
+2025-11-06 08:49:25,873 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker coordination_auto_1762390165_0 created for type coordination
+2025-11-06 08:49:25,874 - SilhouetteMCP-Enhanced-Scalability - INFO - Scaling action executed: scale_up for coordination - High resource pressure detected (score: 9.17)
+2025-11-06 08:49:25,875 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker processing_auto_1762390165_0 created for type processing
+2025-11-06 08:49:25,875 - SilhouetteMCP-Enhanced-Scalability - INFO - Scaling action executed: scale_up for processing - High resource pressure detected (score: 9.15)
+2025-11-06 08:49:25,875 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker api_gateway_auto_1762390165_0 created for type api_gateway
+2025-11-06 08:49:25,881 - SilhouetteMCP-Enhanced-Scalability - INFO - Scaling action executed: scale_up for api_gateway - High resource pressure detected (score: 9.17)
+2025-11-06 08:54:45,895 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker processing_auto_1762390485_0 created for type processing
+2025-11-06 08:54:45,896 - SilhouetteMCP-Enhanced-Scalability - INFO - Scaling action executed: scale_up for processing - High resource pressure detected (score: 9.17)
+2025-11-06 08:54:45,896 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker api_gateway_auto_1762390485_0 created for type api_gateway
+2025-11-06 08:54:45,896 - SilhouetteMCP-Enhanced-Scalability - INFO - Scaling action executed: scale_up for api_gateway - High resource pressure detected (score: 9.19)
+2025-11-06 09:00:05,909 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker processing_auto_1762390805_0 created for type processing
+2025-11-06 09:00:05,910 - SilhouetteMCP-Enhanced-Scalability - INFO - Scaling action executed: scale_up for processing - High resource pressure detected (score: 9.17)
+2025-11-06 09:00:05,911 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker api_gateway_auto_1762390805_0 created for type api_gateway
+2025-11-06 09:00:05,911 - SilhouetteMCP-Enhanced-Scalability - INFO - Scaling action executed: scale_up for api_gateway - High resource pressure detected (score: 9.17)
+2025-11-06 09:05:25,926 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker processing_auto_1762391125_0 created for type processing
+2025-11-06 09:05:25,928 - SilhouetteMCP-Enhanced-Scalability - INFO - Scaling action executed: scale_up for processing - High resource pressure detected (score: 9.15)
+2025-11-06 09:10:45,941 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker processing_auto_1762391445_0 created for type processing
+2025-11-06 09:10:45,942 - SilhouetteMCP-Enhanced-Scalability - INFO - Scaling action executed: scale_up for processing - High resource pressure detected (score: 9.16)
+2025-11-06 09:16:05,955 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker processing_auto_1762391765_0 created for type processing
+2025-11-06 09:16:05,957 - SilhouetteMCP-Enhanced-Scalability - INFO - Scaling action executed: scale_up for processing - High resource pressure detected (score: 9.20)
+2025-11-06 09:21:25,970 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker processing_auto_1762392085_0 created for type processing
+2025-11-06 09:21:25,972 - SilhouetteMCP-Enhanced-Scalability - INFO - Scaling action executed: scale_up for processing - High resource pressure detected (score: 9.18)
+2025-11-06 09:26:45,987 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker processing_auto_1762392405_0 created for type processing
+2025-11-06 09:26:45,988 - SilhouetteMCP-Enhanced-Scalability - INFO - Scaling action executed: scale_up for processing - High resource pressure detected (score: 9.16)
+2025-11-06 09:32:06,004 - SilhouetteMCP-Enhanced-Scalability - INFO - Worker processing_auto_1762392726_0 created for type processing
+2025-11-06 09:32:06,004 - SilhouetteMCP-Enhanced-Scalability - INFO - Scaling action executed: scale_up for processing - High resource pressure detected (score: 9.18)

@@ -1,0 +1,25 @@
+# SILHOUETTEMCP - PAQUETE DE DESPLIEGUE COMPLETO
+# Archivos incluidos en el paquete:
+
+## ARCHIVOS PRINCIPALES
+1. silhouettemcp_server.py - Servidor FastAPI principal (749 líneas)
+2. silhouettemcp_dashboard.html - Dashboard HTML con autenticación (642 líneas)
+3. Dockerfile.silhouettemcp - Contenedor Docker optimizado
+4. docker-compose.silhouettemcp.yml - Orquestación completa (servidor + nginx + SSL)
+5. nginx.silhouettemcp.conf - Configuración Nginx con SSL automático
+
+## SCRIPTS DE DESPLIEGUE
+6. deploy_silhouettemcp.sh - Script automatizado de despliegue (587 líneas)
+7. comandos_silhouettemcp.sh - Comandos de gestión operativa (122 líneas)
+8. .env.silhouettemcp - Variables de entorno con credenciales
+
+## DOCUMENTACIÓN
+9. GUIA_DESPLIEGUE_SILHOUETTEMCP.md - Guía completa de despliegue (664 líneas)
+10. README_SILHOUETTEMCP_FINAL.md - Documentación ejecutiva (295 líneas)
+
+## TOTAL: 10 archivos esenciales para despliegue completo
+## CREDENCIALES INCLUIDAS:
+- Email admin: alberto.farahb@hotmail.com
+- Password: Fbalberto1910
+- Dominio: silhouettemcp.albertofarah.com
+- API Keys para múltiples aplicaciones

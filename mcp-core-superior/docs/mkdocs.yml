@@ -1,0 +1,115 @@
+site_name: MCP Core Superior - Documentación Técnica
+site_description: Documentación técnica completa del MCP Server Core Superior
+site_author: MCP Core Superior Team
+
+nav:
+  - Inicio: index.md
+  - Arquitectura:
+    - Overview: architecture/overview.md
+    - Components: architecture/components.md
+    - Data Flow: architecture/data-flow.md
+    - Security Architecture: architecture/security.md
+  - API Documentation:
+    - OpenAPI Spec: api/openapi.md
+    - MCP Tools Reference: api/mcp-tools.md
+    - REST API: api/rest-api.md
+    - Streaming API: api/streaming.md
+  - Developer Guide:
+    - Getting Started: developer/getting-started.md
+    - Development Setup: developer/setup.md
+    - Contributing: developer/contributing.md
+    - Code Style: developer/style-guide.md
+  - Deployment:
+    - Overview: deployment/overview.md
+    - Docker: deployment/docker.md
+    - Kubernetes: deployment/kubernetes.md
+    - Production: deployment/production.md
+  - Security:
+    - Overview: security/overview.md
+    - Authentication: security/authentication.md
+    - Authorization: security/authorization.md
+    - Best Practices: security/best-practices.md
+  - Monitoring:
+    - Overview: monitoring/overview.md
+    - Metrics: monitoring/metrics.md
+    - Logging: monitoring/logging.md
+    - Tracing: monitoring/tracing.md
+    - Alerting: monitoring/alerting.md
+  - Troubleshooting:
+    - Common Issues: troubleshooting/common-issues.md
+    - Performance Issues: troubleshooting/performance.md
+    - Debugging: troubleshooting/debugging.md
+    - FAQ: troubleshooting/faq.md
+  - Performance:
+    - Tuning Guide: performance/tuning.md
+    - Optimization: performance/optimization.md
+    - Scalability: performance/scalability.md
+  - Integration:
+    - Client Examples: integration/examples.md
+    - Python SDK: integration/python-sdk.md
+    - JavaScript SDK: integration/js-sdk.md
+    - Custom Integrations: integration/custom.md
+  - Migration:
+    - Migration Guide: migration/guide.md
+    - From Legacy Systems: migration/legacy-systems.md
+    - Upgrades: migration/upgrades.md
+    - Data Migration: migration/data-migration.md
+
+theme:
+  name: material
+  language: es
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - search.suggest
+    - search.highlight
+    - content.tabs.link
+    - content.code.annotation
+    - content.code.copy
+    - content.tooltips
+  palette:
+    - scheme: default
+      primary: blue
+      accent: light blue
+      toggle:
+        icon: material/toggle-switch-off-outline
+        name: Switch to dark mode
+    - scheme: slate
+      primary: blue
+      accent: light blue
+      toggle:
+        icon: material/toggle-switch
+        name: Switch to light mode
+
+markdown_extensions:
+  - admonition
+  - footnotes
+  - tables
+  - toc:
+      permalink: true
+  - codehilite:
+      css_class: highlight
+  - mermaid
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+
+extra:
+  version: "2.0.0"
+  repo_url: "https://github.com/mcp-core-superior"
+  social:
+    - icon: fontawesome/brands/github
+      link: "https://github.com/mcp-core-superior"
+    - icon: fontawesome/brands/twitter
+      link: "https://twitter.com/mcpcoresuperior"
+
+plugins:
+  - search
+  - minify:
+      minify_html: true
+  - git-revision-date-localized:
+      enable_creation_date: true
+      type: timeago

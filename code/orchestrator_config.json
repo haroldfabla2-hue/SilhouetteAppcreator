@@ -1,0 +1,253 @@
+{
+  "orchestrator": {
+    "host": "0.0.0.0",
+    "port": 8025,
+    "secret_key": "silhouettemcp_secret_key_2025",
+    "enable_websocket": true,
+    "enable_monitoring": true,
+    "enable_auto_scaling": true,
+    "health_check_interval": 30,
+    "auto_scaling_interval": 60,
+    "monitoring_interval": 10,
+    "request_timeout": 30.0,
+    "max_concurrent_requests": 1000,
+    "enable_cors": true,
+    "cors_origins": ["*"]
+  },
+  "load_balancer": {
+    "default_strategy": "round_robin",
+    "max_retries": 3,
+    "retry_delay": 1.0,
+    "circuit_breaker_enabled": true,
+    "circuit_breaker_threshold": 5,
+    "circuit_breaker_timeout": 60
+  },
+  "auto_scaler": {
+    "min_instances": 1,
+    "max_instances": 10,
+    "scaling_up_threshold": {
+      "cpu_usage": 80.0,
+      "memory_usage": 85.0,
+      "response_time": 1.0,
+      "request_rate": 100.0
+    },
+    "scaling_down_threshold": {
+      "cpu_usage": 30.0,
+      "memory_usage": 40.0,
+      "response_time": 0.5,
+      "request_rate": 20.0
+    },
+    "scaling_cooldown": 300
+  },
+  "monitoring": {
+    "metrics_retention": 1000,
+    "alert_cooldown": 60,
+    "prometheus_enabled": true,
+    "prometheus_port": 9090,
+    "log_level": "INFO"
+  },
+  "security": {
+    "token_expiry": 3600,
+    "jwt_algorithm": "HS256",
+    "max_login_attempts": 5,
+    "lockout_duration": 300
+  },
+  "services": {
+    "original_services": [
+      {
+        "service_id": "silhouettemcp_core",
+        "host": "localhost",
+        "port": 8001,
+        "protocol": "http",
+        "weight": 2,
+        "health_check_url": "http://localhost:8001/health"
+      },
+      {
+        "service_id": "silhouettemcp_server",
+        "host": "localhost",
+        "port": 8002,
+        "protocol": "http",
+        "weight": 2,
+        "health_check_url": "http://localhost:8002/health"
+      }
+    ],
+    "enhanced_services": [
+      {
+        "service_id": "enhanced_scalability",
+        "host": "localhost",
+        "port": 8010,
+        "protocol": "http",
+        "health_check_url": "http://localhost:8010/health"
+      },
+      {
+        "service_id": "enhanced_security",
+        "host": "localhost",
+        "port": 8011,
+        "protocol": "http",
+        "health_check_url": "http://localhost:8011/health"
+      },
+      {
+        "service_id": "hierarchical_architecture",
+        "host": "localhost",
+        "port": 8012,
+        "protocol": "http",
+        "health_check_url": "http://localhost:8012/health"
+      },
+      {
+        "service_id": "robust_diagnostic",
+        "host": "localhost",
+        "port": 8013,
+        "protocol": "http",
+        "health_check_url": "http://localhost:8013/health"
+      },
+      {
+        "service_id": "comprehensive_verification",
+        "host": "localhost",
+        "port": 8014,
+        "protocol": "http",
+        "health_check_url": "http://localhost:8014/health"
+      },
+      {
+        "service_id": "expanded_content",
+        "host": "localhost",
+        "port": 8015,
+        "protocol": "http",
+        "health_check_url": "http://localhost:8015/health"
+      },
+      {
+        "service_id": "expanded_finance",
+        "host": "localhost",
+        "port": 8016,
+        "protocol": "http",
+        "health_check_url": "http://localhost:8016/health"
+      },
+      {
+        "service_id": "expanded_maps",
+        "host": "localhost",
+        "port": 8017,
+        "protocol": "http",
+        "health_check_url": "http://localhost:8017/health"
+      },
+      {
+        "service_id": "expanded_research",
+        "host": "localhost",
+        "port": 8018,
+        "protocol": "http",
+        "health_check_url": "http://localhost:8018/health"
+      },
+      {
+        "service_id": "expanded_social_travel",
+        "host": "localhost",
+        "port": 8019,
+        "protocol": "http",
+        "health_check_url": "http://localhost:8019/health"
+      },
+      {
+        "service_id": "expanded_supabase",
+        "host": "localhost",
+        "port": 8020,
+        "protocol": "http",
+        "health_check_url": "http://localhost:8020/health"
+      },
+      {
+        "service_id": "superior_allocator",
+        "host": "localhost",
+        "port": 8021,
+        "protocol": "http",
+        "health_check_url": "http://localhost:8021/health"
+      },
+      {
+        "service_id": "comprehensive_diagnostic",
+        "host": "localhost",
+        "port": 8022,
+        "protocol": "http",
+        "health_check_url": "http://localhost:8022/health"
+      },
+      {
+        "service_id": "enhanced_architecture",
+        "host": "localhost",
+        "port": 8023,
+        "protocol": "http",
+        "health_check_url": "http://localhost:8023/health"
+      },
+      {
+        "service_id": "server_unified",
+        "host": "localhost",
+        "port": 8024,
+        "protocol": "http",
+        "health_check_url": "http://localhost:8024/health"
+      }
+    ]
+  },
+  "users": [
+    {
+      "username": "admin",
+      "password": "admin123",
+      "permissions": ["admin", "read", "write", "orchestrator"]
+    },
+    {
+      "username": "user",
+      "password": "user123",
+      "permissions": ["read"]
+    },
+    {
+      "username": "orchestrator",
+      "password": "orch123",
+      "permissions": ["orchestrator", "read"]
+    }
+  ],
+  "alert_rules": [
+    {
+      "rule_id": "high_cpu",
+      "name": "Alto uso de CPU",
+      "condition": "cpu_usage > 80",
+      "threshold": 80.0,
+      "duration": 60,
+      "severity": "warning",
+      "enabled": true,
+      "actions": ["log"]
+    },
+    {
+      "rule_id": "high_memory",
+      "name": "Alto uso de memoria",
+      "condition": "memory_usage > 85",
+      "threshold": 85.0,
+      "duration": 60,
+      "severity": "critical",
+      "enabled": true,
+      "actions": ["log", "email"]
+    },
+    {
+      "rule_id": "high_response_time",
+      "name": "Tiempo de respuesta alto",
+      "condition": "response_time > 2.0",
+      "threshold": 2.0,
+      "duration": 60,
+      "severity": "warning",
+      "enabled": true,
+      "actions": ["log"]
+    },
+    {
+      "rule_id": "low_healthy_services",
+      "name": "Pocos servicios saludables",
+      "condition": "healthy_services < 2",
+      "threshold": 2,
+      "duration": 60,
+      "severity": "critical",
+      "enabled": true,
+      "actions": ["log"]
+    }
+  ],
+  "scaling_rules": {
+    "enhanced_scalability": {
+      "response_time_threshold": 1.0,
+      "cpu_threshold": 70.0,
+      "rps_threshold": 50.0
+    },
+    "enhanced_security": {
+      "response_time_threshold": 0.8,
+      "cpu_threshold": 60.0,
+      "rps_threshold": 30.0
+    }
+  }
+}

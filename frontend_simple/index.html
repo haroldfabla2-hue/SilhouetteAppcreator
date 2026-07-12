@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema Multi-Agente Superior</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .agent-status { transition: all 0.3s ease; }
+        .streaming { animation: pulse 2s infinite; }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-blue-600 mb-2">🚀 Sistema Multi-Agente Superior</h1>
+            <p class="text-gray-600">Superando a MiniMax Agent con arquitectura avanzada</p>
+            <div class="mt-4 flex justify-center space-x-4">
+                <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">Backend: 🟢 Online</span>
+                <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">v0.1.0</span>
+                <span class="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm">OpenRouter 70B</span>
+            </div>
+        </div>
+
+        <!-- System Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white p-6 rounded-lg shadow">
+                <h3 class="text-lg font-semibold mb-4">📊 Estado del Sistema</h3>
+                <div id="system-stats">
+                    <div class="flex justify-between mb-2">
+                        <span>Estado:</span>
+                        <span id="system-status" class="font-semibold text-green-600">Cargando...</span>
+                    </div>
+                    <div class="flex justify-between mb-2">
+                        <span>Versión:</span>
+                        <span id="system-version" class="font-semibold">0.1.0</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-lg shadow">
+                <h3 class="text-lg font-semibold mb-4">🧠 LLM Router</h3>
+                <div id="llm-stats">
+                    <div class="flex justify-between mb-2">
+                        <span>Llamadas:</span>
+                        <span id="llm-calls" class="font-semibold">0</span>
+                    </div>
+                    <div class="flex justify-between mb-2">
+                        <span>MiniMax días:</span>
+                        <span id="minimax-days" class="font-semibold text-purple-600">4</span>
+                    </div>
+                    <div class="text-xs text-gray-500">
+                        <div>MiniMax: <span id="minimax-calls">0</span></div>
+                        <div>OpenRouter: <span id="openrouter-calls">0</span></div>
+                        <div>Fallback: <span id="fallback-calls">0</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-lg shadow">
+                <h3 class="text-lg font-semibold mb-4">🤖 Agentes Activos</h3>
+                <div id="agent-stats">
+                    <div class="flex justify-between mb-2">
+                        <span>Sesiones:</span>
+                        <span id="active-sessions" class="font-semibold">0</span>
+                    </div>
+                    <div class="text-xs text-gray-500">
+                        <div>• Reasoner (Análisis)</div>
+                        <div>• Planner (Planificación)</div>
+                        <div>• Verifier (Verificación)</div>
+                        <div>• Memory Manager (Memoria)</div>
+                        <div>• 4 Executors especializados</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Task Interface -->
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+            <h3 class="text-xl font-semibold mb-4">💡 Crear Nueva Tarea</h3>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium mb-2">Objetivo a Cumplir:</label>
+                    <textarea 
+                        id="task-objective" 
+                        class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="Ejemplo: Analiza el mercado de IA y crea un informe completo con recomendaciones..."
+                        rows="3"
+                    ></textarea>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-2">Contexto Adicional (opcional):</label>
+                    <textarea 
+                        id="task-context" 
+                        class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="Información adicional, restricciones, formato preferido..."
+                        rows="2"
+                    ></textarea>
+                </div>
+                <div class="flex space-x-4">
+                    <button 
+                        id="execute-task" 
+                        class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+                    >
+                        🚀 Ejecutar Tarea
+                    </button>
+                    <button 
+                        id="test-llm" 
+                        class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+                    >
+                        🧪 Probar LLM
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results -->
+        <div id="results" class="space-y-4">
+            <!-- Resultados aparecerán aquí -->
+        </div>
+
+        <!-- Live Updates -->
+        <div id="live-updates" class="hidden bg-blue-50 border-l-4 border-blue-400 p-4 mb-4">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <span class="streaming">⚡</span>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm text-blue-700" id="live-message">
+                        Sistema listo para procesar tareas...
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // API Configuration
+        const API_BASE = 'http://localhost:8000';
+        
+        // DOM Elements
+        const elements = {
+            systemStatus: document.getElementById('system-status'),
+            systemVersion: document.getElementById('system-version'),
+            llmCalls: document.getElementById('llm-calls'),
+            minimaxDays: document.getElementById('minimax-days'),
+            minimaxCalls: document.getElementById('minimax-calls'),
+            openrouterCalls: document.getElementById('openrouter-calls'),
+            fallbackCalls: document.getElementById('fallback-calls'),
+            activeSessions: document.getElementById('active-sessions'),
+            taskObjective: document.getElementById('task-objective'),
+            taskContext: document.getElementById('task-context'),
+            executeBtn: document.getElementById('execute-task'),
+            testLlBtn: document.getElementById('test-llm'),
+            results: document.getElementById('results'),
+            liveUpdates: document.getElementById('live-updates'),
+            liveMessage: document.getElementById('live-message')
+        };
+
+        // API Functions
+        async function apiGet(endpoint) {
+            try {
+                const response = await fetch(`${API_BASE}${endpoint}`);
+                return await response.json();
+            } catch (error) {
+                console.error('API Error:', error);
+                throw error;
+            }
+        }
+
+        async function apiPost(endpoint, data) {
+            try {
+                const response = await fetch(`${API_BASE}${endpoint}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+                return await response.json();
+            } catch (error) {
+                console.error('API Error:', error);
+                throw error;
+            }
+        }
+
+        // UI Functions
+        function showLiveUpdate(message) {
+            elements.liveMessage.textContent = message;
+            elements.liveUpdates.classList.remove('hidden');
+            setTimeout(() => {
+                elements.liveUpdates.classList.add('hidden');
+            }, 3000);
+        }
+
+        function addResultCard(title, content, status = 'success') {
+            const card = document.createElement('div');
+            card.className = `bg-white rounded-lg shadow p-6 ${status === 'error' ? 'border-l-4 border-red-400' : 'border-l-4 border-green-400'}`;
+            card.innerHTML = `
+                <div class="flex items-center justify-between mb-4">
+                    <h4 class="text-lg font-semibold">${title}</h4>
+                    <span class="text-xs px-2 py-1 rounded ${status === 'error' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}">
+                        ${new Date().toLocaleTimeString()}
+                    </span>
+                </div>
+                <div class="text-sm text-gray-700 whitespace-pre-wrap">${content}</div>
+            `;
+            elements.results.prepend(card);
+        }
+
+        // Load System Stats
+        async function loadSystemStats() {
+            try {
+                const stats = await apiGet('/api/v1/stats');
+                
+                // System status
+                elements.systemStatus.textContent = stats.system.status === 'running' ? '🟢 Activo' : '🔴 Inactivo';
+                elements.systemVersion.textContent = stats.system.version;
+                
+                // LLM stats
+                elements.llmCalls.textContent = stats.llm.total_calls;
+                elements.minimaxDays.textContent = stats.llm.minimax_free_days_remaining;
+                elements.minimaxCalls.textContent = stats.llm.by_provider.minimax_m2.calls;
+                elements.openrouterCalls.textContent = stats.llm.by_provider.openrouter_70b.calls;
+                elements.fallbackCalls.textContent = stats.llm.by_provider.fallback.calls;
+                
+                // Agent stats
+                elements.activeSessions.textContent = stats.orchestrator.active_sessions;
+                
+            } catch (error) {
+                elements.systemStatus.textContent = '🔴 Error';
+                console.error('Error loading stats:', error);
+            }
+        }
+
+        // Execute Task
+        async function executeTask() {
+            const objective = elements.taskObjective.value.trim();
+            const context = elements.taskContext.value.trim();
+            
+            if (!objective) {
+                alert('Por favor ingresa un objetivo');
+                return;
+            }
+            
+            elements.executeBtn.disabled = true;
+            elements.executeBtn.textContent = '⏳ Ejecutando...';
+            
+            try {
+                showLiveUpdate('🚀 Iniciando procesamiento con orquestador multi-agente...');
+                
+                const response = await apiPost('/api/v1/tasks', {
+                    objetivo: objective,
+                    contexto: context ? { context } : {},
+                    user_id: 'demo_user',
+                    stream: false
+                });
+                
+                if (response.status === 'completed') {
+                    addResultCard(
+                        `✅ Tarea Completada (${response.conversation_id})`,
+                        response.result?.synthesis || JSON.stringify(response.result, null, 2)
+                    );
+                    showLiveUpdate('✅ Tarea completada exitosamente');
+                } else {
+                    addResultCard(
+                        `⚠️ Estado: ${response.status}`,
+                        JSON.stringify(response, null, 2),
+                        'error'
+                    );
+                }
+                
+            } catch (error) {
+                addResultCard(
+                    '❌ Error en la Tarea',
+                    `Error: ${error.message}\n\nVerifica que el backend esté ejecutándose en http://localhost:8000`,
+                    'error'
+                );
+                showLiveUpdate('❌ Error ejecutando tarea');
+            } finally {
+                elements.executeBtn.disabled = false;
+                elements.executeBtn.textContent = '🚀 Ejecutar Tarea';
+                await loadSystemStats(); // Refresh stats
+            }
+        }
+
+        // Test LLM
+        async function testLLM() {
+            elements.testLlBtn.disabled = true;
+            elements.testLlBtn.textContent = '⏳ Probando...';
+            
+            try {
+                showLiveUpdate('🧪 Probando conectividad con LLM Router...');
+                
+                const response = await apiPost('/api/v1/llm/test', null, {
+                    params: { prompt: 'Hola, ¿puedes identificarte?' }
+                });
+                
+                addResultCard(
+                    '🧪 Test LLM Completado',
+                    `Respuesta: ${response.response || JSON.stringify(response, null, 2)}`
+                );
+                
+                showLiveUpdate('✅ LLM funcionando correctamente');
+                
+            } catch (error) {
+                addResultCard(
+                    '❌ Error en Test LLM',
+                    `Error: ${error.message}\n\nVerifica la configuración de OPENROUTER_API_KEY`,
+                    'error'
+                );
+                showLiveUpdate('❌ Error en test LLM');
+            } finally {
+                elements.testLlBtn.disabled = false;
+                elements.testLlBtn.textContent = '🧪 Probar LLM';
+                await loadSystemStats(); // Refresh stats
+            }
+        }
+
+        // Event Listeners
+        elements.executeBtn.addEventListener('click', executeTask);
+        elements.testLlBtn.addEventListener('click', testLLM);
+
+        // Load initial stats
+        loadSystemStats();
+        setInterval(loadSystemStats, 10000); // Update every 10 seconds
+
+        // Welcome message
+        setTimeout(() => {
+            addResultCard(
+                '🎉 Sistema Multi-Agente Superior Iniciado',
+                `¡Bienvenido al sistema que supera a MiniMax Agent!
+
+Características principales:
+• 5 Agentes especializados (Reasoner, Planner, Verifier, Memory Manager + Executors)
+• Router LLM inteligente con fallback automático
+• OpenRouter 70B (Llama 3.3) + MiniMax M2 (gratis hasta Nov 7)
+• Arquitectura escalable y robusta
+• Procesamiento paralelo de tareas
+
+El sistema está listo para procesar tareas complejas. ¡Prueba creando una tarea o probando el LLM!`
+            );
+        }, 1000);
+    </script>
+</body>
+</html>

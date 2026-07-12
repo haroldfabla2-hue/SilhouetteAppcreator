@@ -1,0 +1,48 @@
+[Unit]
+Description=SilhouetteMCP Server - FINAL UNIFIED v4.0.0
+Documentation=https://docs.silhouettemcp.albertofarah.com
+After=network.target network-online.target
+Wants=network-online.target
+
+[Service]
+Type=exec
+User=silhouettemcp
+Group=silhouettemcp
+WorkingDirectory=/opt/silhouettemcp_v4_unified/server
+ExecStart=/opt/silhouettemcp_v4_unified/server/venv/bin/python silhouettemcp_server_unified.py
+ExecReload=/bin/kill -USR1 $MAINPID
+Restart=always
+RestartSec=5
+StartLimitInterval=60
+StartLimitBurst=3
+
+# Environment variables
+Environment=PYTHONPATH=/opt/silhouettemcp_v4_unified/server
+Environment=PORT=8001
+Environment=SUPABASE_URL=https://your-project.supabase.co
+Environment=SUPABASE_SERVICE_ROLE_KEY=
+Environment=SUPABASE_ANON_KEY=
+Environment=SUPABASE_PROJECT_ID=
+
+# Security settings
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/silhouettemcp_v4_unified/data /tmp
+CapabilityBoundingSet=CAP_NET_BIND_SERVICE
+AmbientCapabilities=CAP_NET_BIND_SERVICE
+
+# Resource limits
+LimitNOFILE=65536
+LimitNPROC=4096
+TasksMax=4096
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=silhouettemcp
+
+[Install]
+WantedBy=multi-user.target
+Alias=silhouettemcp.service

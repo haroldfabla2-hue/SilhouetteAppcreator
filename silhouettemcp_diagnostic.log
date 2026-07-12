@@ -1,0 +1,5 @@
+2025-11-06 05:17:29,745 - SilhouetteMCP-Comprehensive-Diagnostic - INFO - Iniciando SilhouetteMCP Comprehensive Diagnostic System...
+2025-11-06 05:17:29,745 - SilhouetteMCP-Comprehensive-Diagnostic - INFO - Puertos disponibles:
+2025-11-06 05:17:29,747 - SilhouetteMCP-Comprehensive-Diagnostic - INFO - - 8007: API de Diagnóstico Principal
+2025-11-06 05:17:29,748 - SilhouetteMCP-Comprehensive-Diagnostic - INFO - - 8008: Métricas en Tiempo Real (WebSocket)
+2025-11-06 05:17:29,750 - SilhouetteMCP-Comprehensive-Diagnostic - INFO - - 8009: Endpoints de Diagnóstico Avanzado

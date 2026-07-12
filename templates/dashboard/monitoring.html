@@ -1,0 +1,244 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="header">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+        <div>
+            <h1>📈 Monitoring en Tiempo Real</h1>
+            <p>Supervisión avanzada del sistema SilhouetteMCP 110/100</p>
+        </div>
+        <div>
+            <span id="lastUpdate" style="color: #666;">Última actualización: --</span>
+        </div>
+    </div>
+</div>
+
+<div class="nav">
+    <a href="/dashboard">📊 Dashboard</a>
+    <a href="/apis">⚡ APIs</a>
+    <a href="/monitoring" class="active">📈 Monitoring</a>
+    <a href="/production">🚀 Producción</a>
+</div>
+
+<div class="metrics-grid">
+    <div class="metric-card">
+        <h3>CPU</h3>
+        <div class="metric-value" id="cpuValue">--</div>
+        <p>Uso del procesador</p>
+    </div>
+    
+    <div class="metric-card">
+        <h3>Memoria</h3>
+        <div class="metric-value" id="memoryValue">--</div>
+        <p>Uso de RAM</p>
+    </div>
+    
+    <div class="metric-card">
+        <h3>Disco</h3>
+        <div class="metric-value" id="diskValue">--</div>
+        <p>Uso de almacenamiento</p>
+    </div>
+    
+    <div class="metric-card">
+        <h3>Sistemas</h3>
+        <div class="metric-value" id="systemsValue">--</div>
+        <p>Sistemas saludables</p>
+    </div>
+</div>
+
+<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px;">
+    <!-- Gráficos principales -->
+    <div class="card">
+        <h2>📊 Gráficos de Rendimiento</h2>
+        <div class="chart-container">
+            <canvas id="systemChart" class="chart-canvas"></canvas>
+        </div>
+    </div>
+    
+    <!-- Panel de alertas -->
+    <div class="card">
+        <h2>🚨 Alertas del Sistema</h2>
+        <div id="alertsPanel">
+            <div style="padding: 10px; background: #f0f8ff; border-left: 4px solid #4CAF50; margin-bottom: 10px;">
+                <strong>✅ Sistema Operativo</strong><br>
+                <small>Todos los sistemas funcionando correctamente</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <h2>🔧 Estado Detallado de Sistemas</h2>
+    <div id="detailedSystems" class="api-list">
+        <!-- Se llenará dinámicamente -->
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+function getAuthHeaders() {
+    const token = localStorage.getItem('silhouette_token');
+    return token ? { 'Authorization': `Bearer ${token}` } : {};
+}
+
+let systemChart;
+let updateInterval;
+
+// Configurar gráfico principal
+function setupSystemChart() {
+    const ctx = document.getElementById('systemChart').getContext('2d');
+    
+    systemChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [
+                {
+                    label: 'CPU (%)',
+                    data: [],
+                    borderColor: 'rgb(255, 99, 132)',
+                    backgroundColor: 'rgba(255, 99, 132, 0.1)',
+                    tension: 0.4
+                },
+                {
+                    label: 'Memoria (%)',
+                    data: [],
+                    borderColor: 'rgb(54, 162, 235)',
+                    backgroundColor: 'rgba(54, 162, 235, 0.1)',
+                    tension: 0.4
+                },
+                {
+                    label: 'Disco (%)',
+                    data: [],
+                    borderColor: 'rgb(255, 205, 86)',
+                    backgroundColor: 'rgba(255, 205, 86, 0.1)',
+                    tension: 0.4
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100
+                }
+            },
+            plugins: {
+                legend: {
+                    position: 'top'
+                }
+            }
+        }
+    });
+}
+
+// Cargar datos de monitoring
+async function loadMonitoringData() {
+    try {
+        const response = await fetch('/monitoring/realtime', {
+            headers: { ...getAuthHeaders() }
+        });
+        
+        if (!response.ok) {
+            if (response.status === 401) {
+                window.location.href = '/login';
+                return;
+            }
+            throw new Error('Error de autenticación');
+        }
+        
+        const data = await response.json();
+        updateMonitoringDisplay(data);
+        
+        // Actualizar timestamp
+        document.getElementById('lastUpdate').textContent = 
+            'Última actualización: ' + new Date().toLocaleTimeString();
+        
+    } catch (error) {
+        console.error('Error cargando monitoring:', error);
+    }
+}
+
+// Actualizar display de monitoring
+function updateMonitoringDisplay(data) {
+    // Actualizar métricas principales
+    document.getElementById('cpuValue').textContent = 
+        data.system.cpu.usage.toFixed(1) + '%';
+    document.getElementById('memoryValue').textContent = 
+        data.system.memory.percentage.toFixed(1) + '%';
+    document.getElementById('diskValue').textContent = 
+        data.system.disk.percentage.toFixed(1) + '%';
+    document.getElementById('systemsValue').textContent = 
+        `${data.silhouettemcp.systems_healthy}/${data.silhouettemcp.total_systems}`;
+    
+    // Actualizar gráfico
+    updateSystemChart(data);
+    
+    // Actualizar estado detallado
+    updateDetailedSystems(data);
+}
+
+function updateSystemChart(data) {
+    const now = new Date().toLocaleTimeString();
+    
+    // Agregar nuevos puntos
+    systemChart.data.labels.push(now);
+    systemChart.data.datasets[0].data.push(data.system.cpu.usage);
+    systemChart.data.datasets[1].data.push(data.system.memory.percentage);
+    systemChart.data.datasets[2].data.push(data.system.disk.percentage);
+    
+    // Mantener solo los últimos 30 puntos
+    if (systemChart.data.labels.length > 30) {
+        systemChart.data.labels.shift();
+        systemChart.data.datasets.forEach(dataset => dataset.data.shift());
+    }
+    
+    systemChart.update('none');
+}
+
+function updateDetailedSystems(data) {
+    const container = document.getElementById('detailedSystems');
+    
+    const systems = [
+        { name: 'CPU', value: data.system.cpu.usage, status: 'healthy', unit: '%' },
+        { name: 'Memoria', value: data.system.memory.percentage, status: 'healthy', unit: '%' },
+        { name: 'Disco', value: data.system.disk.percentage, status: 'healthy', unit: '%' },
+        { name: 'SilhouetteMCP Score', value: data.silhouettemcp.score, status: 'healthy', unit: '/100' },
+        { name: 'Sistemas Saludables', value: data.silhouettemcp.systems_healthy, status: 'healthy', unit: `/${data.silhouettemcp.total_systems}` }
+    ];
+    
+    container.innerHTML = systems.map(system => `
+        <div class="api-item">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h4>${system.name}</h4>
+                </div>
+                <div style="text-align: right;">
+                    <strong>${system.value.toFixed(1)}${system.unit}</strong>
+                    <div class="status-indicator status-${system.status}"></div>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+// Inicializar monitoring
+document.addEventListener('DOMContentLoaded', function() {
+    setupSystemChart();
+    loadMonitoringData();
+    
+    // Actualizar cada 2 segundos
+    updateInterval = setInterval(loadMonitoringData, 2000);
+});
+
+// Limpiar interval al salir de la página
+window.addEventListener('beforeunload', function() {
+    if (updateInterval) {
+        clearInterval(updateInterval);
+    }
+});
+</script>
+{% endblock %}

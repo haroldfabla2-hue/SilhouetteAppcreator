@@ -1,0 +1,302 @@
+name: Automated Testing Pipeline
+
+on:
+  push:
+    branches: [ main, develop, staging ]
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - 'requirements*.txt'
+      - '.github/workflows/01-automated-testing.yml'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - 'requirements*.txt'
+  schedule:
+    - cron: '0 2 * * *' # Daily at 2 AM
+
+env:
+  PYTHON_VERSION: '3.11'
+  NODE_VERSION: '18'
+
+jobs:
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.9', '3.10', '3.11']
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: mcp_core_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+      
+      redis:
+        image: redis:7
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Cache pip dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r file_processing_requirements.txt
+        pip install pytest pytest-asyncio pytest-cov pytest-xdist
+        pip install -e .
+
+    - name: Install system dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y tesseract-ocr ffmpeg
+
+    - name: Run unit tests with coverage
+      env:
+        DATABASE_URL: postgresql://postgres:postgres@localhost:5432/mcp_core_test
+        REDIS_URL: redis://localhost:6379
+        MCP_CORE_ENVIRONMENT: testing
+        MCP_CORE_DEBUG: true
+      run: |
+        pytest tests/ -v \
+          --cov=src \
+          --cov-report=xml \
+          --cov-report=html \
+          --cov-report=term-missing \
+          --junitxml=pytest-results.xml \
+          -x
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage.xml
+        flags: unittests
+        name: codecov-umbrella
+
+    - name: Archive test results
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: test-results-${{ matrix.python-version }}
+        path: |
+          pytest-results.xml
+          htmlcov/
+        retention-days: 30
+
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    needs: unit-tests
+    if: github.event_name == 'push' || github.event_name == 'schedule'
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: mcp_core_integration
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+      
+      redis:
+        image: redis:7
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r file_processing_requirements.txt
+        pip install pytest pytest-asyncio pytest-mock
+        pip install -e .
+
+    - name: Run integration tests
+      env:
+        DATABASE_URL: postgresql://postgres:postgres@localhost:5432/mcp_core_integration
+        REDIS_URL: redis://localhost:6379
+        MCP_CORE_ENVIRONMENT: integration
+        MCP_CORE_DEBUG: true
+        CONTEXTFORGE_URL: http://localhost:8001
+      run: |
+        pytest tests/test_integration/ -v --tb=short
+
+    - name: Test database operations
+      run: |
+        python -c "
+        import asyncio
+        from src.agents.database_operations_agent import DatabaseOperationsAgent
+        
+        async def test_db():
+            agent = DatabaseOperationsAgent()
+            result = await agent.execute({
+                'action': 'test_connection',
+                'connection_string': 'postgresql://postgres:postgres@localhost:5432/mcp_core_integration'
+            })
+            assert result.get('status') == 'success'
+        
+        asyncio.run(test_db())
+        "
+      env:
+        DATABASE_URL: postgresql://postgres:postgres@localhost:5432/mcp_core_integration
+
+  performance-tests:
+    name: Performance Tests
+    runs-on: ubuntu-latest
+    needs: integration-tests
+    if: github.event_name == 'push' || github.event_name == 'schedule'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r file_processing_requirements.txt
+        pip install pytest pytest-benchmark locust
+        pip install -e .
+
+    - name: Run performance tests
+      env:
+        DATABASE_URL: sqlite:///./test_perf.db
+        REDIS_URL: redis://localhost:6379
+      run: |
+        # Tests de carga para agentes
+        pytest tests/test_performance/ -v --benchmark-only --benchmark-sort=mean || echo "Performance tests completed"
+
+    - name: Run load tests with Locust
+      env:
+        TARGET_HOST: http://localhost:8080
+      run: |
+        # Configuración de tests de carga
+        cat > loadtest.py << 'EOF'
+        from locust import HttpUser, task, between
+        
+        class MCPUser(HttpUser):
+            wait_time = between(1, 2)
+            
+            @task
+            def health_check(self):
+                self.client.get("/health")
+                
+            @task
+            def status_check(self):
+                self.client.get("/api/status")
+        EOF
+        locust -f loadtest.py --headless --users 10 --spawn-rate 1 --run-time 30s || echo "Load tests completed"
+
+    - name: Performance regression analysis
+      run: |
+        # Crear baseline de performance
+        echo "# Performance Baseline - $(date)" > performance_baseline.md
+        echo "Python version: ${{ env.PYTHON_VERSION }}" >> performance_baseline.md
+        echo "Runner: ${{ runner.os }}" >> performance_baseline.md
+        echo "Commit: ${{ github.sha }}" >> performance_baseline.md
+
+  concurrency-tests:
+    name: Concurrency Tests
+    runs-on: ubuntu-latest
+    needs: unit-tests
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r file_processing_requirements.txt
+        pip install -e .
+
+    - name: Run concurrency tests
+      env:
+        DATABASE_URL: sqlite:///./test_concurrency.db
+        MCP_CORE_MAX_CONCURRENT_TASKS: 50
+        MCP_CORE_MAX_CONCURRENT_TOOLS: 25
+      run: |
+        python -c "
+        import asyncio
+        from src.orchestrator.multi_agent_orchestrator import MultiAgentOrchestrator
+        
+        async def test_concurrent_execution():
+            orchestrator = MultiAgentOrchestrator()
+            tasks = []
+            for i in range(20):
+                task = orchestrator.orchestrate({
+                    'objective': f'test task {i}',
+                    'context': {'concurrent': True}
+                })
+                tasks.append(task)
+            
+            results = await asyncio.gather(*tasks, return_exceptions=True)
+            successful = sum(1 for r in results if not isinstance(r, Exception))
+            print(f'Successful concurrent tasks: {successful}/20')
+            assert successful >= 18, f'Too many failures: {successful}'
+        
+        asyncio.run(test_concurrent_execution())
+        "

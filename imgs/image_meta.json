@@ -1,0 +1,92 @@
+[
+  {
+    "query": "A technical diagram showing MiniMax MCP server architecture and tools integration",
+    "image_info": {
+      "url": "https://miro.medium.com/1*BTKtK-shDqnsayqc8a8liw.jpeg",
+      "img_format": "JPEG",
+      "mode": "RGB",
+      "file_size": 54068,
+      "width": 1102,
+      "height": 886,
+      "total_pixels": 976372,
+      "basic_score": 0.9254022710695554,
+      "file_name": "minimax_mcp_diagram_1.jpeg"
+    },
+    "llm_score": null
+  },
+  {
+    "query": "A technical diagram showing MiniMax MCP server architecture and tools integration",
+    "image_info": {
+      "url": "https://miro.medium.com/v2/resize:fit:1400/1*3GQ7q_gt_qQ7F2jt1w4JJw.png",
+      "img_format": "PNG",
+      "mode": "RGBA",
+      "file_size": 120713,
+      "width": 1400,
+      "height": 860,
+      "total_pixels": 1204000,
+      "basic_score": 0.9138501610730388,
+      "file_name": "minimax_mcp_diagram_0.png"
+    },
+    "llm_score": null
+  },
+  {
+    "query": "A technical diagram showing MiniMax MCP server architecture and tools integration",
+    "image_info": {
+      "url": "https://miro.medium.com/v2/resize:fit:1400/1*MfI2XLk63rQye0Sh-hAUag.png",
+      "img_format": "PNG",
+      "mode": "RGBA",
+      "file_size": 149457,
+      "width": 1400,
+      "height": 920,
+      "total_pixels": 1288000,
+      "basic_score": 0.9110809011960873,
+      "file_name": "minimax_mcp_diagram_3.png"
+    },
+    "llm_score": null
+  },
+  {
+    "query": "Screenshot of SilhouetteMCP admin dashboard showing metrics and agents",
+    "image_info": {
+      "url": "https://static.vecteezy.com/system/resources/previews/036/599/911/non_2x/spaceship-radar-screen-interface-hud-dashboard-vector.jpg",
+      "img_format": "JPEG",
+      "mode": "RGB",
+      "file_size": 184186,
+      "width": 1416,
+      "height": 980,
+      "total_pixels": 1387680,
+      "basic_score": 0.9070261560059213,
+      "file_name": "silhouettemcp_dashboard_6.jpg"
+    },
+    "llm_score": null
+  },
+  {
+    "query": "Screenshot of SilhouetteMCP admin dashboard showing metrics and agents",
+    "image_info": {
+      "url": "https://cdn.prod.website-files.com/6383ff6c86150542267ade00/688b51479302e515a0aef3ca_Backslash%20Vibe%20Coding%20Security%20dashboard%20(1).jpeg",
+      "img_format": "JPEG",
+      "mode": "RGB",
+      "file_size": 414218,
+      "width": 1686,
+      "height": 1084,
+      "total_pixels": 1827624,
+      "basic_score": 0.8121886048715761,
+      "file_name": "silhouettemcp_dashboard_5.jpeg"
+    },
+    "llm_score": null
+  },
+  {
+    "query": "Screenshot of SilhouetteMCP admin dashboard showing metrics and agents",
+    "image_info": {
+      "url": "https://experienceleague.adobe.com/en/docs/experience-platform/dashboards/guides/media_121aa8047d41626e50113f1ef8ddb5addaf13a43b.png?width=750&format=png&optimize=medium",
+      "img_format": "PNG",
+      "mode": "P",
+      "file_size": 22885,
+      "width": 750,
+      "height": 370,
+      "total_pixels": 277500,
+      "basic_score": 0.7506623346747696,
+      "file_name": "silhouettemcp_dashboard_2.png"
+    },
+    "llm_score": null
+  }
+]

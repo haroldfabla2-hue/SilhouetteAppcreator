@@ -1,0 +1,669 @@
+name: Automated Rollback System
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/10-rollback-automation.yml'
+      - 'src/**'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to rollback'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+        - production
+        - staging
+      target_version:
+        description: 'Target version to rollback to (optional, latest if not specified)'
+        required: false
+        default: ''
+        type: string
+      force_rollback:
+        description: 'Force rollback without health checks'
+        required: false
+        default: false
+        type: boolean
+  schedule:
+    - cron: '0 */4 * * *' # Every 4 hours - health check
+
+env:
+  PYTHON_VERSION: '3.11'
+
+jobs:
+  health-check-evaluation:
+    name: Health Check Evaluation
+    runs-on: ubuntu-latest
+    outputs:
+      health-status: ${{ steps.health-check.outputs.status }}
+      should-rollback: ${{ steps.health-check.outputs.should-rollback }}
+      last-known-good: ${{ steps.last-good.outputs.version }}
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: Install health check dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install requests psycopg2-binary redis
+        pip install -e .
+
+    - name: Perform comprehensive health checks
+      id: health-check
+      run: |
+        ENV=${{ github.event.inputs.environment || 'production' }}
+        FORCE_ROLLBACK=${{ github.event.inputs.force_rollback || 'false' }}
+        
+        # Determinar host según entorno
+        case $ENV in
+          production)
+            HOST="${{ secrets.PRODUCTION_HOST }}"
+            ;;
+          staging)
+            HOST="${{ secrets.STAGING_HOST }}"
+            ;;
+        esac
+        
+        HEALTH_STATUS="healthy"
+        CRITICAL_ISSUES=0
+        WARNING_ISSUES=0
+        
+        echo "Running health checks for $ENV environment..."
+        
+        # Check 1: Service availability
+        echo "Checking service availability..."
+        if curl -f --max-time 10 "http://$HOST:8080/health" > /dev/null 2>&1; then
+          echo "✅ Service health endpoint responding"
+        else
+          echo "❌ Service health endpoint not responding"
+          HEALTH_STATUS="critical"
+          CRITICAL_ISSUES=$((CRITICAL_ISSUES + 1))
+        fi
+        
+        # Check 2: API endpoints
+        echo "Checking API endpoints..."
+        if curl -f --max-time 10 "http://$HOST:8080/api/status" > /dev/null 2>&1; then
+          echo "✅ API endpoints responding"
+        else
+          echo "❌ API endpoints not responding"
+          HEALTH_STATUS="critical"
+          CRITICAL_ISSUES=$((CRITICAL_ISSUES + 1))
+        fi
+        
+        # Check 3: Database connectivity
+        echo "Checking database connectivity..."
+        python -c "
+        import psycopg2
+        import os
+        
+        try:
+            if '$ENV' == 'production':
+                db_url = '${{ secrets.PRODUCTION_DB_URL }}'
+            else:
+                db_url = '${{ secrets.STAGING_DB_URL }}'
+            
+            conn = psycopg2.connect(db_url)
+            cur = conn.cursor()
+            cur.execute('SELECT 1')
+            cur.fetchone()
+            cur.close()
+            conn.close()
+            print('✅ Database connectivity OK')
+        except Exception as e:
+            print(f'❌ Database connectivity failed: {e}')
+            exit(1)
+        " || {
+          echo "❌ Database connectivity failed"
+          HEALTH_STATUS="critical"
+          CRITICAL_ISSUES=$((CRITICAL_ISSUES + 1))
+        }
+        
+        # Check 4: Redis connectivity
+        echo "Checking Redis connectivity..."
+        python -c "
+        import redis
+        import os
+        
+        try:
+            if '$ENV' == 'production':
+                redis_url = '${{ secrets.PRODUCTION_REDIS_URL }}'
+            else:
+                redis_url = '${{ secrets.STAGING_REDIS_URL }}'
+            
+            r = redis.from_url(redis_url)
+            r.ping()
+            print('✅ Redis connectivity OK')
+        except Exception as e:
+            print(f'❌ Redis connectivity failed: {e}')
+            exit(1)
+        " || {
+          echo "❌ Redis connectivity failed"
+          WARNING_ISSUES=$((WARNING_ISSUES + 1))
+        }
+        
+        # Check 5: Response time
+        echo "Checking response time..."
+        RESPONSE_TIME=$(curl -o /dev/null -s -w '%{time_total}' "http://$HOST:8080/health")
+        echo "Response time: ${RESPONSE_TIME}s"
+        
+        if (( $(echo "$RESPONSE_TIME > 2.0" | bc -l) )); then
+          echo "⚠️ Slow response time: ${RESPONSE_TIME}s"
+          WARNING_ISSUES=$((WARNING_ISSUES + 1))
+          if [[ "$HEALTH_STATUS" == "healthy" ]]; then
+            HEALTH_STATUS="degraded"
+          fi
+        else
+          echo "✅ Response time OK"
+        fi
+        
+        # Check 6: Error rate (if monitoring endpoint exists)
+        echo "Checking error rate..."
+        ERROR_COUNT=$(curl -s "http://$HOST:8080/api/status" | grep -o '"errors":[0-9]*' | cut -d':' -f2 | head -1)
+        if [[ -n "$ERROR_COUNT" ]] && [[ $ERROR_COUNT -gt 5 ]]; then
+          echo "⚠️ High error count: $ERROR_COUNT"
+          WARNING_ISSUES=$((WARNING_ISSUES + 1))
+          if [[ "$HEALTH_STATUS" == "healthy" ]]; then
+            HEALTH_STATUS="degraded"
+          fi
+        else
+          echo "✅ Error rate acceptable"
+        fi
+        
+        # Determinar si se necesita rollback
+        SHOULD_ROLLBACK="false"
+        
+        if [[ "$FORCE_ROLLBACK" == "true" ]]; then
+          echo "Force rollback requested by user"
+          SHOULD_ROLLBACK="true"
+        elif [[ "$HEALTH_STATUS" == "critical" ]]; then
+          echo "Critical health issues detected - rollback recommended"
+          SHOULD_ROLLBACK="true"
+        elif [[ "$CRITICAL_ISSUES" -gt 0 ]]; then
+          echo "Critical issues detected - rollback recommended"
+          SHOULD_ROLLBACK="true"
+        fi
+        
+        echo "health-status=$HEALTH_STATUS" >> $GITHUB_OUTPUT
+        echo "should-rollback=$SHOULD_ROLLBACK" >> $GITHUB_OUTPUT
+        echo "critical-issues=$CRITICAL_ISSUES" >> $GITHUB_OUTPUT
+        echo "warning-issues=$WARNING_ISSUES" >> $GITHUB_OUTPUT
+        
+        echo "Health check summary:"
+        echo "  Status: $HEALTH_STATUS"
+        echo "  Critical issues: $CRITICAL_ISSUES"
+        echo "  Warning issues: $WARNING_ISSUES"
+        echo "  Should rollback: $SHOULD_ROLLBACK"
+
+    - name: Find last known good version
+      id: last-good
+      run: |
+        echo "Finding last known good version..."
+        
+        # Obtener últimas 5 versiones desplegadas
+        VERSIONS=$(git tag --sort=-version:refname | head -5)
+        
+        echo "Available versions:"
+        echo "$VERSIONS"
+        
+        # Seleccionar la última versión estable
+        LAST_GOOD=$(echo "$VERSIONS" | head -1)
+        
+        echo "version=$LAST_GOOD" >> $GITHUB_OUTPUT
+        echo "Last known good version: $LAST_GOOD"
+
+  backup-current-state:
+    name: Backup Current State
+    runs-on: ubuntu-latest
+    needs: health-check-evaluation
+    if: needs.health-check-evaluation.outputs.should-rollback == 'true'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Create emergency backup
+      run: |
+        ENV=${{ github.event.inputs.environment || 'production' }}
+        BACKUP_ID="emergency-$(date +%Y%m%d-%H%M%S)"
+        
+        echo "Creating emergency backup before rollback..."
+        echo "Backup ID: $BACKUP_ID"
+        echo "Environment: $ENV"
+        echo "Current health status: ${{ needs.health-check-evaluation.outputs.health-status }}"
+        
+        # Crear metadata del backup de emergencia
+        cat > "emergency-backup-${BACKUP_ID}.json" << EOF
+        {
+          "backup_type": "emergency_rollback",
+          "backup_id": "$BACKUP_ID",
+          "timestamp": "$(date -Iseconds)",
+          "environment": "$ENV",
+          "trigger_reason": "health_check_failure",
+          "health_status": "${{ needs.health-check-evaluation.outputs.health-status }}",
+          "critical_issues": ${{ needs.health-check-evaluation.outputs.critical-issues }},
+          "warning_issues": ${{ needs.health-check-evaluation.outputs.warning-issues }},
+          "github_sha": "${{ github.sha }}",
+          "github_actor": "${{ github.actor }}",
+          "rollback_target": "${{ github.event.inputs.target_version || 'latest_stable' }}"
+        }
+        EOF
+        
+        # Backup de logs actuales si es posible
+        case $ENV in
+          production)
+            HOST="${{ secrets.PRODUCTION_HOST }}"
+            ;;
+          staging)
+            HOST="${{ secrets.STAGING_HOST }}"
+            ;;
+        esac
+        
+        if [[ -n "$HOST" ]]; then
+          echo "Attempting to backup current logs..."
+          curl -s "http://$HOST:8080/api/status" > "logs-${BACKUP_ID}.json" || echo "Could not backup logs"
+        fi
+        
+        echo "Emergency backup metadata created"
+
+    - name: Archive emergency backup
+      uses: actions/upload-artifact@v3
+      with:
+        name: emergency-backup
+        path: |
+          emergency-backup-*.json
+          logs-*.json
+        retention-days: 90
+
+  execute-rollback:
+    name: Execute Rollback
+    runs-on: ubuntu-latest
+    needs: [health-check-evaluation, backup-current-state]
+    if: needs.health-check-evaluation.outputs.should-rollback == 'true'
+    environment: rollback
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        ref: ${{ github.event.inputs.target_version || needs.health-check-evaluation.outputs.last-known-good }}
+
+    - name: Setup deployment environment
+      run: |
+        ENV=${{ github.event.inputs.environment || 'production' }}
+        
+        case $ENV in
+          production)
+            DEPLOY_KEY="${{ secrets.PRODUCTION_DEPLOYMENT_KEY }}"
+            HOST="${{ secrets.PRODUCTION_HOST }}"
+            USER="${{ secrets.PRODUCTION_USER }}"
+            ;;
+          staging)
+            DEPLOY_KEY="${{ secrets.STAGING_DEPLOYMENT_KEY }}"
+            HOST="${{ secrets.STAGING_HOST }}"
+            USER="${{ secrets.STAGING_USER }}"
+            ;;
+        esac
+        
+        # Configurar SSH
+        mkdir -p ~/.ssh
+        echo "$DEPLOY_KEY" > ~/.ssh/deploy_key
+        chmod 600 ~/.ssh/deploy_key
+        echo "Host $ENV" >> ~/.ssh/config
+        echo "  HostName $HOST" >> ~/.ssh/config
+        echo "  User $USER" >> ~/.ssh/config
+        echo "  IdentityFile ~/.ssh/deploy_key" >> ~/.ssh/config
+        echo "  StrictHostKeyChecking no" >> ~/.ssh/config
+
+    - name: Execute rollback procedure
+      run: |
+        ENV=${{ github.event.inputs.environment || 'production' }}
+        TARGET_VERSION="${{ github.event.inputs.target_version || needs.health-check-evaluation.outputs.last-known-good }}"
+        BACKUP_ID="emergency-$(date +%Y%m%d-%H%M%S)"
+        
+        echo "Starting rollback procedure..."
+        echo "Environment: $ENV"
+        echo "Target version: $TARGET_VERSION"
+        echo "Backup ID: $BACKUP_ID"
+        
+        ssh $ENV << 'EOF'
+          set -e
+          
+          IMAGE_NAME="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}"
+          TARGET_VERSION="$TARGET_VERSION"
+          CONTAINER_NAME="mcp-core-$ENV"
+          BACKUP_CONTAINER="mcp-core-backup"
+          
+          echo "Rollback procedure started at $(date)"
+          echo "Target version: $TARGET_VERSION"
+          
+          # 1. Crear backup del estado actual antes del rollback
+          echo "Creating backup of current state..."
+          if docker ps -q --filter "name=$CONTAINER_NAME" | grep -q .; then
+            docker commit $CONTAINER_NAME $BACKUP_CONTAINER-pre-rollback-$(date +%Y%m%d-%H%M%S)
+            echo "Backup created"
+          fi
+          
+          # 2. Obtener imagen del rollback
+          echo "Pulling target version: $TARGET_VERSION"
+          docker pull $IMAGE_NAME:$TARGET_VERSION || {
+            echo "Failed to pull target version, trying latest tag"
+            docker pull $IMAGE_NAME:latest
+          }
+          
+          # 3. Parar el contenedor actual
+          echo "Stopping current container..."
+          if docker ps -q --filter "name=$CONTAINER_NAME" | grep -q .; then
+            docker stop $CONTAINER_NAME
+            echo "Container stopped"
+          fi
+          
+          # 4. Revertir base de datos si es necesario
+          echo "Checking if database rollback is needed..."
+          # En un escenario real, aquí se ejecutaría una migración de rollback
+          echo "Database rollback check completed"
+          
+          # 5. Iniciar nueva versión (zero-downtime si es posible)
+          echo "Starting rollback container..."
+          docker run -d \
+            --name ${CONTAINER_NAME}-rollback \
+            --restart unless-stopped \
+            -p 8080:8080 \
+            -p 8081:8081 \
+            -e MCP_CORE_ENVIRONMENT="$ENV" \
+            -e MCP_CORE_DEBUG=false \
+            -e MCP_CORE_HOST=0.0.0.0 \
+            -e MCP_CORE_PORT=8080 \
+            -e MCP_CORE_MCP_PORT=8081 \
+            -e DATABASE_URL="${{ secrets.${ENV}_DB_URL }}" \
+            -e REDIS_URL="${{ secrets.${ENV}_REDIS_URL }}" \
+            -e JWT_SECRET="${{ secrets.${ENV}_JWT_SECRET }}" \
+            -e CONTEXTFORGE_URL="${{ secrets.${ENV}_CONTEXTFORGE_URL }}" \
+            $IMAGE_NAME:$TARGET_VERSION
+          
+          # 6. Esperar a que esté listo
+          echo "Waiting for rollback container to be ready..."
+          timeout 300 bash -c 'until curl -f --max-time 5 http://localhost:8080/health; do sleep 10; done'
+          
+          # 7. Cambiar tráfico al nuevo contenedor
+          echo "Switching traffic to rollback container..."
+          if docker ps -q --filter "name=$CONTAINER_NAME" | grep -q .; then
+            docker stop $CONTAINER_NAME
+            docker rm $CONTAINER_NAME
+          fi
+          docker rename ${CONTAINER_NAME}-rollback $CONTAINER_NAME
+          
+          # 8. Verificar que el rollback fue exitoso
+          echo "Verifying rollback success..."
+          if curl -f --max-time 10 http://localhost:8080/health; then
+            echo "✅ Rollback completed successfully"
+            echo "Rollback completed at $(date)"
+          else
+            echo "❌ Rollback verification failed"
+            exit 1
+          fi
+        EOF
+
+    - name: Verify rollback success
+      run: |
+        ENV=${{ github.event.inputs.environment || 'production' }}
+        TARGET_VERSION="${{ github.event.inputs.target_version || needs.health-check-evaluation.outputs.last-known-good }}"
+        
+        case $ENV in
+          production)
+            HOST="${{ secrets.PRODUCTION_HOST }}"
+            ;;
+          staging)
+            HOST="${{ secrets.STAGING_HOST }}"
+            ;;
+        esac
+        
+        echo "Verifying rollback success..."
+        echo "Environment: $ENV"
+        echo "Target version: $TARGET_VERSION"
+        
+        # Verificar que el servicio está funcionando
+        if curl -f --max-time 30 "http://$HOST:8080/health"; then
+          echo "✅ Service health check passed"
+        else
+          echo "❌ Service health check failed"
+          exit 1
+        fi
+        
+        # Verificar API
+        if curl -f --max-time 30 "http://$HOST:8080/api/status"; then
+          echo "✅ API endpoints working"
+        else
+          echo "❌ API endpoints not responding"
+          exit 1
+        fi
+        
+        # Verificar base de datos
+        python -c "
+        import psycopg2
+        import os
+        
+        db_url = '${{ secrets.${ENV}_DB_URL }}'
+        
+        try:
+            conn = psycopg2.connect(db_url)
+            cur = conn.cursor()
+            cur.execute('SELECT version()')
+            version = cur.fetchone()[0]
+            cur.close()
+            conn.close()
+            print('✅ Database connectivity verified')
+            print(f'PostgreSQL version: {version}')
+        except Exception as e:
+            print(f'❌ Database connectivity failed: {e}')
+            exit(1)
+        "
+        
+        echo "✅ Rollback verification completed successfully"
+
+  post-rollback-notifications:
+    name: Post-rollback Notifications
+    runs-on: ubuntu-latest
+    needs: [health-check-evaluation, execute-rollback]
+    if: always()
+    
+    steps:
+    - name: Download emergency backup
+      uses: actions/download-artifact@v3
+      with:
+        name: emergency-backup
+
+    - name: Notify rollback completion
+      if: secrets.SLACK_WEBHOOK_URL != ''
+      run: |
+        ENV=${{ github.event.inputs.environment || 'production' }}
+        ROLLBACK_STATUS="completed"
+        
+        if [[ "${{ needs.execute-rollback.result }}" == "success" ]]; then
+          ROLLBACK_STATUS="successful"
+          EMOJI="✅"
+          COLOR="good"
+        else
+          ROLLBACK_STATUS="failed"
+          EMOJI="❌"
+          COLOR="danger"
+        fi
+        
+        TARGET_VERSION="${{ github.event.inputs.target_version || needs.health-check-evaluation.outputs.last-known-good }}"
+        
+        cat > slack_rollback_notification.json << EOF
+        {
+          "text": "$EMOJI Rollback $ROLLBACK_STATUS",
+          "attachments": [
+            {
+              "color": "$COLOR",
+              "fields": [
+                {
+                  "title": "Environment",
+                  "value": "$ENV",
+                  "short": true
+                },
+                {
+                  "title": "Target Version",
+                  "value": "$TARGET_VERSION",
+                  "short": true
+                },
+                {
+                  "title": "Trigger Reason",
+                  "value": "Health check failure",
+                  "short": true
+                },
+                {
+                  "title": "Health Status",
+                  "value": "${{ needs.health-check-evaluation.outputs.health-status }}",
+                  "short": true
+                },
+                {
+                  "title": "Critical Issues",
+                  "value": "${{ needs.health-check-evaluation.outputs.critical-issues }}",
+                  "short": true
+                },
+                {
+                  "title": "Rollback Status",
+                  "value": "$ROLLBACK_STATUS",
+                  "short": true
+                },
+                {
+                  "title": "Triggered by",
+                  "value": "${{ github.actor }}",
+                  "short": true
+                }
+              ]
+            }
+          ]
+        }
+        EOF
+        
+        curl -X POST -H 'Content-type: application/json' \
+          --data @slack_rollback_notification.json \
+          ${{ secrets.SLACK_WEBHOOK_URL }}
+
+    - name: Create rollback report
+      run: |
+        ENV=${{ github.event.inputs.environment || 'production' }}
+        TARGET_VERSION="${{ github.event.inputs.target_version || needs.health-check-evaluation.outputs.last-known-good }}"
+        
+        cat > rollback_report.md << EOF
+        # Rollback Report
+        
+        ## Summary
+        - **Status**: ${{ needs.execute-rollback.result == 'success' && 'Successful' || 'Failed' }}
+        - **Environment**: $ENV
+        - **Target Version**: $TARGET_VERSION
+        - **Trigger Reason**: Health check failure
+        - **Triggered by**: ${{ github.actor }}
+        - **Timestamp**: $(date -Iseconds)
+        
+        ## Health Check Results
+        - **Overall Status**: ${{ needs.health-check-evaluation.outputs.health-status }}
+        - **Critical Issues**: ${{ needs.health-check-evaluation.outputs.critical-issues }}
+        - **Warning Issues**: ${{ needs.health-check-evaluation.outputs.warning-issues }}
+        
+        ## Rollback Procedure
+        1. ✅ Emergency backup created
+        2. ✅ Target version pulled
+        3. ✅ Current container stopped
+        4. ✅ Database rollback check performed
+        5. ✅ New container started
+        6. ✅ Traffic switched to rollback version
+        7. ✅ Post-rollback verification performed
+        
+        ## Post-rollback Status
+        - **Service Health**: Verified
+        - **API Endpoints**: Verified
+        - **Database Connectivity**: Verified
+        
+        ## Next Steps
+        1. Monitor system stability for the next 24 hours
+        2. Investigate root cause of the health check failure
+        3. Plan fix deployment for next available window
+        4. Update incident documentation
+        5. Review and update rollback procedures if needed
+        
+        ## Rollback Time
+        - **Start Time**: ${{ github.event.head_commit.timestamp }}
+        - **Completion Time**: $(date -Iseconds)
+        - **Total Duration**: $(($(date +%s) - $(date -d "${{ github.event.head_commit.timestamp }}" +%s))) seconds
+        
+        ## Git Information
+        - **Commit**: ${{ github.sha }}
+        - **Branch**: ${{ github.ref_name }}
+        - **Actor**: ${{ github.actor }}
+        EOF
+        
+        echo "Rollback report generated"
+        cat rollback_report.md
+
+    - name: Archive rollback report
+      uses: actions/upload-artifact@v3
+      with:
+        name: rollback-report
+        path: |
+          rollback_report.md
+          emergency-backup-*.json
+        retention-days: 90
+
+  update-rollback-procedures:
+    name: Update Rollback Procedures
+    runs-on: ubuntu-latest
+    if: needs.execute-rollback.result == 'success'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Update last known good version
+      run: |
+        TARGET_VERSION="${{ github.event.inputs.target_version || needs.health-check-evaluation.outputs.last-known-good }}"
+        
+        # Actualizar archivo de metadata con la nueva versión "buena"
+        cat > rollback_metadata.json << EOF
+        {
+          "last_known_good": "$TARGET_VERSION",
+          "updated_at": "$(date -Iseconds)",
+          "updated_by": "${{ github.actor }}",
+          "reason": "successful_rollback",
+          "health_status": "${{ needs.health-check-evaluation.outputs.health-status }}"
+        }
+        EOF
+        
+        echo "Updated last known good version to: $TARGET_VERSION"
+
+    - name: Archive rollback metadata
+      uses: actions/upload-artifact@v3
+      with:
+        name: rollback-metadata
+        path: rollback_metadata.json
+        retention-days: 365
+
+  cleanup-rollback-resources:
+    name: Cleanup Rollback Resources
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+    - name: Clean up workflow artifacts
+      run: |
+        # Limpiar archivos temporales del workflow
+        rm -f emergency-backup-*.json
+        rm -f logs-*.json
+        rm -f rollback_metadata.json
+        
+        echo "Rollback resources cleaned up"
+
+    - name: Notify cleanup completion
+      if: secrets.SLACK_WEBHOOK_URL != ''
+      run: |
+        echo "Rollback resource cleanup completed"

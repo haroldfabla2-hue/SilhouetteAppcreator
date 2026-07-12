@@ -1,0 +1,115 @@
+2025-11-06 04:23:37,733 - SilhouetteMCP-Enhanced-Security - INFO - Inicializadas 5 secret keys
+2025-11-06 04:23:37,738 - SilhouetteMCP-Enhanced-Security - INFO - Iniciando SilhouetteMCP Enhanced Security System...
+2025-11-06 04:23:37,738 - SilhouetteMCP-Enhanced-Security - INFO - Versión: 2.0.0
+2025-11-06 04:23:37,739 - SilhouetteMCP-Enhanced-Security - INFO - Capacidades de seguridad habilitadas:
+2025-11-06 04:23:37,739 - SilhouetteMCP-Enhanced-Security - INFO - - Autenticación JWT robusta con rotación automática
+2025-11-06 04:23:37,739 - SilhouetteMCP-Enhanced-Security - INFO - - Protección DDoS multicapa
+2025-11-06 04:23:37,739 - SilhouetteMCP-Enhanced-Security - INFO - - Monitoreo de seguridad en tiempo real
+2025-11-06 04:23:37,739 - SilhouetteMCP-Enhanced-Security - INFO - - Cifrado AES-256 de datos
+2025-11-06 04:23:37,741 - SilhouetteMCP-Enhanced-Security - INFO - - Gestión segura de API keys
+2025-11-06 04:23:37,741 - SilhouetteMCP-Enhanced-Security - INFO - - Logging de auditoría
+2025-11-06 04:23:37,744 - SilhouetteMCP-Enhanced-Security - INFO - Puertos disponibles:
+2025-11-06 04:23:37,747 - SilhouetteMCP-Enhanced-Security - INFO - - 8015: API de Seguridad Principal
+2025-11-06 04:23:37,749 - SilhouetteMCP-Enhanced-Security - INFO - - 8016: Monitoreo de Seguridad
+2025-11-06 04:23:37,751 - SilhouetteMCP-Enhanced-Security - INFO - - 8017: Gestión de Identidades
+2025-11-06 04:23:37,754 - SilhouetteMCP-Enhanced-Security - INFO - - 8018: Protección DDoS
+2025-11-06 04:23:37,754 - SilhouetteMCP-Enhanced-Security - INFO - - 8019: Auditoría de Seguridad
+2025-11-06 04:23:37,804 - SilhouetteMCP-Enhanced-Security - INFO - Inicializadas 5 secret keys
+2025-11-06 04:23:37,808 - SilhouetteMCP-Enhanced-Security - INFO - Inicializando sistema de seguridad mejorado...
+2025-11-06 04:23:37,808 - SilhouetteMCP-Enhanced-Security - INFO - Rotación automática de JWT keys iniciada
+2025-11-06 04:23:37,808 - SilhouetteMCP-Enhanced-Security - INFO - Monitoreo de seguridad iniciado
+2025-11-06 04:23:37,809 - SilhouetteMCP-Enhanced-Security - INFO - Usuario administrador por defecto creado
+2025-11-06 04:23:37,811 - SilhouetteMCP-Enhanced-Security - INFO - API Key generada: key_001
+2025-11-06 04:23:37,813 - SilhouetteMCP-Enhanced-Security - INFO - API Key generada: key_002
+2025-11-06 04:23:37,815 - SilhouetteMCP-Enhanced-Security - INFO - API Key generada: key_003
+2025-11-06 04:23:37,817 - SilhouetteMCP-Enhanced-Security - INFO - API Key generada: key_004
+2025-11-06 04:23:37,819 - SilhouetteMCP-Enhanced-Security - INFO - API Key generada: key_005
+2025-11-06 04:23:37,819 - SilhouetteMCP-Enhanced-Security - INFO - Sistema de seguridad inicializado correctamente
+2025-11-06 05:17:21,097 - SilhouetteMCP-Enhanced-Security - INFO - Inicializadas 5 secret keys
+2025-11-06 05:17:21,104 - SilhouetteMCP-Enhanced-Security - INFO - Iniciando SilhouetteMCP Enhanced Security System...
+2025-11-06 05:17:21,104 - SilhouetteMCP-Enhanced-Security - INFO - Versión: 2.0.0
+2025-11-06 05:17:21,105 - SilhouetteMCP-Enhanced-Security - INFO - Capacidades de seguridad habilitadas:
+2025-11-06 05:17:21,105 - SilhouetteMCP-Enhanced-Security - INFO - - Autenticación JWT robusta con rotación automática
+2025-11-06 05:17:21,105 - SilhouetteMCP-Enhanced-Security - INFO - - Protección DDoS multicapa
+2025-11-06 05:17:21,105 - SilhouetteMCP-Enhanced-Security - INFO - - Monitoreo de seguridad en tiempo real
+2025-11-06 05:17:21,105 - SilhouetteMCP-Enhanced-Security - INFO - - Cifrado AES-256 de datos
+2025-11-06 05:17:21,105 - SilhouetteMCP-Enhanced-Security - INFO - - Gestión segura de API keys
+2025-11-06 05:17:21,107 - SilhouetteMCP-Enhanced-Security - INFO - - Logging de auditoría
+2025-11-06 05:17:21,107 - SilhouetteMCP-Enhanced-Security - INFO - Puertos disponibles:
+2025-11-06 05:17:21,109 - SilhouetteMCP-Enhanced-Security - INFO - - 8015: API de Seguridad Principal
+2025-11-06 05:17:21,112 - SilhouetteMCP-Enhanced-Security - INFO - - 8016: Monitoreo de Seguridad
+2025-11-06 05:17:21,113 - SilhouetteMCP-Enhanced-Security - INFO - - 8017: Gestión de Identidades
+2025-11-06 05:17:21,115 - SilhouetteMCP-Enhanced-Security - INFO - - 8018: Protección DDoS
+2025-11-06 05:17:21,117 - SilhouetteMCP-Enhanced-Security - INFO - - 8019: Auditoría de Seguridad
+2025-11-06 05:17:21,147 - SilhouetteMCP-Enhanced-Security - INFO - Inicializadas 5 secret keys
+2025-11-06 05:17:21,151 - SilhouetteMCP-Enhanced-Security - INFO - Inicializando sistema de seguridad mejorado...
+2025-11-06 05:17:21,151 - SilhouetteMCP-Enhanced-Security - INFO - Rotación automática de JWT keys iniciada
+2025-11-06 05:17:21,151 - SilhouetteMCP-Enhanced-Security - INFO - Monitoreo de seguridad iniciado
+2025-11-06 05:17:21,153 - SilhouetteMCP-Enhanced-Security - INFO - Usuario administrador por defecto creado
+2025-11-06 05:17:21,155 - SilhouetteMCP-Enhanced-Security - INFO - API Key generada: key_001
+2025-11-06 05:17:21,157 - SilhouetteMCP-Enhanced-Security - INFO - API Key generada: key_002
+2025-11-06 05:17:21,159 - SilhouetteMCP-Enhanced-Security - INFO - API Key generada: key_003
+2025-11-06 05:17:21,161 - SilhouetteMCP-Enhanced-Security - INFO - API Key generada: key_004
+2025-11-06 05:17:21,163 - SilhouetteMCP-Enhanced-Security - INFO - API Key generada: key_005
+2025-11-06 05:17:21,163 - SilhouetteMCP-Enhanced-Security - INFO - Sistema de seguridad inicializado correctamente
+2025-11-06 05:17:21,164 - SilhouetteMCP-Enhanced-Security - INFO - Apagando sistema de seguridad...
+2025-11-06 05:17:21,166 - SilhouetteMCP-Enhanced-Security - INFO - Rotación de JWT keys detenida
+2025-11-06 05:17:21,168 - SilhouetteMCP-Enhanced-Security - INFO - Sistema de seguridad detenido
+2025-11-06 05:23:37,820 - SilhouetteMCP-Enhanced-Security - INFO - Iniciando rotación de JWT keys
+2025-11-06 05:23:37,820 - SilhouetteMCP-Enhanced-Security - INFO - JWT keys rotadas. Nueva key actual: key_006
+2025-11-06 05:34:28,674 - SilhouetteMCP-Enhanced-Security - INFO - Inicializadas 5 secret keys
+2025-11-06 05:34:28,680 - SilhouetteMCP-Enhanced-Security - INFO - Iniciando SilhouetteMCP Enhanced Security System...
+2025-11-06 05:34:28,680 - SilhouetteMCP-Enhanced-Security - INFO - Versión: 2.0.0
+2025-11-06 05:34:28,680 - SilhouetteMCP-Enhanced-Security - INFO - Capacidades de seguridad habilitadas:
+2025-11-06 05:34:28,680 - SilhouetteMCP-Enhanced-Security - INFO - - Autenticación JWT robusta con rotación automática
+2025-11-06 05:34:28,680 - SilhouetteMCP-Enhanced-Security - INFO - - Protección DDoS multicapa
+2025-11-06 05:34:28,680 - SilhouetteMCP-Enhanced-Security - INFO - - Monitoreo de seguridad en tiempo real
+2025-11-06 05:34:28,680 - SilhouetteMCP-Enhanced-Security - INFO - - Cifrado AES-256 de datos
+2025-11-06 05:34:28,683 - SilhouetteMCP-Enhanced-Security - INFO - - Gestión segura de API keys
+2025-11-06 05:34:28,683 - SilhouetteMCP-Enhanced-Security - INFO - - Logging de auditoría
+2025-11-06 05:34:28,685 - SilhouetteMCP-Enhanced-Security - INFO - Puertos disponibles:
+2025-11-06 05:34:28,687 - SilhouetteMCP-Enhanced-Security - INFO - - 8015: API de Seguridad Principal
+2025-11-06 05:34:28,690 - SilhouetteMCP-Enhanced-Security - INFO - - 8016: Monitoreo de Seguridad
+2025-11-06 05:34:28,692 - SilhouetteMCP-Enhanced-Security - INFO - - 8017: Gestión de Identidades
+2025-11-06 05:34:28,695 - SilhouetteMCP-Enhanced-Security - INFO - - 8018: Protección DDoS
+2025-11-06 05:34:28,695 - SilhouetteMCP-Enhanced-Security - INFO - - 8019: Auditoría de Seguridad
+2025-11-06 05:34:28,746 - SilhouetteMCP-Enhanced-Security - INFO - Inicializadas 5 secret keys
+2025-11-06 05:34:28,750 - SilhouetteMCP-Enhanced-Security - INFO - Inicializando sistema de seguridad mejorado...
+2025-11-06 05:34:28,750 - SilhouetteMCP-Enhanced-Security - INFO - Rotación automática de JWT keys iniciada
+2025-11-06 05:34:28,750 - SilhouetteMCP-Enhanced-Security - INFO - Monitoreo de seguridad iniciado
+2025-11-06 05:34:28,752 - SilhouetteMCP-Enhanced-Security - INFO - Usuario administrador por defecto creado
+2025-11-06 05:34:28,754 - SilhouetteMCP-Enhanced-Security - INFO - API Key generada: key_001
+2025-11-06 05:34:28,756 - SilhouetteMCP-Enhanced-Security - INFO - API Key generada: key_002
+2025-11-06 05:34:28,757 - SilhouetteMCP-Enhanced-Security - INFO - API Key generada: key_003
+2025-11-06 05:34:28,760 - SilhouetteMCP-Enhanced-Security - INFO - API Key generada: key_004
+2025-11-06 05:34:28,760 - SilhouetteMCP-Enhanced-Security - INFO - API Key generada: key_005
+2025-11-06 05:34:28,760 - SilhouetteMCP-Enhanced-Security - INFO - Sistema de seguridad inicializado correctamente
+2025-11-06 08:11:23,419 - SilhouetteMCP-Enhanced-Security - INFO - Inicializadas 5 secret keys
+2025-11-06 08:11:23,426 - SilhouetteMCP-Enhanced-Security - INFO - Iniciando SilhouetteMCP Enhanced Security System...
+2025-11-06 08:11:23,426 - SilhouetteMCP-Enhanced-Security - INFO - Versión: 2.0.0
+2025-11-06 08:11:23,426 - SilhouetteMCP-Enhanced-Security - INFO - Capacidades de seguridad habilitadas:
+2025-11-06 08:11:23,426 - SilhouetteMCP-Enhanced-Security - INFO - - Autenticación JWT robusta con rotación automática
+2025-11-06 08:11:23,427 - SilhouetteMCP-Enhanced-Security - INFO - - Protección DDoS multicapa
+2025-11-06 08:11:23,427 - SilhouetteMCP-Enhanced-Security - INFO - - Monitoreo de seguridad en tiempo real
+2025-11-06 08:11:23,427 - SilhouetteMCP-Enhanced-Security - INFO - - Cifrado AES-256 de datos
+2025-11-06 08:11:23,427 - SilhouetteMCP-Enhanced-Security - INFO - - Gestión segura de API keys
+2025-11-06 08:11:23,427 - SilhouetteMCP-Enhanced-Security - INFO - - Logging de auditoría
+2025-11-06 08:11:23,427 - SilhouetteMCP-Enhanced-Security - INFO - Puertos disponibles:
+2025-11-06 08:11:23,427 - SilhouetteMCP-Enhanced-Security - INFO - - 8015: API de Seguridad Principal
+2025-11-06 08:11:23,427 - SilhouetteMCP-Enhanced-Security - INFO - - 8016: Monitoreo de Seguridad
+2025-11-06 08:11:23,427 - SilhouetteMCP-Enhanced-Security - INFO - - 8017: Gestión de Identidades
+2025-11-06 08:11:23,427 - SilhouetteMCP-Enhanced-Security - INFO - - 8018: Protección DDoS
+2025-11-06 08:11:23,427 - SilhouetteMCP-Enhanced-Security - INFO - - 8019: Auditoría de Seguridad
+2025-11-06 08:11:23,454 - SilhouetteMCP-Enhanced-Security - INFO - Inicializadas 5 secret keys
+2025-11-06 08:11:23,458 - SilhouetteMCP-Enhanced-Security - INFO - Inicializando sistema de seguridad mejorado...
+2025-11-06 08:11:23,458 - SilhouetteMCP-Enhanced-Security - INFO - Rotación automática de JWT keys iniciada
+2025-11-06 08:11:23,458 - SilhouetteMCP-Enhanced-Security - INFO - Monitoreo de seguridad iniciado
+2025-11-06 08:11:23,460 - SilhouetteMCP-Enhanced-Security - INFO - Usuario administrador por defecto creado
+2025-11-06 08:11:23,461 - SilhouetteMCP-Enhanced-Security - INFO - API Key generada: key_001
+2025-11-06 08:11:23,462 - SilhouetteMCP-Enhanced-Security - INFO - API Key generada: key_002
+2025-11-06 08:11:23,463 - SilhouetteMCP-Enhanced-Security - INFO - API Key generada: key_003
+2025-11-06 08:11:23,464 - SilhouetteMCP-Enhanced-Security - INFO - API Key generada: key_004
+2025-11-06 08:11:23,466 - SilhouetteMCP-Enhanced-Security - INFO - API Key generada: key_005
+2025-11-06 08:11:23,466 - SilhouetteMCP-Enhanced-Security - INFO - Sistema de seguridad inicializado correctamente
+2025-11-06 09:11:23,466 - SilhouetteMCP-Enhanced-Security - INFO - Iniciando rotación de JWT keys
+2025-11-06 09:11:23,468 - SilhouetteMCP-Enhanced-Security - INFO - JWT keys rotadas. Nueva key actual: key_006

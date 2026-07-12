@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="header">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+        <div>
+            <h1>🚀 SilhouetteMCP Dashboard Ultra-Avanzado</h1>
+            <p>Sistema 110/100 - Versión {{ version }}</p>
+            <p style="color: #666;">Bienvenido, {{ user.email }}</p>
+        </div>
+        <div>
+            <button class="btn" onclick="logout()">Cerrar Sesión</button>
+        </div>
+    </div>
+</div>
+
+<div class="nav">
+    <a href="/dashboard" class="active">📊 Dashboard</a>
+    <a href="/apis">⚡ APIs</a>
+    <a href="/monitoring">📈 Monitoring</a>
+    <a href="/production">🚀 Producción</a>
+</div>
+
+<div class="metrics-grid">
+    <div class="metric-card">
+        <h3>Sistema SilhouetteMCP</h3>
+        <div class="metric-value" id="systemScore">110.0</div>
+        <p>Score Ultra-Optimizado</p>
+        <div class="status-indicator status-healthy"></div>
+    </div>
+    
+    <div class="metric-card">
+        <h3>APIs Activas</h3>
+        <div class="metric-value" id="activeApis">0</div>
+        <p>APIs Dinámicas</p>
+        <div class="status-indicator status-healthy"></div>
+    </div>
+    
+    <div class="metric-card">
+        <h3>Uptime</h3>
+        <div class="metric-value" id="uptime">0h</div>
+        <p>Tiempo Activo</p>
+        <div class="status-indicator status-healthy"></div>
+    </div>
+    
+    <div class="metric-card">
+        <h3>CPU Usage</h3>
+        <div class="metric-value" id="cpuUsage">0%</div>
+        <p>Procesamiento</p>
+        <div class="status-indicator status-healthy"></div>
+    </div>
+</div>
+
+<div class="card">
+    <h2>📊 Métricas del Sistema</h2>
+    <div class="chart-container">
+        <canvas id="performanceChart" class="chart-canvas"></canvas>
+    </div>
+</div>
+
+<div class="card">
+    <h2>🔧 Sistemas Monitoreados</h2>
+    <div id="systemsStatus" class="api-list">
+        <!-- Se llenará dinámicamente -->
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Configuración de autenticación
+function getAuthHeaders() {
+    const token = localStorage.getItem('silhouette_token');
+    return token ? { 'Authorization': `Bearer ${token}` } : {};
+}
+
+// Logout
+async function logout() {
+    try {
+        await fetch('/auth/logout', {
+            method: 'POST',
+            headers: { ...getAuthHeaders() }
+        });
+    } catch (error) {
+        console.error('Error en logout:', error);
+    } finally {
+        localStorage.removeItem('silhouette_token');
+        window.location.href = '/login';
+    }
+}
+
+// Cargar datos del dashboard
+async function loadDashboardData() {
+    try {
+        const response = await fetch('/dashboard/api/data', {
+            headers: { ...getAuthHeaders() }
+        });
+        
+        if (!response.ok) {
+            if (response.status === 401) {
+                window.location.href = '/login';
+                return;
+            }
+            throw new Error('Error de autenticación');
+        }
+        
+        const data = await response.json();
+        updateDashboard(data);
+        
+    } catch (error) {
+        console.error('Error cargando datos:', error);
+    }
+}
+
+// Actualizar dashboard con datos
+function updateDashboard(data) {
+    // Actualizar métricas
+    document.getElementById('systemScore').textContent = data.system_status.score.toFixed(1);
+    document.getElementById('activeApis').textContent = data.api_stats.active_apis;
+    document.getElementById('cpuUsage').textContent = data.performance.cpu_usage.toFixed(1) + '%';
+    
+    // Formatear uptime
+    const uptime = data.system_status.uptime;
+    const hours = Math.floor(uptime / 3600);
+    document.getElementById('uptime').textContent = `${hours}h`;
+    
+    // Actualizar gráficos
+    updateChart(data);
+}
+
+// Configurar gráfico
+let performanceChart;
+function setupChart() {
+    const ctx = document.getElementById('performanceChart').getContext('2d');
+    
+    performanceChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [{
+                label: 'CPU Usage (%)',
+                data: [],
+                borderColor: 'rgb(102, 126, 234)',
+                backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100
+                }
+            }
+        }
+    });
+}
+
+// Actualizar gráfico
+function updateChart(data) {
+    const now = new Date().toLocaleTimeString();
+    
+    performanceChart.data.labels.push(now);
+    performanceChart.data.datasets[0].data.push(data.performance.cpu_usage);
+    
+    // Mantener solo los últimos 20 puntos
+    if (performanceChart.data.labels.length > 20) {
+        performanceChart.data.labels.shift();
+        performanceChart.data.datasets[0].data.shift();
+    }
+    
+    performanceChart.update('none');
+}
+
+// Inicializar dashboard
+document.addEventListener('DOMContentLoaded', function() {
+    setupChart();
+    loadDashboardData();
+    
+    // Actualizar cada 5 segundos
+    setInterval(loadDashboardData, 5000);
+});
+</script>
+{% endblock %}

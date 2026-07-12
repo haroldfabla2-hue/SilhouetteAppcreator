@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="header">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+        <div>
+            <h1>⚡ Gestión de APIs Dinámicas</h1>
+            <p>Crear y administrar APIs para tu aplicación</p>
+        </div>
+        <div>
+            <button class="btn" onclick="loadApis()">🔄 Actualizar</button>
+        </div>
+    </div>
+</div>
+
+<div class="nav">
+    <a href="/dashboard">📊 Dashboard</a>
+    <a href="/apis" class="active">⚡ APIs</a>
+    <a href="/monitoring">📈 Monitoring</a>
+    <a href="/production">🚀 Producción</a>
+</div>
+
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+    <!-- Crear nueva API -->
+    <div class="card">
+        <h2>➕ Crear Nueva API</h2>
+        <form id="createApiForm">
+            <div class="form-group">
+                <label for="apiName">Nombre de la API:</label>
+                <input type="text" id="apiName" placeholder="Mi API Personalizada" required>
+            </div>
+            <div class="form-group">
+                <label for="apiDescription">Descripción:</label>
+                <textarea id="apiDescription" placeholder="Descripción de la funcionalidad..."></textarea>
+            </div>
+            <div class="form-group">
+                <label for="apiMethod">Método HTTP:</label>
+                <select id="apiMethod">
+                    <option value="GET">GET</option>
+                    <option value="POST">POST</option>
+                    <option value="PUT">PUT</option>
+                    <option value="DELETE">DELETE</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="apiEndpoint">Endpoint:</label>
+                <input type="text" id="apiEndpoint" placeholder="/mi-api/personalizada" required>
+            </div>
+            <button type="submit" class="btn">🚀 Crear API</button>
+        </form>
+        <div id="createApiMessage" style="margin-top: 15px;"></div>
+    </div>
+    
+    <!-- Lista de APIs -->
+    <div class="card">
+        <h2>📋 APIs Creadas</h2>
+        <div id="apisList" class="api-list">
+            <!-- Se llenará dinámicamente -->
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function getAuthHeaders() {
+    const token = localStorage.getItem('silhouette_token');
+    return token ? { 'Authorization': `Bearer ${token}` } : {};
+}
+
+// Crear nueva API
+document.getElementById('createApiForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const name = document.getElementById('apiName').value;
+    const description = document.getElementById('apiDescription').value;
+    const method = document.getElementById('apiMethod').value;
+    const endpoint_path = document.getElementById('apiEndpoint').value;
+    
+    const messageDiv = document.getElementById('createApiMessage');
+    messageDiv.innerHTML = '🔄 Creando API...';
+    
+    try {
+        const response = await fetch('/apis/create', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                ...getAuthHeaders()
+            },
+            body: JSON.stringify({
+                name,
+                description,
+                method,
+                endpoint_path,
+                parameters: {},
+                response_template: { "status": "success", "data": {} }
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            messageDiv.innerHTML = `✅ API creada exitosamente: <code>${data.endpoint}</code>`;
+            document.getElementById('createApiForm').reset();
+            loadApis();
+        } else {
+            messageDiv.innerHTML = `❌ ${data.message}`;
+        }
+    } catch (error) {
+        messageDiv.innerHTML = '❌ Error de conexión';
+    }
+});
+
+// Cargar lista de APIs
+async function loadApis() {
+    try {
+        const response = await fetch('/apis/list', {
+            headers: { ...getAuthHeaders() }
+        });
+        
+        if (!response.ok) {
+            if (response.status === 401) {
+                window.location.href = '/login';
+                return;
+            }
+            throw new Error('Error de autenticación');
+        }
+        
+        const data = await response.json();
+        updateApisList(data.apis);
+        
+    } catch (error) {
+        console.error('Error cargando APIs:', error);
+    }
+}
+
+// Actualizar lista de APIs
+function updateApisList(apis) {
+    const container = document.getElementById('apisList');
+    
+    if (apis.length === 0) {
+        container.innerHTML = '<p style="text-align: center; color: #666;">No hay APIs creadas</p>';
+        return;
+    }
+    
+    container.innerHTML = apis.map(api => `
+        <div class="api-item">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h4>${api.name}</h4>
+                    <p><code>${api.method}</code> <code>${api.endpoint}</code></p>
+                    <p style="color: #666; font-size: 0.9em;">${api.description || 'Sin descripción'}</p>
+                    <p style="color: #666; font-size: 0.8em;">Usos: ${api.usage_count} | Creada: ${new Date(api.created_at).toLocaleString()}</p>
+                </div>
+                <div>
+                    <span class="status-indicator ${api.is_active ? 'status-healthy' : 'status-error'}"></span>
+                    <span style="font-size: 0.8em; color: #666;">${api.is_active ? 'Activa' : 'Inactiva'}</span>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+// Inicializar página
+document.addEventListener('DOMContentLoaded', function() {
+    loadApis();
+    
+    // Actualizar cada 10 segundos
+    setInterval(loadApis, 10000);
+});
+</script>
+{% endblock %}

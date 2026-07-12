@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: mcp-core-superior
+  labels:
+    name: mcp-core-superior
+    environment: production
+    managed-by: kubernetes
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: mcp-core-monitoring
+  labels:
+    name: mcp-core-monitoring
+    purpose: observability
+    managed-by: kubernetes

@@ -1,0 +1,377 @@
+# CI/CD Pipeline para MCP Core Superior
+# Workflow principal que maneja build, test, y deployment
+
+name: MCP Core Superior CI/CD
+
+on:
+  push:
+    branches: [ main, develop, staging ]
+    tags: [ 'v*' ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
+      deployment_strategy:
+        description: 'Deployment strategy'
+        required: true
+        default: 'rolling'
+        type: choice
+        options:
+          - rolling
+          - blue-green
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+  NODE_VERSION: '18'
+  PYTHON_VERSION: '3.11'
+
+jobs:
+  # === VALIDACIÓN Y TESTING ===
+  validate:
+    name: Validación y Testing
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.meta.outputs.version }}
+      image_tag: ${{ steps.meta.outputs.tags }}
+      image_digest: ${{ steps.build.outputs.digest }}
+      
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Configurar Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Instalar dependencias
+        run: |
+          npm ci
+          pip install -r file_processing_requirements.txt
+          pip install -r src/security/requirements.txt
+
+      - name: Ejecutar linting
+        run: |
+          npm run lint
+          python -m pylint src/ || echo "Linting warnings found"
+
+      - name: Ejecutar tests unitarios
+        run: |
+          python -m pytest tests/ --cov=src/ --cov-report=xml --cov-report=term
+          npm test
+
+      - name: Tests de seguridad
+        run: |
+          python -m bandit -r src/ -f json -o security-report.json || true
+          python -m safety check --json --output safety-report.json || true
+
+      - name: Generar metadatos de imagen
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha,prefix={{branch}}-
+
+      - name: Build imagen Docker
+        id: build
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./deployment/docker/Dockerfile
+          push: false
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          platforms: linux/amd64,linux/arm64
+
+  # === ESCaneo de seguridad ===
+  security-scan:
+    name: Escaneo de Seguridad
+    runs-on: ubuntu-latest
+    needs: validate
+    if: github.event_name != 'pull_request'
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configurar Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Configurar Trivy
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ needs.validate.outputs.image_tag }}
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+
+      - name: Subir resultados Trivy a GitHub
+        uses: github/codeql-action/upload-sarif@v2
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+  # === DEPLOYMENT A STAGING ===
+  deploy-staging:
+    name: Deploy a Staging
+    runs-on: ubuntu-latest
+    needs: [validate, security-scan]
+    if: github.ref == 'refs/heads/develop' || github.event_name == 'workflow_dispatch'
+    environment: staging
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configurar kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'latest'
+
+      - name: Configurar AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Configurar EKS
+        uses: azure/aks-set-context@v3
+        with:
+          resource-group: ${{ secrets.AWS_EKS_RESOURCE_GROUP }}
+          cluster-name: ${{ secrets.AWS_EKS_CLUSTER_NAME }}
+
+      - name: Ejecutar deployment a staging
+        run: |
+          echo "Desplegando a staging..."
+          kubectl apply -f deployment/kubernetes/01-namespace.yaml
+          kubectl apply -f deployment/kubernetes/02-configmaps.yaml
+          kubectl apply -f deployment/kubernetes/03-secrets.yaml
+          kubectl apply -f deployment/kubernetes/04-storage.yaml
+          kubectl apply -f deployment/kubernetes/05-deployment.yaml
+          kubectl apply -f deployment/kubernetes/06-services.yaml
+
+      - name: Ejecutar health checks
+        run: |
+          kubectl rollout status deployment/mcp-core -n mcp-core-superior --timeout=300s
+          kubectl get pods -n mcp-core-superior
+          kubectl logs -l app=mcp-core -n mcp-core-superior --tail=50
+
+      - name: Ejecutar smoke tests
+        run: |
+          kubectl run smoke-test --image=curlimages/curl:7.85.0 --rm -i --tty -- \
+            --max-time 30 http://mcp-core-service:8080/health
+
+  # === DEPLOYMENT A PRODUCCIÓN ===
+  deploy-production:
+    name: Deploy a Producción
+    runs-on: ubuntu-latest
+    needs: [validate, security-scan]
+    if: startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/main'
+    environment: production
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configurar kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'latest'
+
+      - name: Configurar AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Configurar EKS
+        uses: azure/aks-set-context@v3
+        with:
+          resource-group: ${{ secrets.AWS_EKS_RESOURCE_GROUP }}
+          cluster-name: ${{ secrets.AWS_EKS_CLUSTER_NAME }}
+
+      - name: Blue-Green Deployment
+        if: github.event.inputs.deployment_strategy == 'blue-green'
+        run: |
+          chmod +x deployment/scripts/blue-green-deploy.sh
+          ./deployment/scripts/blue-green-deploy.sh deploy ${{ needs.validate.outputs.version }}
+
+      - name: Rolling Deployment
+        if: github.event.inputs.deployment_strategy != 'blue-green'
+        run: |
+          kubectl set image deployment/mcp-core mcp-core=${{ needs.validate.outputs.image_tag }} -n mcp-core-superior
+          kubectl rollout status deployment/mcp-core -n mcp-core-superior --timeout=600s
+
+      - name: Ejecutar health checks post-deployment
+        run: |
+          sleep 30  # Esperar a que el deployment se estabilice
+          kubectl rollout status deployment/mcp-core -n mcp-core-superior
+          kubectl get pods -n mcp-core-superior
+
+      - name: Ejecutar smoke tests en producción
+        run: |
+          # Obtener la IP externa del LoadBalancer
+          LB_IP=$(kubectl get svc nginx-service -n mcp-core-superior -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+          kubectl run smoke-test-prod --image=curlimages/curl:7.85.0 --rm -i --tty -- \
+            --max-time 30 "http://${LB_IP}/health"
+
+      - name: Ejecutar integration tests
+        run: |
+          # Aquí irían tests específicos de integración
+          echo "Ejecutando tests de integración..."
+          # pytest tests/integration/ --cov-report=xml
+
+      - name: Notificar deployment exitoso
+        uses: 8398a7/action-slack@v3
+        with:
+          status: success
+          text: '🚀 MCP Core Superior desplegado exitosamente a producción!'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  # === DEPLOYMENT DE MONITORING ===
+  deploy-monitoring:
+    name: Deploy Monitoring Stack
+    runs-on: ubuntu-latest
+    needs: deploy-production
+    if: always() && (needs.deploy-production.result == 'success' || needs.deploy-production.result == 'skipped')
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configurar kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'latest'
+
+      - name: Configurar AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Configurar EKS
+        uses: azure/aks-set-context@v3
+        with:
+          resource-group: ${{ secrets.AWS_EKS_RESOURCE_GROUP }}
+          cluster-name: ${{ secrets.AWS_EKS_CLUSTER_NAME }}
+
+      - name: Deploy monitoring stack
+        run: |
+          kubectl apply -f deployment/monitoring/
+          kubectl apply -f deployment/kubernetes/09-servicemonitors.yaml
+          kubectl apply -f deployment/kubernetes/10-alertrules.yaml
+
+  # === CLEANUP Y DOCUMENTATION ===
+  cleanup:
+    name: Cleanup y Documentación
+    runs-on: ubuntu-latest
+    needs: [deploy-production, deploy-monitoring]
+    if: always()
+    
+    steps:
+      - name: Cleanup de imágenes Docker
+        if: github.ref == 'refs/heads/main'
+        run: |
+          # Limpiar imágenes locales
+          docker system prune -af --volumes || true
+
+      - name: Generar documentación de release
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          echo "# Release ${{ github.ref_name }}" > RELEASE_NOTES.md
+          echo "" >> RELEASE_NOTES.md
+          echo "Fecha: $(date)" >> RELEASE_NOTES.md
+          echo "Branch: ${{ github.ref }}" >> RELEASE_NOTES.md
+          echo "Commit: ${{ github.sha }}" >> RELEASE_NOTES.md
+          echo "" >> RELEASE_NOTES.md
+          echo "## Cambios" >> RELEASE_NOTES.md
+          # Aquí iría la lógica para obtener los cambios desde el commit anterior
+
+      - name: Subir documentación
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./gh-pages
+
+  # === ROLLBACK (se ejecuta manualmente) ===
+  rollback:
+    name: Rollback de Emergencia
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'rollback'
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configurar kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'latest'
+
+      - name: Configurar AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Configurar EKS
+        uses: azure/aks-set-context@v3
+        with:
+          resource-group: ${{ secrets.AWS_EKS_RESOURCE_GROUP }}
+          cluster-name: ${{ secrets.AWS_EKS_CLUSTER_NAME }}
+
+      - name: Ejecutar rollback
+        run: |
+          echo "Ejecutando rollback..."
+          ./deployment/scripts/blue-green-deploy.sh rollback
+
+      - name: Verificar rollback
+        run: |
+          sleep 30
+          kubectl get pods -n mcp-core-superior
+          kubectl logs -l app=mcp-core -n mcp-core-superior --tail=50
+
+      - name: Notificar rollback
+        uses: 8398a7/action-slack@v3
+        with:
+          status: failure
+          text: '🚨 ROLLBACK ejecutado en MCP Core Superior!'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

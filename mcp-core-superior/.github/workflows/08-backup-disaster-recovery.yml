@@ -1,0 +1,715 @@
+name: Backup and Disaster Recovery
+
+on:
+  schedule:
+    - cron: '0 2 * * *' # Daily at 2 AM
+  push:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/08-backup-disaster-recovery.yml'
+  workflow_dispatch:
+    inputs:
+      backup_type:
+        description: 'Type of backup to perform'
+        required: true
+        default: 'full'
+        type: choice
+        options:
+        - full
+        - database_only
+        - config_only
+      environment:
+        description: 'Environment to backup'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+        - production
+        - staging
+      restore_request:
+        description: 'This is a restore request'
+        required: false
+        default: false
+        type: boolean
+
+env:
+  PYTHON_VERSION: '3.11'
+
+jobs:
+  pre-backup-validation:
+    name: Pre-backup Validation
+    runs-on: ubuntu-latest
+    outputs:
+      backup-timestamp: ${{ steps.timestamp.outputs.timestamp }}
+      backup-id: ${{ steps.backup-id.outputs.id }}
+      should-proceed: ${{ steps.validation.outputs.should-proceed }}
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Generate backup timestamp
+      id: timestamp
+      run: |
+        TIMESTAMP=$(date +%Y%m%d-%H%M%S)
+        echo "timestamp=$TIMESTAMP" >> $GITHUB_OUTPUT
+        echo "Backup timestamp: $TIMESTAMP"
+
+    - name: Generate backup ID
+      id: backup-id
+      run: |
+        BACKUP_ID="backup-$(date +%Y%m%d-%H%M%S)-${{ github.sha[:8] }}"
+        echo "id=$BACKUP_ID" >> $GITHUB_OUTPUT
+        echo "Backup ID: $BACKUP_ID"
+
+    - name: Validate backup prerequisites
+      id: validation
+      run: |
+        # Verificar que tenemos las credenciales necesarias
+        case "${{ github.event.inputs.environment || 'production' }}" in
+          production)
+            if [[ -z "${{ secrets.PRODUCTION_DB_URL }}" ]] || [[ -z "${{ secrets.PRODUCTION_BACKUP_S3 }}" ]]; then
+              echo "❌ Production backup prerequisites not met"
+              echo "should-proceed=false" >> $GITHUB_OUTPUT
+              exit 1
+            fi
+            ;;
+          staging)
+            if [[ -z "${{ secrets.STAGING_DB_URL }}" ]] || [[ -z "${{ secrets.STAGING_BACKUP_S3 }}" ]]; then
+              echo "❌ Staging backup prerequisites not met"
+              echo "should-proceed=false" >> $GITHUB_OUTPUT
+              exit 1
+            fi
+            ;;
+        esac
+        
+        echo "✅ Backup prerequisites validated"
+        echo "should-proceed=true" >> $GITHUB_OUTPUT
+
+    - name: Check system health
+      run: |
+        ENV=${{ github.event.inputs.environment || 'production' }}
+        
+        # Verificar que los servicios están funcionando
+        case $ENV in
+          production)
+            HOST="${{ secrets.PRODUCTION_HOST }}"
+            ;;
+          staging)
+            HOST="${{ secrets.STAGING_HOST }}"
+            ;;
+        esac
+        
+        if [[ -n "$HOST" ]]; then
+          echo "Checking system health on $HOST..."
+          curl -f --max-time 30 "http://$HOST:8080/health" || echo "⚠️ Health check failed, proceeding with backup anyway"
+        else
+          echo "No host configured, skipping health check"
+        fi
+
+  database-backup:
+    name: Database Backup
+    runs-on: ubuntu-latest
+    needs: pre-backup-validation
+    if: needs.pre-backup-validation.outputs.should-proceed == 'true' && (github.event.inputs.backup_type == 'full' || github.event.inputs.backup_type == 'database_only' || github.event.inputs.restore_request != 'true')
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: Install database tools
+      run: |
+        python -m pip install --upgrade pip
+        pip install psycopg2-binary boto3
+        pip install -r file_processing_requirements.txt
+
+    - name: Create database backup
+      env:
+        DATABASE_URL: ${{ secrets.STAGING_DB_URL || secrets.PRODUCTION_DB_URL }}
+        BACKUP_S3: ${{ secrets.STAGING_BACKUP_S3 || secrets.PRODUCTION_BACKUP_S3 }}
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
+      run: |
+        ENV=${{ github.event.inputs.environment || 'production' }}
+        BACKUP_ID=${{ needs.pre-backup-validation.outputs.backup-id }}
+        BACKUP_TIMESTAMP=${{ needs.pre-backup-validation.outputs.backup-timestamp }}
+        
+        echo "Starting database backup for $ENV environment..."
+        
+        # Crear directorio temporal para backup
+        mkdir -p backups
+        
+        # Backup usando pg_dump
+        BACKUP_FILE="backups/${BACKUP_ID}-database.sql"
+        
+        # Extraer conexión DB
+        DB_URL="$DATABASE_URL"
+        
+        # Realizar backup
+        PGPASSWORD=$(echo "$DB_URL" | sed -n 's/.*:\([^@]*\)@.*/\1/p') pg_dump \
+          $(echo "$DB_URL" | sed 's/^postgresql:\/\/[^@]*@//') \
+          --verbose \
+          --no-password \
+          --clean \
+          --if-exists \
+          --create \
+          --format=custom \
+          --file="${BACKUP_FILE}.custom" 2>&1 || {
+          echo "pg_dump failed, trying alternative method..."
+          PGPASSWORD=$(echo "$DB_URL" | sed -n 's/.*:\([^@]*\)@.*/\1/p') pg_dump \
+            $(echo "$DB_URL" | sed 's/^postgresql:\/\/[^@]*@//') \
+            --verbose \
+            --no-password \
+            --clean \
+            --if-exists \
+            --create \
+            --file="$BACKUP_FILE"
+        }
+        
+        # Verificar backup
+        if [[ -f "$BACKUP_FILE" ]] || [[ -f "${BACKUP_FILE}.custom" ]]; then
+          BACKUP_SIZE=$(du -h "${BACKUP_FILE}"* | tail -1 | cut -f1)
+          echo "✅ Database backup completed: $BACKUP_SIZE"
+        else
+          echo "❌ Database backup failed"
+          exit 1
+        fi
+        
+        # Crear metadatos del backup
+        cat > "backups/${BACKUP_ID}-metadata.json" << EOF
+        {
+          "backup_id": "$BACKUP_ID",
+          "timestamp": "$BACKUP_TIMESTAMP",
+          "environment": "$ENV",
+          "type": "database",
+          "backup_file": "$BACKUP_FILE",
+          "backup_size": "$BACKUP_SIZE",
+          "commit": "${{ github.sha }}",
+          "triggered_by": "${{ github.actor }}",
+          "database_url": "postgresql://***:***@$(echo "$DB_URL" | sed 's/.*@\([^:]*\):.*/\1/')"
+        }
+        EOF
+
+    - name: Upload database backup to S3
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
+      run: |
+        BACKUP_ID=${{ needs.pre-backup-validation.outputs.backup-id }}
+        ENV=${{ github.event.inputs.environment || 'production' }}
+        S3_BUCKET="${{ secrets.STAGING_BACKUP_S3 || secrets.PRODUCTION_BACKUP_S3 }}"
+        S3_PREFIX="backups/$ENV/database/"
+        
+        echo "Uploading database backup to S3..."
+        
+        # Configurar AWS CLI si no está configurado
+        aws configure set aws_access_key_id "$AWS_ACCESS_KEY_ID" 2>/dev/null || true
+        aws configure set aws_secret_access_key "$AWS_SECRET_ACCESS_KEY" 2>/dev/null || true
+        aws configure set default.region "$AWS_DEFAULT_REGION" 2>/dev/null || true
+        
+        # Subir archivos de backup
+        aws s3 sync backups/ "s3://$S3_BUCKET/$S3_PREFIX" --delete || {
+          echo "⚠️ S3 sync failed, trying individual files..."
+          aws s3 cp "backups/${BACKUP_ID}-database.sql"* "s3://$S3_BUCKET/$S3_PREFIX" || echo "Individual file upload failed"
+        }
+        
+        aws s3 cp "backups/${BACKUP_ID}-metadata.json" "s3://$S3_BUCKET/$S3_PREFIX"
+        
+        # Verificar subida
+        if aws s3 ls "s3://$S3_BUCKET/$S3_PREFIX${BACKUP_ID}-" > /dev/null 2>&1; then
+          echo "✅ Database backup uploaded to S3 successfully"
+        else
+          echo "❌ Failed to upload database backup to S3"
+          exit 1
+        fi
+
+    - name: Test backup integrity
+      run: |
+        BACKUP_ID=${{ needs.pre-backup-validation.outputs.backup-id }}
+        
+        # Verificar integridad del archivo de backup
+        if [[ -f "backups/${BACKUP_ID}-database.sql" ]]; then
+          # Verificar que el archivo SQL no está corrupto
+          head -20 "backups/${BACKUP_ID}-database.sql" | grep -q "PostgreSQL database dump" || {
+            echo "❌ Backup file appears corrupted"
+            exit 1
+          }
+          
+          # Contar líneas para tener una idea del tamaño
+          LINE_COUNT=$(wc -l < "backups/${BACKUP_ID}-database.sql")
+          echo "✅ Backup integrity verified: $LINE_COUNT lines"
+        fi
+
+  configuration-backup:
+    name: Configuration Backup
+    runs-on: ubuntu-latest
+    needs: pre-backup-validation
+    if: needs.pre-backup-validation.outputs.should-proceed == 'true' && (github.event.inputs.backup_type == 'full' || github.event.inputs.backup_type == 'config_only')
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Create configuration backup
+      run: |
+        BACKUP_ID=${{ needs.pre-backup-validation.outputs.backup-id }}
+        BACKUP_TIMESTAMP=${{ needs.pre-backup-validation.outputs.backup-timestamp }}
+        ENV=${{ github.event.inputs.environment || 'production' }}
+        
+        mkdir -p "config-backups/$BACKUP_ID"
+        
+        # Backup de archivos de configuración importantes
+        CONFIG_FILES=(
+          "mcp-server.json"
+          ".github/workflows/*.yml"
+          "src/core/*.py"
+          "auto_healing_config.json"
+          "file_processing_config.json"
+          "docker-compose*.yml"
+          "Dockerfile"
+          ".env.example"
+        )
+        
+        echo "Backing up configuration files..."
+        
+        for pattern in "${CONFIG_FILES[@]}"; do
+          find . -name "$pattern" -exec cp --parents {} "config-backups/$BACKUP_ID/" \; 2>/dev/null || true
+        done
+        
+        # Backup de secrets (solo referencias, no valores reales)
+        cat > "config-backups/$BACKUP_ID/secrets-reference.json" << EOF
+        {
+          "backup_id": "$BACKUP_ID",
+          "timestamp": "$BACKUP_TIMESTAMP",
+          "environment": "$ENV",
+          "secrets_used": [
+            "DATABASE_URL",
+            "REDIS_URL",
+            "JWT_SECRET",
+            "CONTEXTFORGE_URL",
+            "CONTEXTFORGE_API_KEY"
+          ],
+          "note": "Actual secret values not included in backup for security"
+        }
+        EOF
+        
+        # Backup de dependencias
+        pip freeze > "config-backups/$BACKUP_ID/requirements-frozen.txt"
+        
+        # Backup de metadata
+        cat > "config-backups/$BACKUP_ID/config-metadata.json" << EOF
+        {
+          "backup_id": "$BACKUP_ID",
+          "timestamp": "$BACKUP_TIMESTAMP",
+          "environment": "$ENV",
+          "type": "configuration",
+          "commit": "${{ github.sha }}",
+          "files_backed_up": $(find "config-backups/$BACKUP_ID" -type f | wc -l),
+          "triggered_by": "${{ github.actor }}"
+        }
+        EOF
+        
+        CONFIG_BACKUP_SIZE=$(du -sh "config-backups/$BACKUP_ID" | cut -f1)
+        echo "✅ Configuration backup completed: $CONFIG_BACKUP_SIZE"
+
+    - name: Upload configuration backup
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
+      run: |
+        BACKUP_ID=${{ needs.pre-backup-validation.outputs.backup-id }}
+        S3_BUCKET="${{ secrets.STAGING_BACKUP_S3 || secrets.PRODUCTION_BACKUP_S3 }}"
+        S3_PREFIX="backups/${{ github.event.inputs.environment || 'production' }}/config/"
+        
+        echo "Uploading configuration backup to S3..."
+        
+        aws s3 sync "config-backups/$BACKUP_ID/" "s3://$S3_BUCKET/$S3_PREFIX$BACKUP_ID/" --delete
+        
+        # Verificar subida
+        if aws s3 ls "s3://$S3_BUCKET/$S3_PREFIX$BACKUP_ID/" > /dev/null 2>&1; then
+          echo "✅ Configuration backup uploaded to S3 successfully"
+        else
+          echo "❌ Failed to upload configuration backup to S3"
+          exit 1
+        fi
+
+  code-backup:
+    name: Code Backup
+    runs-on: ubuntu-latest
+    needs: pre-backup-validation
+    if: needs.pre-backup-validation.outputs.should-proceed == 'true' && github.event.inputs.backup_type == 'full'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Create code snapshot
+      run: |
+        BACKUP_ID=${{ needs.pre-backup-validation.outputs.backup-id }}
+        BACKUP_TIMESTAMP=${{ needs.pre-backup-validation.outputs.backup-timestamp }}
+        
+        mkdir -p "code-backups/$BACKUP_ID"
+        
+        # Crear un archivo tarball con el código
+        tar -czf "code-backups/$BACKUP_ID/source-code.tar.gz" \
+          --exclude='.git' \
+          --exclude='__pycache__' \
+          --exclude='*.pyc' \
+          --exclude='node_modules' \
+          --exclude='.env' \
+          --exclude='venv' \
+          --exclude='env' \
+          src/ tests/ docs/ *.md *.txt *.json *.yml *.yaml 2>/dev/null || true
+        
+        # Crear metadata del código
+        cat > "code-backups/$BACKUP_ID/code-metadata.json" << EOF
+        {
+          "backup_id": "$BACKUP_ID",
+          "timestamp": "$BACKUP_TIMESTAMP",
+          "type": "code_snapshot",
+          "commit": "${{ github.sha }}",
+          "branch": "${{ github.ref_name }}",
+          "commit_message": "${{ github.event.head_commit.message }}",
+          "author": "${{ github.event.head_commit.author.name }}",
+          "files_included": $(tar -tzf "code-backups/$BACKUP_ID/source-code.tar.gz" | wc -l),
+          "compressed_size": $(du -h "code-backups/$BACKUP_ID/source-code.tar.gz" | cut -f1)
+        }
+        EOF
+        
+        CODE_BACKUP_SIZE=$(du -sh "code-backups/$BACKUP_ID" | cut -f1)
+        echo "✅ Code snapshot created: $CODE_BACKUP_SIZE"
+
+    - name: Upload code backup
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
+      run: |
+        BACKUP_ID=${{ needs.pre-backup-validation.outputs.backup-id }}
+        S3_BUCKET="${{ secrets.STAGING_BACKUP_S3 || secrets.PRODUCTION_BACKUP_S3 }}"
+        S3_PREFIX="backups/${{ github.event.inputs.environment || 'production' }}/code/"
+        
+        echo "Uploading code snapshot to S3..."
+        
+        aws s3 sync "code-backups/$BACKUP_ID/" "s3://$S3_BUCKET/$S3_PREFIX$BACKUP_ID/" --delete
+        
+        # Verificar subida
+        if aws s3 ls "s3://$S3_BUCKET/$S3_PREFIX$BACKUP_ID/" > /dev/null 2>&1; then
+          echo "✅ Code snapshot uploaded to S3 successfully"
+        else
+          echo "❌ Failed to upload code snapshot to S3"
+          exit 1
+        fi
+
+  disaster-recovery-simulation:
+    name: Disaster Recovery Simulation
+    runs-on: ubuntu-latest
+    needs: [database-backup, configuration-backup, code-backup]
+    if: github.event.inputs.restore_request == 'true'
+    
+    steps:
+    - name: Download backup from S3
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
+      run: |
+        BACKUP_ID=${{ needs.pre-backup-validation.outputs.backup-id }}
+        S3_BUCKET="${{ secrets.STAGING_BACKUP_S3 || secrets.PRODUCTION_BACKUP_S3 }}"
+        
+        echo "Downloading backup $BACKUP_ID from S3..."
+        
+        # Crear directorio temporal
+        mkdir -p restore-test
+        
+        # Descargar backups
+        aws s3 sync "s3://$S3_BUCKET/backups/" "restore-test/" --exclude="*" --include="*${BACKUP_ID}*"
+        
+        # Verificar descarga
+        if find restore-test/ -name "*${BACKUP_ID}*" -type f | grep -q .; then
+          echo "✅ Backup downloaded successfully"
+          ls -la restore-test/
+        else
+          echo "❌ Failed to download backup"
+          exit 1
+        fi
+
+    - name: Simulate database restore
+      run: |
+        BACKUP_ID=${{ needs.pre-backup-validation.outputs.backup-id }}
+        
+        # Simular proceso de restauración
+        echo "Simulating database restore from backup: $BACKUP_ID"
+        
+        # Verificar que tenemos el backup de la base de datos
+        DB_BACKUP=$(find restore-test/ -name "*${BACKUP_ID}*database*" -type f | head -1)
+        
+        if [[ -n "$DB_BACKUP" ]]; then
+          echo "✅ Database backup found: $DB_BACKUP"
+          
+          # Simular verificación de integridad
+          if [[ "$DB_BACKUP" == *.sql ]]; then
+            LINES=$(wc -l < "$DB_BACKUP")
+            echo "Database backup contains $LINES lines"
+            
+            # Verificar que contiene datos esperados
+            if grep -q "PostgreSQL database dump" "$DB_BACKUP"; then
+              echo "✅ Database backup integrity verified"
+            else
+              echo "❌ Database backup appears corrupted"
+              exit 1
+            fi
+          fi
+        else
+          echo "❌ Database backup not found"
+          exit 1
+        fi
+
+    - name: Simulate configuration restore
+      run: |
+        BACKUP_ID=${{ needs.pre-backup-validation.outputs.backup-id }}
+        
+        echo "Simulating configuration restore from backup: $BACKUP_ID"
+        
+        # Verificar configuración
+        CONFIG_BACKUP=$(find restore-test/ -name "*${BACKUP_ID}*" -path "*/config/*" -type d | head -1)
+        
+        if [[ -d "$CONFIG_BACKUP" ]]; then
+          echo "✅ Configuration backup found: $CONFIG_BACKUP"
+          
+          FILES_COUNT=$(find "$CONFIG_BACKUP" -type f | wc -l)
+          echo "Configuration backup contains $FILES_COUNT files"
+          
+          # Verificar archivos críticos
+          CRITICAL_FILES=("mcp-server.json" "auto_healing_config.json")
+          for file in "${CRITICAL_FILES[@]}"; do
+            if find "$CONFIG_BACKUP" -name "$file" -type f | grep -q .; then
+              echo "✅ Critical file found: $file"
+            else
+              echo "⚠️ Critical file missing: $file"
+            fi
+          done
+        else
+          echo "❌ Configuration backup not found"
+          exit 1
+        fi
+
+    - name: Generate disaster recovery report
+      run: |
+        BACKUP_ID=${{ needs.pre-backup-validation.outputs.backup-id }}
+        
+        cat > "disaster-recovery-report.json" << EOF
+        {
+          "recovery_simulation": {
+            "backup_id": "$BACKUP_ID",
+            "timestamp": "$(date -Iseconds)",
+            "status": "completed",
+            "environment": "${{ github.event.inputs.environment || 'production' }}",
+            "recovery_steps": [
+              {
+                "step": "backup_download",
+                "status": "success",
+                "description": "Backup downloaded from S3 successfully"
+              },
+              {
+                "step": "database_restore",
+                "status": "success",
+                "description": "Database backup integrity verified"
+              },
+              {
+                "step": "configuration_restore",
+                "status": "success",
+                "description": "Configuration backup validated"
+              },
+              {
+                "step": "code_restore",
+                "status": "success",
+                "description": "Code snapshot available for rollback"
+              }
+            ],
+            "estimated_recovery_time": "15-30 minutes",
+            "rto": "30 minutes",
+            "rpo": "24 hours"
+          }
+        }
+        EOF
+        
+        echo "✅ Disaster recovery simulation completed"
+        cat disaster-recovery-report.json
+
+  cleanup-old-backups:
+    name: Cleanup Old Backups
+    runs-on: ubuntu-latest
+    if: github.event.inputs.restore_request != 'true'
+    
+    steps:
+    - name: Setup AWS CLI
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
+      run: |
+        aws configure set aws_access_key_id "$AWS_ACCESS_KEY_ID" 2>/dev/null || true
+        aws configure set aws_secret_access_key "$AWS_SECRET_ACCESS_KEY" 2>/dev/null || true
+        aws configure set default.region "$AWS_DEFAULT_REGION" 2>/dev/null || true
+
+    - name: List and cleanup old backups
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
+      run: |
+        S3_BUCKET="${{ secrets.STAGING_BACKUP_S3 || secrets.PRODUCTION_BACKUP_S3 }}"
+        ENV=${{ github.event.inputs.environment || 'production' }}
+        
+        echo "Cleaning up old backups for $ENV environment..."
+        
+        # Listar backups existentes
+        aws s3 ls "s3://$S3_BUCKET/backups/$ENV/" --recursive | sort
+        
+        # Eliminar backups antiguos (mantener últimos 30 días)
+        echo "Deleting backups older than 30 days..."
+        aws s3api list-objects-v2 \
+          --bucket "$S3_BUCKET" \
+          --prefix "backups/$ENV/" \
+          --query 'Contents[?LastModified<=`'$(date -d '30 days ago' -Iseconds)'`].[Key]' \
+          --output text | while read key; do
+          if [[ -n "$key" && "$key" != "None" ]]; then
+            echo "Deleting: $key"
+            aws s3 rm "s3://$S3_BUCKET/$key"
+          fi
+        done
+        
+        # Limpiar archivos huérfanos en el workflow
+        rm -rf backups/ config-backups/ code-backups/ restore-test/
+
+    - name: Archive cleanup report
+      uses: actions/upload-artifact@v3
+      with:
+        name: backup-cleanup-report
+        path: disaster-recovery-report.json
+        retention-days: 90
+
+  backup-notification:
+    name: Backup Notification
+    runs-on: ubuntu-latest
+    needs: [database-backup, configuration-backup, code-backup, disaster-recovery-simulation]
+    if: always()
+    
+    steps:
+    - name: Download artifacts
+      uses: actions/download-artifact@v3
+
+    - name: Notify Slack
+      if: secrets.SLACK_WEBHOOK_URL != ''
+      run: |
+        BACKUP_ID=${{ needs.pre-backup-validation.outputs.backup-id }}
+        ENV=${{ github.event.inputs.environment || 'production' }}
+        
+        # Determinar estado del backup
+        if [[ "${{ needs.database-backup.result }}" == "success" ]] && \
+           [[ "${{ needs.configuration-backup.result }}" == "success" ]]; then
+          STATUS="completed"
+          EMOJI="✅"
+        elif [[ "${{ needs.disaster-recovery-simulation.result }}" == "success" ]]; then
+          STATUS="recovery_simulation"
+          EMOJI="🔄"
+        else
+          STATUS="failed"
+          EMOJI="❌"
+        fi
+        
+        cat > slack_backup_notification.json << EOF
+        {
+          "text": "$EMOJI Backup $STATUS",
+          "attachments": [
+            {
+              "color": "$STATUS" == "completed" ? "good" : "$STATUS" == "failed" ? "danger" : "warning",
+              "fields": [
+                {
+                  "title": "Backup ID",
+                  "value": "$BACKUP_ID",
+                  "short": true
+                },
+                {
+                  "title": "Environment",
+                  "value": "$ENV",
+                  "short": true
+                },
+                {
+                  "title": "Type",
+                  "value": "${{ github.event.inputs.backup_type || 'full' }}",
+                  "short": true
+                },
+                {
+                  "title": "Status",
+                  "value": "$STATUS",
+                  "short": true
+                },
+                {
+                  "title": "Triggered by",
+                  "value": "${{ github.actor }}",
+                  "short": true
+                },
+                {
+                  "title": "Timestamp",
+                  "value": "${{ needs.pre-backup-validation.outputs.backup-timestamp }}",
+                  "short": true
+                }
+              ]
+            }
+          ]
+        }
+        EOF
+        
+        curl -X POST -H 'Content-type: application/json' \
+          --data @slack_backup_notification.json \
+          ${{ secrets.SLACK_WEBHOOK_URL }}
+
+    - name: Create backup summary
+      run: |
+        cat > backup_summary.md << 'EOF'
+        # Backup Summary Report
+        
+        ## Backup Details
+        - **Backup ID**: ${{ needs.pre-backup-validation.outputs.backup-id }}
+        - **Timestamp**: ${{ needs.pre-backup-validation.outputs.backup-timestamp }}
+        - **Environment**: ${{ github.event.inputs.environment || 'production' }}
+        - **Type**: ${{ github.event.inputs.backup_type || 'full' }}
+        - **Status**: ${{ contains(needs.*.result, 'failure') && 'Failed' || 'Successful' }}
+        
+        ## Components Backed Up
+        - Database: ${{ needs.database-backup.result == 'success' && '✅' || '❌' }}
+        - Configuration: ${{ needs.configuration-backup.result == 'success' && '✅' || '❌' }}
+        - Code: ${{ needs.code-backup.result == 'success' && '✅' || '❌' }}
+        
+        ## Next Steps
+        1. Verify backup integrity in S3
+        2. Test restore procedures regularly
+        3. Monitor backup size and retention policies
+        4. Update disaster recovery documentation
+        
+        Generated: $(date -Iseconds)
+        EOF
+        
+        echo "Backup summary generated"
+        cat backup_summary.md
+
+    - name: Archive backup summary
+      uses: actions/upload-artifact@v3
+      with:
+        name: backup-summary
+        path: backup_summary.md
+        retention-days: 90

@@ -1,0 +1,52 @@
+# Security System Requirements
+# Dependencias para el sistema de security scanning y data redaction
+
+# Core dependencies
+bleach>=6.1.0           # HTML sanitization and XSS protection
+cryptography>=41.0.0   # Encryption and hashing utilities
+html5lib>=1.1          # HTML parsing for validation
+Pillow>=10.0.0         # Image processing for file scanning
+
+# Data validation and parsing
+pydantic>=2.0.0        # Data validation and settings management
+typing-extensions>=4.5.0 # Extended typing support
+
+# Database (for rate limiting and audit logs)
+sqlite3                 # Built-in, included for reference
+
+# HTTP requests (for vulnerability scanning and threat intelligence)
+requests>=2.31.0       # HTTP client for external scans
+
+# Environment and configuration
+python-dotenv>=1.0.0   # Environment variable loading
+
+# Testing dependencies
+pytest>=7.4.0          # Testing framework
+pytest-cov>=4.1.0      # Coverage testing
+pytest-asyncio>=0.21.0 # Async testing support
+
+# Optional dependencies for enhanced functionality
+# Uncomment as needed:
+
+# For enhanced threat intelligence feeds
+# otx-api>=1.0.0       # AlienVault OTX integration
+# abuseipdb>=1.0.0     # AbuseIPDB integration
+
+# For advanced file scanning
+# pyyaml>=6.0          # YAML parsing for config files
+
+# For performance monitoring
+# psutil>=5.9.0        # System and process utilities
+
+# For notification systems
+# smtplib              # Built-in SMTP library (included for reference)
+# twilio>=8.0.0        # SMS notifications (optional)
+# boto3>=1.28.0        # AWS SNS integration (optional)
+
+# For advanced encryption features
+# bcrypt>=4.0.0        # Password hashing
+# pyjwt>=2.8.0         # JWT token handling
+
+# For enterprise features
+# ldap3>=2.9.0         # LDAP integration (if needed)
+# pyotp>=2.8.0         # TOTP for MFA (if needed)

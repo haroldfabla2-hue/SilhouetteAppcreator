@@ -1,0 +1,118 @@
+# File Processing Agent MCP - Requirements
+# Dependencias Python para procesamiento avanzado de archivos multimedia
+
+# === DEPENDENCIAS PRINCIPALES ===
+
+# Procesamiento de imágenes
+Pillow>=10.0.0
+opencv-python>=4.8.0
+
+# OCR y reconocimiento de texto
+pytesseract>=0.3.10
+
+# Procesamiento de documentos Office
+python-docx>=0.8.11
+openpyxl>=3.1.0
+python-pptx>=0.6.21
+
+# Procesamiento de audio
+librosa>=0.10.0
+mutagen>=1.46.0
+
+# Procesamiento de video y multimedia
+ffmpeg-python>=0.2.0
+
+# Detección de códigos QR y barras
+qrcode>=7.4.0
+pyzbar>=0.1.9
+
+# === DEPENDENCIAS OPCIONALES ===
+
+# Detección automática de codificación
+chardet>=5.0.0
+
+# Procesamiento de PDF avanzado
+PyPDF2>=3.0.0
+pypdf>=3.0.0
+
+# Soporte adicional para formatos de audio
+soundfile>=0.12.0
+audioread>=3.0.0
+
+# Análisis de imagen avanzado
+numpy>=1.24.0
+scipy>=1.11.0
+
+# Procesamiento de metadatos EXIF
+piexif>=1.1.3
+exifread>=3.0.0
+
+# Soporte para archivos comprimidos
+zipfile36>=0.1.3
+rarfile>=4.0
+
+# === DEPENDENCIAS DE DESARROLLO ===
+
+# Testing
+pytest>=7.0.0
+pytest-asyncio>=0.21.0
+
+# Code quality
+black>=23.0.0
+flake8>=6.0.0
+mypy>=1.5.0
+
+# Documentation
+mkdocs>=1.5.0
+
+# === NOTAS DE INSTALACIÓN ===
+
+# Para sistemas Ubuntu/Debian, instalar también:
+# sudo apt install tesseract-ocr tesseract-ocr-spa tesseract-ocr-eng
+# sudo apt install ffmpeg
+
+# Para sistemas macOS con Homebrew:
+# brew install tesseract ffmpeg
+
+# Para Windows:
+# Descargar e instalar Tesseract desde: https://github.com/UB-Mannheim/tesseract/wiki
+# Descargar FFmpeg desde: https://ffmpeg.org/download.html#build-windows
+
+# === VERIFICACIÓN DE INSTALACIÓN ===
+
+# Ejecutar este comando para verificar las instalaciones principales:
+# python -c "
+# try:
+#     import PIL; print('✅ Pillow OK')
+# except: print('❌ Pillow FALTA')
+# try:
+#     import cv2; print('✅ OpenCV OK')
+# except: print('❌ OpenCV FALTA')
+# try:
+#     import pytesseract; print('✅ Tesseract OK')
+# except: print('❌ Tesseract FALTA')
+# try:
+#     from docx import Document; print('✅ python-docx OK')
+# except: print('❌ python-docx FALTA')
+# try:
+#     from openpyxl import load_workbook; print('✅ openpyxl OK')
+# except: print('❌ openpyxl FALTA')
+# try:
+#     from pptx import Presentation; print('✅ python-pptx OK')
+# except: print('❌ python-pptx FALTA')
+# try:
+#     import librosa; print('✅ librosa OK')
+# except: print('❌ librosa FALTA')
+# try:
+#     import mutagen; print('✅ mutagen OK')
+# except: print('❌ mutagen FALTA')
+# try:
+#     import ffmpeg; print('✅ ffmpeg-python OK')
+# except: print('❌ ffmpeg-python FALTA')
+# try:
+#     import qrcode; print('✅ qrcode OK')
+# except: print('❌ qrcode FALTA')
+# try:
+#     from pyzbar import pyzbar; print('✅ pyzbar OK')
+# except: print('❌ pyzbar FALTA')
+# "

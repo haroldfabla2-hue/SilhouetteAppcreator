@@ -1,0 +1,261 @@
+version: '3.8'
+
+services:
+  # === BASE DE DATOS PRINCIPAL ===
+  postgres:
+    image: postgres:15-alpine
+    container_name: mcp-postgres-dev
+    environment:
+      POSTGRES_DB: mcp_core
+      POSTGRES_USER: mcpuser
+      POSTGRES_PASSWORD: devpassword123
+      POSTGRES_HOST_AUTH_METHOD: trust
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data_dev:/var/lib/postgresql/data
+      - ./database/init:/docker-entrypoint-initdb.d
+    networks:
+      - mcp-network-dev
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mcpuser -d mcp_core"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  # === VECTOR DATABASE ===
+  vector_postgres:
+    image: pgvector/pgvector:pg15
+    container_name: mcp-vector-postgres-dev
+    environment:
+      POSTGRES_DB: vector_db
+      POSTGRES_USER: mcpuser
+      POSTGRES_PASSWORD: devpassword123
+      POSTGRES_HOST_AUTH_METHOD: trust
+    ports:
+      - "5433:5432"
+    volumes:
+      - vector_data_dev:/var/lib/postgresql/data
+    networks:
+      - mcp-network-dev
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mcpuser -d vector_db"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  # === REDIS CACHE ===
+  redis:
+    image: redis:7-alpine
+    container_name: mcp-redis-dev
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data_dev:/data
+    networks:
+      - mcp-network-dev
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  # === APLICACIÓN PRINCIPAL ===
+  mcp-core:
+    build:
+      context: ..
+      dockerfile: deployment/docker/Dockerfile
+      target: runtime
+    container_name: mcp-core-dev
+    environment:
+      # Configuración de desarrollo
+      ENVIRONMENT: development
+      DEBUG: "true"
+      LOG_LEVEL: DEBUG
+      DATABASE_URL: postgresql://mcpuser:devpassword123@postgres:5432/mcp_core
+      VECTOR_DB_URL: postgresql://mcpuser:devpassword123@vector_postgres:5432/vector_db
+      REDIS_URL: redis://redis:6379/0
+      JWT_SECRET: dev-jwt-secret-key-change-in-production
+      METRICS_ENABLED: "true"
+      STREAMING_ENABLED: "true"
+      RATE_LIMIT_ENABLED: "false"
+      CORS_ENABLED: "true"
+      CORS_ORIGINS: '["http://localhost:3000", "http://localhost:8080"]'
+      MCP_CORE_METRICS_PORT: 9090
+      MCP_CORE_STREAMING_FREQUENCY: "0.5"
+      MCP_CORE_MAX_CONCURRENT_TASKS: "20"
+      # Hot reload
+      PYTHONDONTWRITEBYTECODE: "1"
+      PYTHONUNBUFFERED: "1"
+    ports:
+      - "8080:8080"  # API principal
+      - "8081:8081"  # MCP protocolo
+      - "9090:9090"  # Métricas
+    volumes:
+      - ..:/app/src:rw  # Mount del código fuente para hot reload
+      - /app/logs  # Logs externos
+      - /app/uploads  # Uploads externos
+    networks:
+      - mcp-network-dev
+    depends_on:
+      postgres:
+        condition: service_healthy
+      vector_postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    restart: unless-stopped
+
+  # === CONTEXTFORGE GATEWAY (OPCIONAL) ===
+  contextforge:
+    image: contextforge/gateway:latest
+    container_name: mcp-contextforge-dev
+    environment:
+      PORT: 8001
+      DEBUG: "true"
+    ports:
+      - "8001:8001"
+    networks:
+      - mcp-network-dev
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  # === MONITORING STACK ===
+
+  # Prometheus - Métricas
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: mcp-prometheus-dev
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    ports:
+      - "9091:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data_dev:/prometheus
+    networks:
+      - mcp-network-dev
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:9090/-/healthy"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  # Grafana - Dashboards
+  grafana:
+    image: grafana/grafana:latest
+    container_name: mcp-grafana-dev
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: devgrafana
+      GF_USERS_ALLOW_SIGN_UP: "true"
+      GF_INSTALL_PLUGINS: grafana-clock-panel,grafana-simple-json-datasource
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data_dev:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
+    networks:
+      - mcp-network-dev
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3000/api/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  # Jaeger - Distributed Tracing
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    container_name: mcp-jaeger-dev
+    environment:
+      COLLECTOR_OTLP_ENABLED: "true"
+      MEMORY_MAX_TRACES: 50000
+    ports:
+      - "16686:16686"  # UI
+      - "14268:14268"  # HTTP collector
+      - "14250:14250"  # gRPC collector
+    networks:
+      - mcp-network-dev
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:16686/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  # === SERVICIOS ADICIONALES ===
+
+  # PgAdmin para desarrollo (OPCIONAL)
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: mcp-pgadmin-dev
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@mcp.com
+      PGADMIN_DEFAULT_PASSWORD: devadmin
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+    ports:
+      - "5050:80"
+    volumes:
+      - pgadmin_data_dev:/var/lib/pgadmin
+    networks:
+      - mcp-network-dev
+    depends_on:
+      - postgres
+    restart: unless-stopped
+
+  # Redis Commander para desarrollo
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: mcp-redis-commander-dev
+    environment:
+      REDIS_HOSTS: local:redis:6379
+    ports:
+      - "8081:8081"
+    networks:
+      - mcp-network-dev
+    depends_on:
+      - redis
+    restart: unless-stopped
+
+# Volúmenes persistentes
+volumes:
+  postgres_data_dev:
+    driver: local
+  vector_data_dev:
+    driver: local
+  redis_data_dev:
+    driver: local
+  prometheus_data_dev:
+    driver: local
+  grafana_data_dev:
+    driver: local
+  pgadmin_data_dev:
+    driver: local
+
+# Red compartida
+networks:
+  mcp-network-dev:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

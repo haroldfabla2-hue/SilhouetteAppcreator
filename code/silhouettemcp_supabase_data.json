@@ -1,0 +1,119 @@
+{
+  "server_info": {
+    "name": "SilhouetteMCP Server - Supabase Toolkit",
+    "version": "3.0.0-supabase",
+    "domain": "silhouettemcp.albertofarah.com",
+    "created_at": "2025-11-05T17:32:24.376786",
+    "start_time": 1762335144.376867,
+    "supabase_tools": 13
+  },
+  "applications": [
+    {
+      "id": "silhouettemcp_supabase",
+      "name": "SilhouetteMCP Supabase Toolkit",
+      "description": "Toolkit completo de operaciones Supabase",
+      "api_key": "sk-WXa-F5tM1hx-b18dJIzG54Txdj81DXpt99A17QdEzFw",
+      "owner_email": "alberto.farahb@hotmail.com",
+      "agents": [
+        {
+          "id": "supabase_admin",
+          "name": "Supabase Admin",
+          "app_id": "silhouettemcp_supabase",
+          "status": "active",
+          "tasks_completed": 7,
+          "avg_response_time": 0.0,
+          "token_usage": 1521,
+          "last_activity": "2025-11-05T17:34:24.525470",
+          "success_rate": 95.0,
+          "agent_type": "supabase_admin",
+          "created_at": "2025-11-05T17:32:24.376834"
+        },
+        {
+          "id": "database_ops",
+          "name": "Database Operations",
+          "app_id": "silhouettemcp_supabase",
+          "status": "active",
+          "tasks_completed": 1,
+          "avg_response_time": 0.0,
+          "token_usage": 374,
+          "last_activity": "2025-11-05T17:34:08.409880",
+          "success_rate": 95.0,
+          "agent_type": "database",
+          "created_at": "2025-11-05T17:32:24.376841"
+        },
+        {
+          "id": "storage_ops",
+          "name": "Storage Operations",
+          "app_id": "silhouettemcp_supabase",
+          "status": "active",
+          "tasks_completed": 11,
+          "avg_response_time": 0.0,
+          "token_usage": 1255,
+          "last_activity": "2025-11-05T17:34:40.547427",
+          "success_rate": 95.0,
+          "agent_type": "storage",
+          "created_at": "2025-11-05T17:32:24.376846"
+        },
+        {
+          "id": "edge_functions",
+          "name": "Edge Functions Manager",
+          "app_id": "silhouettemcp_supabase",
+          "status": "active",
+          "tasks_completed": 14,
+          "avg_response_time": 0.0,
+          "token_usage": 2021,
+          "last_activity": "2025-11-05T17:34:48.564890",
+          "success_rate": 95.0,
+          "agent_type": "edge_functions",
+          "created_at": "2025-11-05T17:32:24.376850"
+        },
+        {
+          "id": "cron_jobs",
+          "name": "Cron Jobs Manager",
+          "app_id": "silhouettemcp_supabase",
+          "status": "active",
+          "tasks_completed": 14,
+          "avg_response_time": 0.0,
+          "token_usage": 3444,
+          "last_activity": "2025-11-05T17:34:56.583919",
+          "success_rate": 95.0,
+          "agent_type": "cron_jobs",
+          "created_at": "2025-11-05T17:32:24.376854"
+        },
+        {
+          "id": "stripe_integration",
+          "name": "Stripe Integration",
+          "app_id": "silhouettemcp_supabase",
+          "status": "active",
+          "tasks_completed": 3,
+          "avg_response_time": 0.0,
+          "token_usage": 922,
+          "last_activity": "2025-11-05T17:34:16.517793",
+          "success_rate": 95.0,
+          "agent_type": "stripe",
+          "created_at": "2025-11-05T17:32:24.376859"
+        }
+      ],
+      "created_at": "2025-11-05T17:32:24.376863",
+      "is_active": true,
+      "supabase_config": {
+        "project_url": "https://your-project.supabase.co",
+        "service_role_key": "",
+        "anon_key": "",
+        "project_id": ""
+      }
+    }
+  ],
+  "metrics": {
+    "total_requests": 0,
+    "supabase_operations": 0,
+    "avg_response_time": 0.0,
+    "last_updated": "2025-11-05T17:32:24.376786"
+  },
+  "supabase_config": {
+    "project_url": "https://your-project.supabase.co",
+    "service_role_key": "",
+    "anon_key": "",
+    "project_id": ""
+  }
+}

@@ -1,0 +1,81 @@
+{
+  "server_info": {
+    "name": "SilhouetteMCP Server con Google Maps",
+    "version": "3.0.0",
+    "domain": "silhouettemcp.albertofarah.com",
+    "created_at": "2025-11-06T08:11:49.263753",
+    "start_time": 1762387909.263806,
+    "maps_enabled": true
+  },
+  "applications": [
+    {
+      "id": "silhouettemcp_maps_default",
+      "name": "SilhouetteMCP Dashboard con Maps",
+      "description": "Dashboard principal de gestión con Google Maps Intelligence",
+      "api_key": "sk-lPjJ2SwZofdRcyxEgDA4KK5dyhxMm8yjOhtcr89Q5Tg",
+      "owner_email": "alberto.farahb@hotmail.com",
+      "agents": [
+        {
+          "id": "dashboard_admin",
+          "name": "Dashboard Admin",
+          "app_id": "silhouettemcp_maps_default",
+          "status": "idle",
+          "tasks_completed": 5,
+          "avg_response_time": 0.0,
+          "token_usage": 456,
+          "last_activity": "2025-11-06T08:11:49.269524",
+          "success_rate": 95.0,
+          "agent_type": "admin",
+          "created_at": "2025-11-06T08:11:49.263783"
+        },
+        {
+          "id": "google_maps_agent",
+          "name": "Google Maps Intelligence Agent",
+          "app_id": "silhouettemcp_maps_default",
+          "status": "active",
+          "tasks_completed": 0,
+          "avg_response_time": 0.0,
+          "token_usage": 0,
+          "last_activity": "2025-11-06T08:11:49.263788",
+          "success_rate": 95.0,
+          "agent_type": "maps",
+          "created_at": "2025-11-06T08:11:49.263790"
+        },
+        {
+          "id": "system_monitor",
+          "name": "System Monitor",
+          "app_id": "silhouettemcp_maps_default",
+          "status": "active",
+          "tasks_completed": 0,
+          "avg_response_time": 0.0,
+          "token_usage": 0,
+          "last_activity": "2025-11-06T08:11:49.263793",
+          "success_rate": 95.0,
+          "agent_type": "monitoring",
+          "created_at": "2025-11-06T08:11:49.263794"
+        },
+        {
+          "id": "api_gateway",
+          "name": "API Gateway",
+          "app_id": "silhouettemcp_maps_default",
+          "status": "active",
+          "tasks_completed": 0,
+          "avg_response_time": 0.0,
+          "token_usage": 0,
+          "last_activity": "2025-11-06T08:11:49.263797",
+          "success_rate": 95.0,
+          "agent_type": "gateway",
+          "created_at": "2025-11-06T08:11:49.263799"
+        }
+      ],
+      "created_at": "2025-11-06T08:11:49.263804",
+      "is_active": true
+    }
+  ],
+  "metrics": {
+    "total_requests": 0,
+    "maps_requests": 0,
+    "avg_response_time": 0.0,
+    "last_updated": "2025-11-06T08:11:49.263753"
+  }
+}

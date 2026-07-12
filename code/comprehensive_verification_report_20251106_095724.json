@@ -1,0 +1,200 @@
+{
+  "timestamp": "2025-11-06T09:57:24.723361",
+  "verification_version": "1.0.0",
+  "systems_checked": 10,
+  "systems_healthy": 1,
+  "systems_degraded": 0,
+  "systems_failed": 9,
+  "overall_health_score": 28.0,
+  "detailed_results": {
+    "original_systems": {
+      "port_8001": {
+        "name": "SilhouetteMCP Unified",
+        "type": "core",
+        "port": 8001,
+        "status": "healthy",
+        "response_time": 0.00417327880859375,
+        "health_data": {
+          "status": "healthy",
+          "uptime": 17.749706029891968,
+          "score": 110.0,
+          "optimization_level": "ULTRA",
+          "deployment_ready": true,
+          "timestamp": "2025-11-06T09:57:24.726684"
+        },
+        "last_check": "2025-11-06T09:57:24.727628"
+      },
+      "port_8002": {
+        "name": "Hierarchical Architecture",
+        "type": "architecture",
+        "port": 8002,
+        "status": "error",
+        "response_time": 0.0007193088531494141,
+        "error": "Cannot connect to host localhost:8002 ssl:default [Multiple exceptions: [Errno 111] Connect call failed ('::1', 8002, 0, 0), [Errno 111] Connect call failed ('127.0.0.1', 8002)]",
+        "last_check": "2025-11-06T09:57:24.728470"
+      },
+      "port_8003": {
+        "name": "Dashboard",
+        "type": "ui",
+        "port": 8003,
+        "status": "error",
+        "response_time": 0.0005903244018554688,
+        "error": "Cannot connect to host localhost:8003 ssl:default [Multiple exceptions: [Errno 111] Connect call failed ('::1', 8003, 0, 0), [Errno 111] Connect call failed ('127.0.0.1', 8003)]",
+        "last_check": "2025-11-06T09:57:24.729075"
+      },
+      "port_8004": {
+        "name": "Testing Suite",
+        "type": "testing",
+        "port": 8004,
+        "status": "error",
+        "response_time": 0.0006208419799804688,
+        "error": "Cannot connect to host localhost:8004 ssl:default [Multiple exceptions: [Errno 111] Connect call failed ('::1', 8004, 0, 0), [Errno 111] Connect call failed ('127.0.0.1', 8004)]",
+        "last_check": "2025-11-06T09:57:24.729710"
+      },
+      "port_8005": {
+        "name": "Metrics",
+        "type": "monitoring",
+        "port": 8005,
+        "status": "error",
+        "response_time": 0.0007121562957763672,
+        "error": "Cannot connect to host localhost:8005 ssl:default [Multiple exceptions: [Errno 111] Connect call failed ('::1', 8005, 0, 0), [Errno 111] Connect call failed ('127.0.0.1', 8005)]",
+        "last_check": "2025-11-06T09:57:24.730435"
+      },
+      "port_8006": {
+        "name": "WebSocket",
+        "type": "realtime",
+        "port": 8006,
+        "status": "error",
+        "response_time": 0.000598907470703125,
+        "error": "Cannot connect to host localhost:8006 ssl:default [Multiple exceptions: [Errno 111] Connect call failed ('::1', 8006, 0, 0), [Errno 111] Connect call failed ('127.0.0.1', 8006)]",
+        "last_check": "2025-11-06T09:57:24.731047"
+      },
+      "port_8007": {
+        "name": "Diagnostic System",
+        "type": "diagnostic",
+        "port": 8007,
+        "status": "error",
+        "response_time": 0.0005164146423339844,
+        "error": "Cannot connect to host localhost:8007 ssl:default [Multiple exceptions: [Errno 111] Connect call failed ('::1', 8007, 0, 0), [Errno 111] Connect call failed ('127.0.0.1', 8007)]",
+        "last_check": "2025-11-06T09:57:24.731577"
+      }
+    },
+    "enhanced_systems": {
+      "port_8010": {
+        "name": "Enhanced Architecture",
+        "type": "architecture",
+        "port": 8010,
+        "status": "error",
+        "response_time": 0.0005590915679931641,
+        "error": "Cannot connect to host localhost:8010 ssl:default [Multiple exceptions: [Errno 111] Connect call failed ('::1', 8010, 0, 0), [Errno 111] Connect call failed ('127.0.0.1', 8010)]",
+        "last_check": "2025-11-06T09:57:24.732214"
+      },
+      "port_8020": {
+        "name": "Enhanced Scalability",
+        "type": "scalability",
+        "port": 8020,
+        "status": "error",
+        "response_time": 0.0005297660827636719,
+        "error": "Cannot connect to host localhost:8020 ssl:default [Multiple exceptions: [Errno 111] Connect call failed ('::1', 8020, 0, 0), [Errno 111] Connect call failed ('127.0.0.1', 8020)]",
+        "last_check": "2025-11-06T09:57:24.732756"
+      },
+      "port_8027": {
+        "name": "Enhanced Security",
+        "type": "security",
+        "port": 8027,
+        "status": "error",
+        "response_time": 0.0005037784576416016,
+        "error": "Cannot connect to host localhost:8027 ssl:default [Multiple exceptions: [Errno 111] Connect call failed ('::1', 8027, 0, 0), [Errno 111] Connect call failed ('127.0.0.1', 8027)]",
+        "last_check": "2025-11-06T09:57:24.733273"
+      }
+    }
+  },
+  "performance_analysis": {
+    "total_systems_monitored": 1,
+    "avg_response_time": 0.00417327880859375,
+    "min_response_time": 0.00417327880859375,
+    "max_response_time": 0.00417327880859375,
+    "systems_within_1s": 1,
+    "systems_within_5s": 1,
+    "performance_score": 100.0,
+    "performance_rating": "EXCELLENT"
+  },
+  "security_assessment": {
+    "security_score": 40,
+    "enhanced_security_system": false,
+    "security_files_present": true,
+    "jwt_implementation": false,
+    "ddos_protection": false,
+    "api_key_management": false,
+    "monitoring_system": false,
+    "encryption_enabled": false,
+    "security_rating": "NEEDS_IMPROVEMENT"
+  },
+  "scalability_assessment": {
+    "scalability_score": 40,
+    "enhanced_scalability_system": false,
+    "scalability_files_present": true,
+    "auto_scaling": false,
+    "load_balancing": false,
+    "resource_management": false,
+    "performance_monitoring": false,
+    "horizontal_scaling": false,
+    "scalability_rating": "NEEDS_IMPROVEMENT"
+  },
+  "architecture_assessment": {
+    "architecture_score": 100,
+    "enhanced_architecture": false,
+    "original_architecture": false,
+    "architecture_files_present": true,
+    "hierarchical_structure": false,
+    "agents_implementation": false,
+    "coordination_algorithms": false,
+    "communication_protocols": false,
+    "architecture_rating": "EXCELLENT"
+  },
+  "integration_status": {
+    "integration_score": 10.0,
+    "original_systems_healthy": 1,
+    "enhanced_systems_healthy": 0,
+    "total_systems": 10,
+    "integration_health": "critical",
+    "cross_system_communication": false,
+    "system_coordination": false,
+    "integration_rating": "CRITICAL"
+  },
+  "recommendations": [
+    {
+      "priority": "HIGH",
+      "category": "overall",
+      "recommendation": "Abordar issues de alta prioridad inmediatamente",
+      "rationale": "Puntuaci\u00f3n por debajo del m\u00ednimo aceptable: 48.4/100"
+    },
+    {
+      "priority": "HIGH",
+      "category": "security",
+      "recommendation": "Activar y utilizar el sistema de seguridad mejorado",
+      "rationale": "Puntuaci\u00f3n de seguridad baja: 40/100"
+    },
+    {
+      "priority": "HIGH",
+      "category": "scalability",
+      "recommendation": "Activar y utilizar el sistema de escalabilidad mejorado",
+      "rationale": "Puntuaci\u00f3n de escalabilidad baja: 40/100"
+    },
+    {
+      "priority": "MEDIUM",
+      "category": "integration",
+      "recommendation": "Mejorar coordinaci\u00f3n entre sistemas",
+      "rationale": "Integraci\u00f3n por debajo del \u00f3ptimo: 10.0/100"
+    },
+    {
+      "priority": "LOW",
+      "category": "monitoring",
+      "recommendation": "Implementar monitoreo continuo automatizado",
+      "rationale": "Mantener visibilidad constante del estado del sistema"
+    }
+  ],
+  "verification_duration": 0.01024484634399414,
+  "combined_score": 48.4,
+  "final_rating": "NEEDS_IMPROVEMENT"
+}

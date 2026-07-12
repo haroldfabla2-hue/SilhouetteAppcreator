@@ -1,0 +1,63 @@
+version: '3.8'
+
+services:
+  iris-server:
+    build:
+      context: .
+      dockerfile: Dockerfile.iris
+    ports:
+      - "8000:8000"
+    environment:
+      - IRIS_ENV=production
+      - IRIS_LOG_LEVEL=INFO
+    volumes:
+      - iris_data:/app/data
+      - iris_logs:/app/logs
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # Nginx como proxy reverso
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - iris-server
+    restart: unless-stopped
+
+  # Sistema de backup automático
+  iris-backup:
+    image: alpine:latest
+    volumes:
+      - iris_data:/data:ro
+      - ./backups:/backups
+    command: |
+      sh -c "
+        while true; do
+          timestamp=$$(date +%Y%m%d_%H%M%S)
+          tar -czf /backups/iris_backup_$$timestamp.tar.gz /data
+          # Mantener solo los últimos 30 backups
+          ls -t /backups/iris_backup_*.tar.gz | tail -n +31 | xargs rm -f
+          sleep 86400  # 24 horas
+        done
+      "
+    restart: unless-stopped
+
+volumes:
+  iris_data:
+    driver: local
+  iris_logs:
+    driver: local
+
+networks:
+  default:
+    name: iris-network

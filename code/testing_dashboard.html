@@ -1,0 +1,1259 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SilhouetteMCP Testing & Optimization Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            color: #2c3e50;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            color: #7f8c8d;
+            font-size: 1.2em;
+            margin-bottom: 20px;
+        }
+
+        .status-indicators {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 20px;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .status-online {
+            background: #27ae60;
+        }
+
+        .status-warning {
+            background: #f39c12;
+        }
+
+        .status-offline {
+            background: #e74c3c;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .control-panel {
+            grid-column: 1 / -1;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .test-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .test-btn {
+            padding: 20px;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .test-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-scalability {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+        }
+
+        .btn-coordination {
+            background: linear-gradient(45deg, #2196F3, #1976D2);
+        }
+
+        .btn-optimization {
+            background: linear-gradient(45deg, #FF9800, #F57C00);
+        }
+
+        .btn-communication {
+            background: linear-gradient(45deg, #9C27B0, #7B1FA2);
+        }
+
+        .btn-all {
+            background: linear-gradient(45deg, #f44336, #d32f2f);
+        }
+
+        .btn-custom {
+            background: linear-gradient(45deg, #607D8B, #455A64);
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .metric-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .metric-header {
+            display: flex;
+            align-items: center;
+            justify-content: between;
+            margin-bottom: 15px;
+        }
+
+        .metric-icon {
+            font-size: 2em;
+            margin-right: 15px;
+            color: #3498db;
+        }
+
+        .metric-value {
+            font-size: 2.5em;
+            font-weight: 700;
+            color: #2c3e50;
+            margin: 10px 0;
+        }
+
+        .metric-label {
+            color: #7f8c8d;
+            font-size: 0.9em;
+            font-weight: 500;
+        }
+
+        .metric-trend {
+            font-size: 0.8em;
+            margin-top: 10px;
+        }
+
+        .trend-up {
+            color: #27ae60;
+        }
+
+        .trend-down {
+            color: #e74c3c;
+        }
+
+        .trend-stable {
+            color: #95a5a6;
+        }
+
+        .chart-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .chart-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .chart-title {
+            font-size: 1.3em;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .chart-controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .chart-control {
+            padding: 8px 16px;
+            border: 2px solid #3498db;
+            background: transparent;
+            color: #3498db;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.3s ease;
+        }
+
+        .chart-control:hover, .chart-control.active {
+            background: #3498db;
+            color: white;
+        }
+
+        .status-panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .status-success {
+            background: rgba(39, 174, 96, 0.1);
+            border-left: 4px solid #27ae60;
+        }
+
+        .status-error {
+            background: rgba(231, 76, 60, 0.1);
+            border-left: 4px solid #e74c3c;
+        }
+
+        .status-warning {
+            background: rgba(243, 156, 18, 0.1);
+            border-left: 4px solid #f39c12;
+        }
+
+        .status-info {
+            background: rgba(52, 152, 219, 0.1);
+            border-left: 4px solid #3498db;
+        }
+
+        .status-icon {
+            font-size: 1.2em;
+            margin-right: 15px;
+        }
+
+        .results-panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .result-card {
+            border: 2px solid #ecf0f1;
+            border-radius: 15px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .result-card:hover {
+            border-color: #3498db;
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.1);
+        }
+
+        .result-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+
+        .result-title {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .result-score {
+            font-size: 1.5em;
+            font-weight: 700;
+            padding: 5px 15px;
+            border-radius: 20px;
+            color: white;
+        }
+
+        .score-excellent {
+            background: linear-gradient(45deg, #27ae60, #2ecc71);
+        }
+
+        .score-good {
+            background: linear-gradient(45deg, #3498db, #2980b9);
+        }
+
+        .score-fair {
+            background: linear-gradient(45deg, #f39c12, #e67e22);
+        }
+
+        .score-poor {
+            background: linear-gradient(45deg, #e74c3c, #c0392b);
+        }
+
+        .result-details {
+            color: #7f8c8d;
+            font-size: 0.9em;
+        }
+
+        .real-time-panel {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            min-width: 200px;
+        }
+
+        .realtime-title {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .realtime-metric {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+        }
+
+        .realtime-value {
+            font-weight: 600;
+        }
+
+        .config-panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .config-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .config-input {
+            padding: 12px;
+            border: 2px solid #ecf0f1;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        .config-input:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+
+        .btn-save-config {
+            background: linear-gradient(45deg, #27ae60, #2ecc71);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-save-config:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(39, 174, 96, 0.3);
+        }
+
+        @media (max-width: 768px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .test-buttons {
+                grid-template-columns: 1fr;
+            }
+            
+            .real-time-panel {
+                position: relative;
+                top: auto;
+                right: auto;
+                margin-bottom: 20px;
+            }
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: #ecf0f1;
+            border-radius: 2px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(45deg, #3498db, #2980b9);
+            transition: width 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1><i class="fas fa-flask"></i> SilhouetteMCP Testing Suite</h1>
+            <p>Sistema Completo de Testing y Optimización para Arquitectura Jerárquica de 100+ Agentes</p>
+            
+            <div class="status-indicators">
+                <div class="status-item">
+                    <div class="status-dot status-online" id="api-status"></div>
+                    <span>API Online</span>
+                </div>
+                <div class="status-item">
+                    <div class="status-dot status-online" id="websocket-status"></div>
+                    <span>WebSocket</span>
+                </div>
+                <div class="status-item">
+                    <div class="status-dot status-online" id="database-status"></div>
+                    <span>Database</span>
+                </div>
+                <div class="status-item">
+                    <div class="status-dot status-warning" id="monitoring-status"></div>
+                    <span>Monitoring</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Real-time Panel -->
+        <div class="real-time-panel">
+            <div class="realtime-title">
+                <i class="fas fa-chart-line"></i>
+                Métricas en Tiempo Real
+            </div>
+            <div class="realtime-metric">
+                <span>CPU:</span>
+                <span class="realtime-value" id="realtime-cpu">--%</span>
+            </div>
+            <div class="realtime-metric">
+                <span>Memory:</span>
+                <span class="realtime-value" id="realtime-memory">--%</span>
+            </div>
+            <div class="realtime-metric">
+                <span>Active Tests:</span>
+                <span class="realtime-value" id="realtime-tests">0</span>
+            </div>
+            <div class="realtime-metric">
+                <span>Health Score:</span>
+                <span class="realtime-value" id="realtime-health">--</span>
+            </div>
+        </div>
+
+        <!-- Control Panel -->
+        <div class="control-panel">
+            <h2><i class="fas fa-play-circle"></i> Centro de Control de Tests</h2>
+            
+            <div class="test-buttons">
+                <button class="test-btn btn-scalability" onclick="runTest('scalability-tests')">
+                    <i class="fas fa-chart-line"></i>
+                    Test de Escalabilidad
+                </button>
+                <button class="test-btn btn-coordination" onclick="runTest('coordination-tests')">
+                    <i class="fas fa-users"></i>
+                    Test de Coordinación
+                </button>
+                <button class="test-btn btn-optimization" onclick="runTest('algorithm-optimization')">
+                    <i class="fas fa-brain"></i>
+                    Optimización de Algoritmos
+                </button>
+                <button class="test-btn btn-communication" onclick="runTest('communication-tests')">
+                    <i class="fas fa-network-wired"></i>
+                    Test de Comunicación
+                </button>
+                <button class="test-btn btn-all" onclick="runTest('run-all-tests')">
+                    <i class="fas fa-rocket"></i>
+                    Suite Completa
+                </button>
+                <button class="test-btn btn-custom" onclick="showCustomConfig()">
+                    <i class="fas fa-cog"></i>
+                    Configuración Personalizada
+                </button>
+            </div>
+
+            <div id="test-status"></div>
+        </div>
+
+        <!-- Metrics Grid -->
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <div class="metric-header">
+                    <i class="fas fa-microchip metric-icon"></i>
+                    <div>
+                        <div class="metric-value" id="cpu-usage">0%</div>
+                        <div class="metric-label">CPU Usage</div>
+                    </div>
+                </div>
+                <div class="metric-trend trend-up" id="cpu-trend">
+                    <i class="fas fa-arrow-up"></i> +2.3% desde último test
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-header">
+                    <i class="fas fa-memory metric-icon"></i>
+                    <div>
+                        <div class="metric-value" id="memory-usage">0%</div>
+                        <div class="metric-label">Memory Usage</div>
+                    </div>
+                </div>
+                <div class="metric-trend trend-stable" id="memory-trend">
+                    <i class="fas fa-minus"></i> Estable
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-header">
+                    <i class="fas fa-tachometer-alt metric-icon"></i>
+                    <div>
+                        <div class="metric-value" id="throughput">0 RPS</div>
+                        <div class="metric-label">Throughput</div>
+                    </div>
+                </div>
+                <div class="metric-trend trend-up" id="throughput-trend">
+                    <i class="fas fa-arrow-up"></i> +5.7% mejora
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-header">
+                    <i class="fas fa-heartbeat metric-icon"></i>
+                    <div>
+                        <div class="metric-value" id="health-score">0</div>
+                        <div class="metric-label">Health Score</div>
+                    </div>
+                </div>
+                <div class="metric-trend trend-up" id="health-trend">
+                    <i class="fas fa-arrow-up"></i> Excelente
+                </div>
+            </div>
+        </div>
+
+        <!-- Configuration Panel -->
+        <div class="config-panel" id="config-panel" style="display: none;">
+            <h3><i class="fas fa-sliders-h"></i> Configuración Personalizada</h3>
+            <div class="config-grid">
+                <input type="number" class="config-input" id="max-users" placeholder="Max Concurrent Users" value="500">
+                <input type="number" class="config-input" id="max-agents" placeholder="Max Agents" value="350">
+                <input type="number" class="config-input" id="test-timeout" placeholder="Test Timeout (segundos)" value="3600">
+                <input type="number" class="config-input" id="response-threshold" placeholder="Response Time Threshold (ms)" value="300">
+            </div>
+            <button class="btn-save-config" onclick="saveConfiguration()">
+                <i class="fas fa-save"></i> Guardar Configuración
+            </button>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="main-grid">
+            <div class="chart-container">
+                <div class="chart-header">
+                    <h3 class="chart-title"><i class="fas fa-chart-area"></i> Performance en Tiempo Real</h3>
+                    <div class="chart-controls">
+                        <button class="chart-control active" onclick="updateChartTimeRange('1h')">1H</button>
+                        <button class="chart-control" onclick="updateChartTimeRange('6h')">6H</button>
+                        <button class="chart-control" onclick="updateChartTimeRange('24h')">24H</button>
+                    </div>
+                </div>
+                <canvas id="performanceChart" width="400" height="200"></canvas>
+            </div>
+
+            <div class="chart-container">
+                <div class="chart-header">
+                    <h3 class="chart-title"><i class="fas fa-chart-bar"></i> Resultados de Tests</h3>
+                    <div class="chart-controls">
+                        <button class="chart-control" onclick="updateResultsChart('scalability')">Escalabilidad</button>
+                        <button class="chart-control" onclick="updateResultsChart('coordination')">Coordinación</button>
+                    </div>
+                </div>
+                <canvas id="testResultsChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+
+        <!-- Status Panel -->
+        <div class="status-panel">
+            <h3><i class="fas fa-info-circle"></i> Estado del Sistema</h3>
+            <div id="status-messages">
+                <div class="status-item status-success">
+                    <i class="fas fa-check-circle status-icon"></i>
+                    <div>
+                        <strong>Sistema Operativo:</strong> Todos los componentes funcionando correctamente
+                        <br><small>Última verificación: hace 2 minutos</small>
+                    </div>
+                </div>
+                <div class="status-item status-info">
+                    <i class="fas fa-info-circle status-icon"></i>
+                    <div>
+                        <strong>Tests Automáticos:</strong> Programa de testing continuo activo
+                        <br><small>Próximo test automático: en 45 minutos</small>
+                    </div>
+                </div>
+                <div class="status-item status-warning">
+                    <i class="fas fa-exclamation-triangle status-icon"></i>
+                    <div>
+                        <strong>Alerta de Memoria:</strong> Uso de memoria alto detectado (>80%)
+                        <br><small>Recomendación: Revisar optimización de memoria</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Panel -->
+        <div class="results-panel">
+            <h3><i class="fas fa-clipboard-check"></i> Últimos Resultados</h3>
+            <div class="results-grid" id="results-display">
+                <div class="result-card">
+                    <div class="result-header">
+                        <div class="result-title">Test de Escalabilidad</div>
+                        <div class="result-score score-excellent">94%</div>
+                    </div>
+                    <div class="result-details">
+                        <p><strong>Usuarios Concurrentes:</strong> 500</p>
+                        <p><strong>Tiempo Respuesta P95:</strong> 425ms</p>
+                        <p><strong>Éxito:</strong> 98.2%</p>
+                        <p><strong>Ejecutado:</strong> 6 Nov, 03:15</p>
+                    </div>
+                </div>
+
+                <div class="result-card">
+                    <div class="result-header">
+                        <div class="result-title">Test de Coordinación</div>
+                        <div class="result-score score-good">88%</div>
+                    </div>
+                    <div class="result-details">
+                        <p><strong>Equipos Activos:</strong> 6</p>
+                        <p><strong>Éxito Coordinación:</strong> 92.3%</p>
+                        <p><strong>Tiempo Decisión:</strong> 185ms</p>
+                        <p><strong>Ejecutado:</strong> 6 Nov, 02:45</p>
+                    </div>
+                </div>
+
+                <div class="result-card">
+                    <div class="result-header">
+                        <div class="result-title">Optimización Algoritmos</div>
+                        <div class="result-score score-good">87%</div>
+                    </div>
+                    <div class="result-details">
+                        <p><strong>Algoritmos Optimizados:</strong> 4</p>
+                        <p><strong>Mejora Performance:</strong> 23%</p>
+                        <p><strong>Eficiencia Memoria:</strong> 82%</p>
+                        <p><strong>Ejecutado:</strong> 6 Nov, 02:20</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let performanceChart, testResultsChart;
+        let performanceData = {
+            labels: [],
+            datasets: [
+                {
+                    label: 'CPU %',
+                    data: [],
+                    borderColor: '#4CAF50',
+                    backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                    tension: 0.4
+                },
+                {
+                    label: 'Memory %',
+                    data: [],
+                    borderColor: '#2196F3',
+                    backgroundColor: 'rgba(33, 150, 243, 0.1)',
+                    tension: 0.4
+                },
+                {
+                    label: 'Response Time (ms)',
+                    data: [],
+                    borderColor: '#FF9800',
+                    backgroundColor: 'rgba(255, 152, 0, 0.1)',
+                    tension: 0.4,
+                    yAxisID: 'y1'
+                }
+            ]
+        };
+
+        let testResultsData = {
+            labels: ['Escalabilidad', 'Coordinación', 'Optimización', 'Comunicación'],
+            datasets: [{
+                label: 'Success Rate (%)',
+                data: [94, 88, 87, 92],
+                backgroundColor: [
+                    '#4CAF50',
+                    '#2196F3',
+                    '#FF9800',
+                    '#9C27B0'
+                ],
+                borderColor: [
+                    '#45a049',
+                    '#1976D2',
+                    '#F57C00',
+                    '#7B1FA2'
+                ],
+                borderWidth: 2
+            }]
+        };
+
+        function initCharts() {
+            // Performance Chart
+            const ctx1 = document.getElementById('performanceChart').getContext('2d');
+            performanceChart = new Chart(ctx1, {
+                type: 'line',
+                data: performanceData,
+                options: {
+                    responsive: true,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    scales: {
+                        x: {
+                            display: true,
+                            title: {
+                                display: true,
+                                text: 'Tiempo'
+                            }
+                        },
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            title: {
+                                display: true,
+                                text: 'Porcentaje (%)'
+                            },
+                            max: 100
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            title: {
+                                display: true,
+                                text: 'Tiempo (ms)'
+                            },
+                            grid: {
+                                drawOnChartArea: false,
+                            },
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        }
+                    }
+                }
+            });
+
+            // Test Results Chart
+            const ctx2 = document.getElementById('testResultsChart').getContext('2d');
+            testResultsChart = new Chart(ctx2, {
+                type: 'bar',
+                data: testResultsData,
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            title: {
+                                display: true,
+                                text: 'Success Rate (%)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+
+        function updatePerformanceMetrics(metrics) {
+            // Actualizar métricas principales
+            document.getElementById('cpu-usage').textContent = metrics.system.cpu_percent.toFixed(1) + '%';
+            document.getElementById('memory-usage').textContent = metrics.system.memory_percent.toFixed(1) + '%';
+            document.getElementById('active-tests').textContent = metrics.testing.active_tests;
+            document.getElementById('health-score').textContent = calculateHealthScore(metrics).toFixed(0);
+
+            // Actualizar panel de tiempo real
+            document.getElementById('realtime-cpu').textContent = metrics.system.cpu_percent.toFixed(1) + '%';
+            document.getElementById('realtime-memory').textContent = metrics.system.memory_percent.toFixed(1) + '%';
+            document.getElementById('realtime-tests').textContent = metrics.testing.active_tests;
+            document.getElementById('realtime-health').textContent = calculateHealthScore(metrics).toFixed(0);
+
+            // Actualizar gráfico de performance
+            const now = new Date();
+            performanceData.labels.push(now);
+            performanceData.datasets[0].data.push(metrics.system.cpu_percent);
+            performanceData.datasets[1].data.push(metrics.system.memory_percent);
+            
+            // Simular tiempo de respuesta
+            const responseTime = Math.random() * 200 + 100; // 100-300ms
+            performanceData.datasets[2].data.push(responseTime);
+
+            // Mantener solo los últimos 50 puntos
+            if (performanceData.labels.length > 50) {
+                performanceData.labels.shift();
+                performanceData.datasets.forEach(dataset => dataset.data.shift());
+            }
+
+            performanceChart.update('none');
+
+            // Actualizar tendencias
+            updateTrends(metrics);
+        }
+
+        function calculateHealthScore(metrics) {
+            const cpuScore = Math.max(0, 100 - metrics.system.cpu_percent);
+            const memoryScore = Math.max(0, 100 - metrics.system.memory_percent);
+            const processScore = Math.min(100, 120 - metrics.process.cpu_percent);
+            
+            return (cpuScore + memoryScore + processScore) / 3;
+        }
+
+        function updateTrends(metrics) {
+            // Simular tendencias basadas en métricas actuales
+            const cpuTrend = document.getElementById('cpu-trend');
+            const memoryTrend = document.getElementById('memory-trend');
+            const throughputTrend = document.getElementById('throughput-trend');
+            const healthTrend = document.getElementById('health-trend');
+
+            // CPU Trend
+            if (metrics.system.cpu_percent > 70) {
+                cpuTrend.className = 'metric-trend trend-up';
+                cpuTrend.innerHTML = '<i class="fas fa-arrow-up"></i> Alto uso detectado';
+            } else if (metrics.system.cpu_percent < 50) {
+                cpuTrend.className = 'metric-trend trend-stable';
+                cpuTrend.innerHTML = '<i class="fas fa-minus"></i> Uso normal';
+            }
+
+            // Memory Trend
+            if (metrics.system.memory_percent > 80) {
+                memoryTrend.className = 'metric-trend trend-down';
+                memoryTrend.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Memoria alta';
+            } else {
+                memoryTrend.className = 'metric-trend trend-stable';
+                memoryTrend.innerHTML = '<i class="fas fa-check"></i> Memoria normal';
+            }
+
+            // Throughput Trend (simulado)
+            document.getElementById('throughput').textContent = Math.floor(Math.random() * 200 + 800) + ' RPS';
+
+            // Health Trend
+            const healthScore = calculateHealthScore(metrics);
+            if (healthScore > 80) {
+                healthTrend.className = 'metric-trend trend-up';
+                healthTrend.innerHTML = '<i class="fas fa-heart"></i> Excelente';
+            } else if (healthScore > 60) {
+                healthTrend.className = 'metric-trend trend-stable';
+                healthTrend.innerHTML = '<i class="fas fa-thumbs-up"></i> Bueno';
+            } else {
+                healthTrend.className = 'metric-trend trend-down';
+                healthTrend.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Atención requerida';
+            }
+        }
+
+        async function runTest(endpoint) {
+            const statusDiv = document.getElementById('test-status');
+            
+            // Mostrar estado de ejecución
+            statusDiv.innerHTML = `
+                <div class="status-item status-info">
+                    <div class="loading-spinner"></div>
+                    <div>
+                        <strong>Ejecutando test...</strong>
+                        <br><small>Endpoint: ${endpoint}</small>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 25%"></div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            try {
+                const response = await fetch(`http://localhost:8004/${endpoint}`);
+                const data = await response.json();
+
+                if (data.status === 'completed') {
+                    statusDiv.innerHTML = `
+                        <div class="status-item status-success">
+                            <i class="fas fa-check-circle status-icon"></i>
+                            <div>
+                                <strong>✅ Test completado exitosamente</strong>
+                                <br><small>Tipo: ${data.test_type}</small>
+                                <br><small>Health Score: ${data.summary?.overall_health_score || 'N/A'}</small>
+                            </div>
+                        </div>
+                    `;
+                    
+                    // Mostrar progreso completo
+                    updateProgressBar(100);
+                    
+                    // Actualizar resultados
+                    displayTestResults(data);
+                    
+                    // Simular progreso durante 3 segundos
+                    simulateProgress();
+                } else {
+                    statusDiv.innerHTML = `
+                        <div class="status-item status-error">
+                            <i class="fas fa-times-circle status-icon"></i>
+                            <div>
+                                <strong>❌ Error en el test</strong>
+                                <br><small>${data.error || 'Error desconocido'}</small>
+                            </div>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                statusDiv.innerHTML = `
+                    <div class="status-item status-error">
+                        <i class="fas fa-times-circle status-icon"></i>
+                        <div>
+                            <strong>❌ Error de conexión</strong>
+                            <br><small>${error.message}</small>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        function simulateProgress() {
+            let progress = 25;
+            const interval = setInterval(() => {
+                progress += Math.random() * 15;
+                if (progress >= 100) {
+                    progress = 100;
+                    clearInterval(interval);
+                }
+                updateProgressBar(progress);
+            }, 500);
+        }
+
+        function updateProgressBar(percentage) {
+            const progressFill = document.querySelector('.progress-fill');
+            if (progressFill) {
+                progressFill.style.width = percentage + '%';
+            }
+        }
+
+        function displayTestResults(data) {
+            const resultsDiv = document.getElementById('results-display');
+            const timestamp = new Date(data.timestamp).toLocaleString();
+            const testType = data.test_type || 'Desconocido';
+            const healthScore = data.summary?.overall_health_score || 'N/A';
+
+            // Determinar clase del score
+            let scoreClass = 'score-fair';
+            if (typeof healthScore === 'number') {
+                if (healthScore >= 90) scoreClass = 'score-excellent';
+                else if (healthScore >= 75) scoreClass = 'score-good';
+                else if (healthScore >= 60) scoreClass = 'score-fair';
+                else scoreClass = 'score-poor';
+            }
+
+            let html = `
+                <div class="result-card">
+                    <div class="result-header">
+                        <div class="result-title">Test ${testType}</div>
+                        <div class="result-score ${scoreClass}">${healthScore}</div>
+                    </div>
+                    <div class="result-details">
+                        <p><strong>Fecha:</strong> ${timestamp}</p>
+                        <p><strong>Tipo:</strong> ${testType}</p>
+                        <p><strong>Estado:</strong> Completado</p>
+                        <p><strong>Health Score:</strong> ${healthScore}/100</p>
+                    `;
+
+            if (data.summary) {
+                if (data.summary.critical_issues && data.summary.critical_issues.length > 0) {
+                    html += `<p><strong>Issues:</strong> ${data.summary.critical_issues.length} detectados</p>`;
+                }
+                if (data.summary.recommendations && data.summary.recommendations.length > 0) {
+                    html += `<p><strong>Recomendaciones:</strong> ${data.summary.recommendations.length} generadas</p>`;
+                }
+            }
+
+            html += `</div></div>`;
+
+            // Insertar al principio
+            resultsDiv.innerHTML = html + resultsDiv.innerHTML;
+
+            // Mantener solo los últimos 6 resultados
+            const cards = resultsDiv.querySelectorAll('.result-card');
+            if (cards.length > 6) {
+                for (let i = 6; i < cards.length; i++) {
+                    cards[i].remove();
+                }
+            }
+        }
+
+        function updateChartTimeRange(range) {
+            // Actualizar botones activos
+            document.querySelectorAll('.chart-control').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            // Simular actualización de datos según el rango
+            console.log(`Actualizando gráfico para rango: ${range}`);
+        }
+
+        function updateResultsChart(type) {
+            // Simular actualización de datos según el tipo
+            const newData = {
+                'scalability': [94, 85, 78, 92],
+                'coordination': [88, 92, 85, 89],
+                'optimization': [87, 83, 91, 86],
+                'communication': [92, 89, 94, 91]
+            };
+
+            if (newData[type]) {
+                testResultsData.datasets[0].data = newData[type];
+                testResultsChart.update();
+            }
+        }
+
+        function showCustomConfig() {
+            const configPanel = document.getElementById('config-panel');
+            configPanel.style.display = configPanel.style.display === 'none' ? 'block' : 'none';
+        }
+
+        async function saveConfiguration() {
+            const config = {
+                max_concurrent_users: parseInt(document.getElementById('max-users').value),
+                max_agents: parseInt(document.getElementById('max-agents').value),
+                test_timeout: parseInt(document.getElementById('test-timeout').value),
+                performance_baseline: {
+                    response_time_p95: parseInt(document.getElementById('response-threshold').value)
+                }
+            };
+
+            try {
+                const response = await fetch('http://localhost:8004/configure', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(config)
+                });
+
+                const result = await response.json();
+
+                if (result.status === 'configured') {
+                    showNotification('✅ Configuración guardada exitosamente', 'success');
+                } else {
+                    showNotification('❌ Error guardando configuración', 'error');
+                }
+            } catch (error) {
+                showNotification('❌ Error de conexión: ' + error.message, 'error');
+            }
+        }
+
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            notification.className = `status-item status-${type === 'success' ? 'success' : 'error'}`;
+            notification.style.position = 'fixed';
+            notification.style.top = '20px';
+            notification.style.left = '50%';
+            notification.style.transform = 'translateX(-50%)';
+            notification.style.zIndex = '10000';
+            notification.style.minWidth = '300px';
+            notification.style.backdropFilter = 'blur(10px)';
+            
+            notification.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check-circle' : 'times-circle'} status-icon"></i>
+                <div><strong>${message}</strong></div>
+            `;
+
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+
+        // WebSocket para métricas en tiempo real
+        function initWebSocket() {
+            const ws = new WebSocket('ws://localhost:8004/ws/metrics');
+            
+            ws.onopen = function() {
+                console.log('WebSocket conectado');
+                document.getElementById('websocket-status').className = 'status-dot status-online';
+            };
+
+            ws.onmessage = function(event) {
+                const data = JSON.parse(event.data);
+                updatePerformanceMetrics(data.metrics);
+            };
+
+            ws.onclose = function() {
+                console.log('WebSocket desconectado');
+                document.getElementById('websocket-status').className = 'status-dot status-offline';
+                
+                // Intentar reconectar después de 5 segundos
+                setTimeout(initWebSocket, 5000);
+            };
+
+            ws.onerror = function(error) {
+                console.error('Error de WebSocket:', error);
+                document.getElementById('websocket-status').className = 'status-dot status-offline';
+            };
+        }
+
+        // Inicializar todo cuando se carga la página
+        window.onload = function() {
+            initCharts();
+            initWebSocket();
+            
+            // Simular algunos datos iniciales
+            setTimeout(() => {
+                const mockMetrics = {
+                    system: {
+                        cpu_percent: Math.random() * 60 + 20,
+                        memory_percent: Math.random() * 40 + 40,
+                        memory_available_gb: 14.2,
+                        disk_percent: 34.5,
+                        disk_free_gb: 125.6
+                    },
+                    process: {
+                        memory_rss_mb: 1024.5,
+                        memory_vms_mb: 2048.0,
+                        cpu_percent: Math.random() * 40 + 20,
+                        num_threads: 12
+                    },
+                    testing: {
+                        active_tests: 0,
+                        test_results_count: 15
+                    }
+                };
+                updatePerformanceMetrics(mockMetrics);
+            }, 1000);
+        };
+
+        // Simular estado del sistema
+        setInterval(() => {
+            // Simular cambios aleatorios en el estado
+            const statuses = ['api-status', 'websocket-status', 'database-status', 'monitoring-status'];
+            const status = document.getElementById(statuses[Math.floor(Math.random() * statuses.length)]);
+            
+            // Pequeña animación para mostrar que está funcionando
+            status.style.transform = 'scale(1.2)';
+            setTimeout(() => {
+                status.style.transform = 'scale(1)';
+            }, 200);
+        }, 10000);
+    </script>
+</body>
+</html>
