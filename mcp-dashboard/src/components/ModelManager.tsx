@@ -20,6 +20,18 @@ export const ModelManager: React.FC = () => {
   const [pullModelName, setPullModelName] = useState<string>('');
   const [pulling, setPulling] = useState<boolean>(false);
   
+  // Credentials state
+  const [credentials, setCredentials] = useState<Record<string, { is_set: boolean; masked_val: string }>>({});
+  const [credForm, setCredForm] = useState({
+    openrouter_api_key: '',
+    openai_api_key: '',
+    zhipu_api_key: '',
+    moonshot_api_key: '',
+    minimax_api_key: '',
+    google_maps_api_key: ''
+  });
+  const [savingCreds, setSavingCreds] = useState<boolean>(false);
+
   // Modal / Form state for adding custom model
   const [showAddModal, setShowAddModal] = useState<boolean>(false);
   const [formData, setFormData] = useState({
@@ -30,6 +42,49 @@ export const ModelManager: React.FC = () => {
     api_key: '',
     context_window: 128000
   });
+
+  const fetchCredentials = async () => {
+    try {
+      const res = await fetch('http://localhost:8001/api/system/credentials');
+      if (res.ok) {
+        const data = await res.json();
+        setCredentials(data.credentials || {});
+      }
+    } catch (err) {
+      console.error('Error fetching credentials:', err);
+    }
+  };
+
+  const handleSaveCredentials = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSavingCreds(true);
+    try {
+      const res = await fetch('http://localhost:8001/api/system/credentials', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(credForm)
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert(data.message);
+        fetchCredentials();
+        setCredForm({
+          openrouter_api_key: '',
+          openai_api_key: '',
+          zhipu_api_key: '',
+          moonshot_api_key: '',
+          minimax_api_key: '',
+          google_maps_api_key: ''
+        });
+      } else {
+        alert('Error al guardar credenciales');
+      }
+    } catch (err) {
+      alert('Error de conexión con el servidor');
+    } finally {
+      setSavingCreds(false);
+    }
+  };
 
   const fetchModels = async () => {
     setLoading(true);
@@ -49,6 +104,7 @@ export const ModelManager: React.FC = () => {
 
   useEffect(() => {
     fetchModels();
+    fetchCredentials();
   }, []);
 
   const handleAddModel = async (e: React.FormEvent) => {
@@ -138,6 +194,112 @@ export const ModelManager: React.FC = () => {
             Añadir Nueva API / Modelo
           </button>
         </div>
+      </div>
+
+      {/* Gestor de Credenciales Globales y Secretos (.env) */}
+      <div className="bg-gray-800/80 backdrop-blur border border-gray-700/80 rounded-xl p-5 mb-8">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-lg font-semibold flex items-center gap-2 text-amber-400">
+            <Key className="w-5 h-5" />
+            Gestor de Credenciales Globales (.env)
+          </h2>
+          <span className="text-xs bg-amber-500/20 text-amber-300 border border-amber-500/30 px-3 py-1 rounded-full font-medium">
+            Seguridad Encriptada
+          </span>
+        </div>
+        <p className="text-xs text-gray-400 mb-4">
+          Guarda y aplica tus claves API privadas directamente en el servidor. Los valores actuales se muestran enmascarados.
+        </p>
+
+        <form onSubmit={handleSaveCredentials} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div>
+            <label className="block text-xs font-medium text-gray-300 mb-1">
+              OpenRouter API Key {credentials.OPENROUTER_API_KEY?.is_set && <span className="text-emerald-400">✓</span>}
+            </label>
+            <input
+              type="password"
+              placeholder={credentials.OPENROUTER_API_KEY?.masked_val || "sk-or-v1-..."}
+              value={credForm.openrouter_api_key}
+              onChange={(e) => setCredForm({ ...credForm, openrouter_api_key: e.target.value })}
+              className="w-full bg-gray-900 border border-gray-700 text-white rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:border-amber-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium text-gray-300 mb-1">
+              OpenAI API Key {credentials.OPENAI_API_KEY?.is_set && <span className="text-emerald-400">✓</span>}
+            </label>
+            <input
+              type="password"
+              placeholder={credentials.OPENAI_API_KEY?.masked_val || "sk-..."}
+              value={credForm.openai_api_key}
+              onChange={(e) => setCredForm({ ...credForm, openai_api_key: e.target.value })}
+              className="w-full bg-gray-900 border border-gray-700 text-white rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:border-amber-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium text-gray-300 mb-1">
+              Zhipu GLM API Key {credentials.ZHIPU_API_KEY?.is_set && <span className="text-emerald-400">✓</span>}
+            </label>
+            <input
+              type="password"
+              placeholder={credentials.ZHIPU_API_KEY?.masked_val || "zhipu-key-..."}
+              value={credForm.zhipu_api_key}
+              onChange={(e) => setCredForm({ ...credForm, zhipu_api_key: e.target.value })}
+              className="w-full bg-gray-900 border border-gray-700 text-white rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:border-amber-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium text-gray-300 mb-1">
+              Moonshot Kimi API Key {credentials.MOONSHOT_API_KEY?.is_set && <span className="text-emerald-400">✓</span>}
+            </label>
+            <input
+              type="password"
+              placeholder={credentials.MOONSHOT_API_KEY?.masked_val || "moonshot-key-..."}
+              value={credForm.moonshot_api_key}
+              onChange={(e) => setCredForm({ ...credForm, moonshot_api_key: e.target.value })}
+              className="w-full bg-gray-900 border border-gray-700 text-white rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:border-amber-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium text-gray-300 mb-1">
+              MiniMax API Key {credentials.MINIMAX_API_KEY?.is_set && <span className="text-emerald-400">✓</span>}
+            </label>
+            <input
+              type="password"
+              placeholder={credentials.MINIMAX_API_KEY?.masked_val || "minimax-key-..."}
+              value={credForm.minimax_api_key}
+              onChange={(e) => setCredForm({ ...credForm, minimax_api_key: e.target.value })}
+              className="w-full bg-gray-900 border border-gray-700 text-white rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:border-amber-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium text-gray-300 mb-1">
+              Google Maps API Key {credentials.GOOGLE_MAPS_API_KEY?.is_set && <span className="text-emerald-400">✓</span>}
+            </label>
+            <input
+              type="password"
+              placeholder={credentials.GOOGLE_MAPS_API_KEY?.masked_val || "AIzaSy..."}
+              value={credForm.google_maps_api_key}
+              onChange={(e) => setCredForm({ ...credForm, google_maps_api_key: e.target.value })}
+              className="w-full bg-gray-900 border border-gray-700 text-white rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:border-amber-500"
+            />
+          </div>
+
+          <div className="md:col-span-2 lg:col-span-3 flex justify-end pt-2">
+            <button
+              type="submit"
+              disabled={savingCreds}
+              className="px-5 py-2 bg-amber-600 hover:bg-amber-500 text-white rounded-lg text-xs font-bold transition disabled:opacity-50"
+            >
+              {savingCreds ? 'Guardando...' : 'Aplicar y Guardar Credenciales (.env)'}
+            </button>
+          </div>
+        </form>
       </div>
 
       {/* Local AI Autodiscovery Section */}

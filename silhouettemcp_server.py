@@ -1177,6 +1177,80 @@ async def pull_local_model(req: PullModelRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+# ==================== GESTOR DE CREDENCIALES GLOBAL Y SECRETOS (.ENV) ====================
+
+class UpdateCredentialsRequest(BaseModel):
+    openrouter_api_key: Optional[str] = None
+    openai_api_key: Optional[str] = None
+    zhipu_api_key: Optional[str] = None
+    moonshot_api_key: Optional[str] = None
+    minimax_api_key: Optional[str] = None
+    google_maps_api_key: Optional[str] = None
+
+@app.get("/api/system/credentials")
+async def get_credentials():
+    """Lee las credenciales del archivo .env y las devuelve enmascaradas."""
+    env_path = Path(".env")
+    if not env_path.exists():
+        env_path = Path(".env.template")
+    
+    credentials = {}
+    if env_path.exists():
+        with open(env_path, "r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if "=" in line and not line.startswith("#"):
+                    key, val = line.split("=", 1)
+                    val = val.strip('"').strip("'")
+                    # Enmascarar valor para seguridad
+                    masked = (val[:6] + "..." + val[-4:]) if len(val) > 12 else ("*" * len(val))
+                    credentials[key] = {
+                        "is_set": bool(val and not val.startswith("[INSERTAR")),
+                        "masked_val": masked
+                    }
+    return {"credentials": credentials}
+
+@app.post("/api/system/credentials")
+async def update_credentials(req: UpdateCredentialsRequest):
+    """Actualiza o crea el archivo .env con las nuevas claves proporcionadas desde la UI."""
+    try:
+        env_path = Path(".env")
+        existing_env = {}
+        if env_path.exists():
+            with open(env_path, "r", encoding="utf-8") as f:
+                for line in f:
+                    line = line.strip()
+                    if "=" in line and not line.startswith("#"):
+                        k, v = line.split("=", 1)
+                        existing_env[k] = v.strip('"').strip("'")
+
+        # Actualizar valores
+        updates = req.dict(exclude_none=True)
+        key_map = {
+            "openrouter_api_key": "OPENROUTER_API_KEY",
+            "openai_api_key": "OPENAI_API_KEY",
+            "zhipu_api_key": "ZHIPU_API_KEY",
+            "moonshot_api_key": "MOONSHOT_API_KEY",
+            "minimax_api_key": "MINIMAX_API_KEY",
+            "google_maps_api_key": "GOOGLE_MAPS_API_KEY"
+        }
+
+        for field, env_var in key_map.items():
+            val = updates.get(field)
+            if val and not val.startswith("*"):
+                existing_env[env_var] = val
+
+        # Escribir de nuevo en .env
+        with open(env_path, "w", encoding="utf-8") as f:
+            f.write("# Archivo .env generado automáticamente por SilhouetteMCP Server\n")
+            for k, v in existing_env.items():
+                f.write(f'{k}="{v}"\n')
+
+        return {"success": True, "message": "Credenciales guardadas y aplicadas exitosamente en .env"}
+    except Exception as e:
+        logger.error(f"Error al guardar credenciales: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 # ==================== MAIN ====================
 
 if __name__ == "__main__":
