@@ -44,7 +44,12 @@ interface LogEntry {
   source: string;
 }
 
+import { OmniSearchModal } from './OmniSearchModal';
+import { ModelManager } from './ModelManager';
+import { Settings } from 'lucide-react';
+
 const Dashboard = () => {
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'settings'>('dashboard');
   const [metrics, setMetrics] = useState<SystemMetrics[]>([]);
   const [agents, setAgents] = useState<AgentStatus[]>([]);
   const [logs, setLogs] = useState<LogEntry[]>([]);
@@ -140,24 +145,52 @@ const Dashboard = () => {
     <div className="min-h-screen bg-gray-50 p-6">
       <OmniSearchModal />
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">MCP Server Superior Dashboard</h1>
-        <div className="flex items-center space-x-4">
-          <div className="flex items-center space-x-2">
-            <div className={`w-3 h-3 rounded-full ${
-              systemStatus === 'healthy' ? 'bg-green-500' :
-              systemStatus === 'warning' ? 'bg-yellow-500' : 'bg-red-500'
-            }`}></div>
-            <span className="text-sm font-medium text-gray-600">
-              Sistema {systemStatus === 'healthy' ? 'Saludable' : 
-                      systemStatus === 'warning' ? 'Con Advertencias' : 'Con Errores'}
+      <div className="mb-8 flex justify-between items-end">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">MCP Server Superior Dashboard</h1>
+          <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2">
+              <div className={`w-3 h-3 rounded-full ${
+                systemStatus === 'healthy' ? 'bg-green-500' :
+                systemStatus === 'warning' ? 'bg-yellow-500' : 'bg-red-500'
+              }`}></div>
+              <span className="text-sm font-medium text-gray-600">
+                Sistema {systemStatus === 'healthy' ? 'Saludable' : 
+                        systemStatus === 'warning' ? 'Con Advertencias' : 'Con Errores'}
+              </span>
+            </div>
+            <span className="text-sm text-gray-500">
+              {new Date().toLocaleString('es-ES')}
             </span>
           </div>
-          <span className="text-sm text-gray-500">
-            {new Date().toLocaleString('es-ES')}
-          </span>
+        </div>
+
+        {/* Pestañas de Navegación */}
+        <div className="flex gap-2 bg-gray-200 p-1.5 rounded-xl">
+          <button
+            onClick={() => setActiveTab('dashboard')}
+            className={`px-4 py-2 rounded-lg text-sm font-semibold transition ${
+              activeTab === 'dashboard' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            Dashboard
+          </button>
+          <button
+            onClick={() => setActiveTab('settings')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition ${
+              activeTab === 'settings' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            <Settings className="w-4 h-4" />
+            Configuraciones (Modelos e IA)
+          </button>
         </div>
       </div>
+
+      {activeTab === 'settings' ? (
+        <ModelManager />
+      ) : (
+        <>
 
       {/* Métricas principales */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -313,7 +346,10 @@ const Dashboard = () => {
             </div>
           ))}
         </div>
+        </div>
       </div>
+      </>
+      )}
     </div>
   );
 };

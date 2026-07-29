@@ -1087,6 +1087,96 @@ async def list_backups(admin=Depends(verify_admin)):
         logger.error(f"Error listando backups: {e}")
         raise HTTPException(status_code=500, detail=f"Error listando backups: {str(e)}")
 
+# ==================== ENDPOINTS DE MODELOS DE IA Y LOCAL AI ====================
+
+class RegisterModelRequest(BaseModel):
+    name: str
+    provider: str
+    model_name: Optional[str] = None
+    base_url: Optional[str] = None
+    api_key: Optional[str] = None
+    context_window: Optional[int] = 128000
+    is_local: Optional[bool] = False
+
+class PullModelRequest(BaseModel):
+    model_name: str
+
+@app.get("/api/system/models")
+async def get_all_models():
+    """Retorna todos los modelos registrados (Cloud + Locales Autodescubiertos)."""
+    try:
+        from backend.app.core.dynamic_model_registry import model_registry
+        from backend.app.core.local_ai_service import local_ai_service
+        
+        static_models = model_registry.get_all_models()
+        local_discovered = await local_ai_service.discover_all()
+        
+        # Inyectar modelos locales autodescubiertos a la lista
+        discovered_models = []
+        for loc in local_discovered:
+            for m_name in loc["models"]:
+                discovered_models.append({
+                    "id": f"{loc['provider']}-{m_name}",
+                    "name": f"{m_name} ({loc['provider'].upper()} Local)",
+                    "provider": loc["provider"],
+                    "model_name": m_name,
+                    "base_url": loc["base_url"],
+                    "is_local": True,
+                    "status": "online"
+                })
+        
+        return {
+            "cloud_and_custom_models": static_models,
+            "local_autodiscovered_models": discovered_models,
+            "total_count": len(static_models) + len(discovered_models)
+        }
+    except Exception as e:
+        logger.error(f"Error al obtener modelos: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/system/models")
+async def register_custom_model(req: RegisterModelRequest):
+    """Registra un nuevo modelo dinámicamente (Zhipu, Moonshot, OpenRouter, Custom API)."""
+    try:
+        from backend.app.core.dynamic_model_registry import model_registry
+        new_model = model_registry.register_model(req.dict())
+        return {"success": True, "model": new_model}
+    except Exception as e:
+        logger.error(f"Error al registrar modelo: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.delete("/api/system/models/{model_id}")
+async def delete_custom_model(model_id: str):
+    """Elimina un modelo personalizado registrado."""
+    try:
+        from backend.app.core.dynamic_model_registry import model_registry
+        removed = model_registry.remove_model(model_id)
+        if not removed:
+            raise HTTPException(status_code=404, detail="Modelo no encontrado")
+        return {"success": True, "message": f"Modelo {model_id} eliminado."}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/system/local-ai")
+async def check_local_ai():
+    """Comprueba el estado de Ollama (11434) y LM Studio (1234)."""
+    try:
+        from backend.app.core.local_ai_service import local_ai_service
+        discovered = await local_ai_service.discover_all()
+        return {"local_services": discovered}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/system/local-ai/pull")
+async def pull_local_model(req: PullModelRequest):
+    """Descarga e instala un modelo local usando Ollama."""
+    try:
+        from backend.app.core.local_ai_service import local_ai_service
+        result = await local_ai_service.pull_ollama_model(req.model_name)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 # ==================== MAIN ====================
 
 if __name__ == "__main__":

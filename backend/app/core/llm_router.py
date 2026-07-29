@@ -16,8 +16,9 @@ import shutil
 import subprocess
 import re
 
-from ..core.config import settings
-
+import litellm
+from .dynamic_model_registry import model_registry
+from .local_ai_service import local_ai_service
 
 logger = logging.getLogger(__name__)
 
@@ -508,7 +509,54 @@ class LLMRouter:
         elif provider in [LLMProvider.CLI_GEMINI, LLMProvider.CLI_CLAUDE_CODE, LLMProvider.CLI_CODEX]:
             return await self._call_cli_provider(provider, prompt, request_id)
         else:
+            # Check dynamic model registry
+            dyn_model = model_registry.get_model(str(provider))
+            if dyn_model:
+                return await self._call_dynamic_litellm(dyn_model, prompt, temperature, max_tokens, request_id)
             raise ValueError(f"Proveedor no soportado: {provider}")
+
+    async def _call_dynamic_litellm(
+        self,
+        model_info: Dict[str, Any],
+        prompt: str,
+        temperature: float,
+        max_tokens: int,
+        request_id: str
+    ) -> str:
+        """Call any cloud or local model using LiteLLM dynamically."""
+        provider_name = model_info.get("id", "dynamic_model")
+        model_name = model_info.get("model_name", provider_name)
+        base_url = model_info.get("base_url")
+        api_key = model_info.get("api_key") or os.environ.get(model_info.get("api_key_env", ""), "")
+
+        kwargs = {
+            "model": model_name,
+            "messages": [{"role": "user", "content": prompt}],
+            "temperature": temperature,
+            "max_tokens": max_tokens
+        }
+
+        if base_url:
+            kwargs["api_base"] = base_url
+        if api_key:
+            kwargs["api_key"] = api_key
+        if model_info.get("extra_params"):
+            kwargs.update(model_info["extra_params"])
+
+        try:
+            self.request_logger.info(f"[{request_id}] Calling dynamic LiteLLM model: {model_name} (base_url: {base_url})")
+            response = await litellm.acompletion(**kwargs)
+            content = response.choices[0].message.content
+            
+            self.stats[provider_name]["calls"] += 1
+            self.stats[provider_name]["last_success"] = datetime.utcnow().isoformat()
+            if hasattr(response, "usage") and response.usage:
+                self.stats[provider_name]["total_tokens"] += getattr(response.usage, "total_tokens", len(content) // 4)
+
+            return content
+        except Exception as e:
+            self.error_logger.error(f"[{request_id}] Error calling dynamic model {model_name}: {e}")
+            raise
     
     async def _call_cli_provider(self, provider: LLMProvider, prompt: str, request_id: str) -> str:
         """Call a local CLI tool as an LLM provider."""
