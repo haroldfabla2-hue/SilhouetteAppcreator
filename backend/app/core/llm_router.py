@@ -43,6 +43,7 @@ class LLMProvider(str, Enum):
     CLI_GEMINI = "cli_gemini"
     CLI_CLAUDE_CODE = "cli_claude_code"
     CLI_CODEX = "cli_codex"
+    CLI_ANTIGRAVITY = "cli_antigravity"
     FALLBACK_LOCAL = "fallback_local"
 
 class CLIExecutor:
@@ -52,10 +53,11 @@ class CLIExecutor:
     async def execute_cli(command: str, prompt: str) -> str:
         """Executes a CLI command asynchronously, injecting the prompt."""
         try:
-            # Prepare arguments. Note: Claude code requires `-p` for prompt, gemini might take it directly
             cmd_args = [command]
             if command == 'claude':
                 cmd_args.extend(["-p", prompt])
+            elif command in ['agy', 'antigravity']:
+                cmd_args.extend(["exec", prompt])
             elif command == 'gemini':
                 cmd_args.append(prompt)
             elif command == 'codex':
@@ -569,6 +571,8 @@ class LLMRouter:
             cmd = "claude"
         elif provider == LLMProvider.CLI_CODEX:
             cmd = "codex"
+        elif provider == LLMProvider.CLI_ANTIGRAVITY:
+            cmd = "agy" if shutil.which("agy") else "antigravity"
             
         try:
             self.request_logger.info(f"[{request_id}] Executing CLI fallback: {cmd}")

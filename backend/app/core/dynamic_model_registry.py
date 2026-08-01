@@ -61,6 +61,38 @@ DEFAULT_MODELS = [
         "api_key_env": "OPENROUTER_API_KEY",
         "context_window": 200000,
         "is_local": False
+    },
+    {
+        "id": "cli_claude_code",
+        "name": "Claude Code (Local CLI App)",
+        "provider": "cli",
+        "model_name": "claude",
+        "is_local": True,
+        "context_window": 200000
+    },
+    {
+        "id": "cli_antigravity",
+        "name": "Antigravity AGY (Local CLI App)",
+        "provider": "cli",
+        "model_name": "agy",
+        "is_local": True,
+        "context_window": 200000
+    },
+    {
+        "id": "cli_gemini",
+        "name": "Gemini CLI (Local CLI App)",
+        "provider": "cli",
+        "model_name": "gemini",
+        "is_local": True,
+        "context_window": 1000000
+    },
+    {
+        "id": "cli_codex",
+        "name": "OpenAI Codex (Local CLI App)",
+        "provider": "cli",
+        "model_name": "codex",
+        "is_local": True,
+        "context_window": 128000
     }
 ]
 
