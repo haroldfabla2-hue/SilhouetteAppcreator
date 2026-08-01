@@ -14,6 +14,7 @@ from collections import defaultdict, deque
 import random
 import shutil
 import os
+import re
 try:
     from ..core.config import settings
 except Exception:
@@ -515,7 +516,7 @@ class LLMRouter:
             return await self._call_openrouter_model(
                 "grok_4_3", prompt, temperature, max_tokens, request_id
             )
-        elif provider in [LLMProvider.CLI_GEMINI, LLMProvider.CLI_CLAUDE_CODE, LLMProvider.CLI_CODEX]:
+        elif provider in [LLMProvider.CLI_GEMINI, LLMProvider.CLI_CLAUDE_CODE, LLMProvider.CLI_CODEX, LLMProvider.CLI_ANTIGRAVITY]:
             return await self._call_cli_provider(provider, prompt, request_id)
         else:
             # Check dynamic model registry
@@ -573,13 +574,14 @@ class LLMRouter:
         
         cmd = None
         if provider == LLMProvider.CLI_GEMINI:
-            cmd = "gemini"
+            cmd = shutil.which("gemini") or "gemini"
         elif provider == LLMProvider.CLI_CLAUDE_CODE:
-            cmd = "claude"
+            cmd = shutil.which("claude") or r"C:\Users\USER\AppData\Roaming\npm\claude.cmd"
         elif provider == LLMProvider.CLI_CODEX:
-            cmd = "codex"
+            cmd = shutil.which("codex") or r"C:\Users\USER\AppData\Roaming\npm\codex.cmd"
         elif provider == LLMProvider.CLI_ANTIGRAVITY:
-            cmd = "agy" if shutil.which("agy") else "antigravity"
+            antigravity_bin = r"C:\Users\USER\AppData\Local\Programs\Antigravity\Antigravity.exe"
+            cmd = shutil.which("agy") or shutil.which("antigravity") or (antigravity_bin if os.path.exists(antigravity_bin) else "antigravity")
             
         try:
             self.request_logger.info(f"[{request_id}] Executing CLI fallback: {cmd}")
