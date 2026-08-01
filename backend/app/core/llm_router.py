@@ -13,8 +13,14 @@ from datetime import datetime, timedelta
 from collections import defaultdict, deque
 import random
 import shutil
-import subprocess
-import re
+import os
+try:
+    from ..core.config import settings
+except Exception:
+    class DummySettings:
+        MINIMAX_API_KEY = os.environ.get("MINIMAX_API_KEY", "")
+        OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY", "")
+    settings = DummySettings()
 
 import litellm
 from .dynamic_model_registry import model_registry
@@ -53,7 +59,8 @@ class CLIExecutor:
     async def execute_cli(command: str, prompt: str) -> str:
         """Executes a CLI command asynchronously, injecting the prompt."""
         try:
-            cmd_args = [command]
+            resolved_cmd = shutil.which(command) or command
+            cmd_args = [resolved_cmd]
             if command == 'claude':
                 cmd_args.extend(["-p", prompt])
             elif command in ['agy', 'antigravity']:
