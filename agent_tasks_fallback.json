@@ -1,0 +1,2090 @@
+{
+  "conv_dae85dfa5fb5": {
+    "status": "RUNNING",
+    "payload": {
+      "objetivo": "Verificar el estado del sistema y la base de datos PostgreSQL"
+    },
+    "updated_at": "2026-08-01T19:22:36.823265"
+  },
+  "conv_c23b11c1416a": {
+    "status": "RUNNING",
+    "payload": {
+      "objetivo": "Inicializar entorno de Sandbox Docker si est\u00e1 disponible"
+    },
+    "updated_at": "2026-08-01T19:22:36.839421"
+  },
+  "conv_ded8c898e6eb": {
+    "status": "RUNNING",
+    "payload": {
+      "objetivo": "Verificar el estado del sistema y la base de datos PostgreSQL"
+    },
+    "updated_at": "2026-08-01T19:23:17.463998"
+  },
+  "conv_4f95818d7fc5": {
+    "status": "RUNNING",
+    "payload": {
+      "objetivo": "Inicializar entorno de Sandbox Docker si est\u00e1 disponible"
+    },
+    "updated_at": "2026-08-01T19:23:17.474095"
+  },
+  "conv_255ec2e88a06": {
+    "status": "RUNNING",
+    "payload": {
+      "objetivo": "Verificar el estado del sistema y la base de datos PostgreSQL"
+    },
+    "updated_at": "2026-08-01T19:24:10.658840"
+  },
+  "conv_fade10d74c3e": {
+    "status": "RUNNING",
+    "payload": {
+      "objetivo": "Inicializar entorno de Sandbox Docker si est\u00e1 disponible"
+    },
+    "updated_at": "2026-08-01T19:24:10.669162"
+  },
+  "conv_8f45192b1120": {
+    "status": "COMPLETED",
+    "payload": {
+      "conversation_id": "conv_8f45192b1120",
+      "status": "completed",
+      "result": {
+        "synthesis": "",
+        "approved": true,
+        "quality_score": 0.6283333333333333,
+        "recommendations": [
+          "Mejorar calidad de resultados - score de validaci\u00f3n bajo",
+          "Optimizar trayectoria de ejecuci\u00f3n - demasiados pasos fallidos"
+        ],
+        "conversation_id": "conv_8f45192b1120"
+      },
+      "phases": {
+        "reasoning": {
+          "intent_analysis": {
+            "type": "general",
+            "complexity": "medium",
+            "main_intent": "Verificar el estado del sistema y la base de datos PostgreSQL",
+            "llm_analysis": "# [Modo Fallback - Respuesta Local]\n\n## An\u00e1lisis del Prompt\n----------------------------------------\nAnaliza la siguiente solicitud del usuario y extrae la intenci\u00f3n principal:\n\nObjetivo: Verificar el estado del sistema y la base de datos PostgreSQL\nContexto: {\n  \"source\": \"auto_startup\",\n  \"priority\": \"high\"\n}\n\nProporciona:\n1. Intenci\u00f3n principal\n2. Subtareas identificadas\n3. Requisitos de informaci\u00f3n\n4. Criterios de \u00e9xito\n\n\n## Informaci\u00f3n del Sistema\n- **Estado**: Todos los proveedores de LLM est\u00e1n temporalmente indisponibles\n- **Modelo Solicitado**: claude3_5\n- **Timestamp**: 2026-08-01T19:25:02.553942\n\n## Recomendaciones Inmediatas\n\n### 1. Verificar Configuraci\u00f3n de API Keys\n```bash\n# Verificar variables de entorno\necho $MINIMAX_API_KEY\necho $OPENROUTER_API_KEY\n\n# Si est\u00e1n vac\u00edas, configurar en .env:\nMINIMAX_API_KEY=tu_clave_minimax\nOPENROUTER_API_KEY=tu_clave_openrouter\n```\n\n### 2. Verificar Conectividad de Red\n- Verificar que los servicios est\u00e9n ejecut\u00e1ndose\n- Comprobar conectividad a internet\n- Validar endpoints de API\n\n### 3. Soluciones Alternativas\n- Usar proveedores alternativos (Azure OpenAI, AWS Bedrock)\n- Configurar modelos locales (Ollama, LM Studio)\n- Implementar caching de respuestas\n\n### 4. Pr\u00f3ximos Pasos\n1. Revisar logs del sistema: `docker-compose logs backend`\n2. Verificar l\u00edmites de rate limiting\n3. Contactar soporte t\u00e9cnico si persiste\n\n---\n*Esta es una respuesta generada localmente. Configure API keys para respuestas reales.*\n",
+            "requires_tools": false,
+            "requires_memory": false
+          },
+          "strategy": {
+            "approach": "breadth_first",
+            "agents_needed": 2,
+            "parallel": true,
+            "tools": [
+              "python_executor",
+              "search_engine"
+            ],
+            "task_type": "general",
+            "reasoning_model": "claude3_5",
+            "planning_model": "llama70b",
+            "budget": {
+              "tokens_per_agent": 4000,
+              "time_seconds": 120,
+              "max_iterations": 3
+            },
+            "criteria": {
+              "success_threshold": 0.85,
+              "quality_gate": true
+            }
+          },
+          "enriched_context": {
+            "objetivo": "Verificar el estado del sistema y la base de datos PostgreSQL",
+            "contexto_original": {
+              "source": "auto_startup",
+              "priority": "high"
+            },
+            "historial_resumido": "Sin historial previo",
+            "strategy": {
+              "approach": "breadth_first",
+              "agents_needed": 2,
+              "parallel": true,
+              "tools": [
+                "python_executor",
+                "search_engine"
+              ],
+              "task_type": "general",
+              "reasoning_model": "claude3_5",
+              "planning_model": "llama70b",
+              "budget": {
+                "tokens_per_agent": 4000,
+                "time_seconds": 120,
+                "max_iterations": 3
+              },
+              "criteria": {
+                "success_threshold": 0.85,
+                "quality_gate": true
+              }
+            },
+            "timestamp": "2026-08-01T19:25:02.554243",
+            "memory_hints": [],
+            "constraints": {
+              "max_time": null,
+              "max_cost": null,
+              "required_quality": 0.8,
+              "language": "es"
+            }
+          },
+          "recommendations": {
+            "agents_needed": 2,
+            "parallel_execution": true,
+            "tools_suggested": [
+              "python_executor",
+              "search_engine"
+            ]
+          }
+        },
+        "planning": {
+          "plan": {
+            "plan_id": "plan_ec787c22f0c5",
+            "objetivo": "Verificar el estado del sistema y la base de datos PostgreSQL",
+            "approach": "breadth_first",
+            "subtasks": [
+              {
+                "task_id": "task_1a4677a3",
+                "name": "Preparaci\u00f3n de contexto",
+                "description": "Validar requisitos y preparar entorno",
+                "type": "preparation",
+                "dependencies": [],
+                "tools": [
+                  "search_engine"
+                ],
+                "priority": 1,
+                "estimated_time": 10
+              },
+              {
+                "task_id": "task_f37f04cb",
+                "name": "Exploraci\u00f3n 1: python_executor",
+                "description": "Ejecutar python_executor en paso 1",
+                "type": "exploration",
+                "dependencies": [],
+                "tools": [
+                  "python_executor"
+                ],
+                "priority": 2,
+                "estimated_time": 60,
+                "parallelizable": true
+              },
+              {
+                "task_id": "task_ccddef87",
+                "name": "Exploraci\u00f3n 2: search_engine",
+                "description": "Ejecutar search_engine en paso 2",
+                "type": "exploration",
+                "dependencies": [],
+                "tools": [
+                  "search_engine"
+                ],
+                "priority": 2,
+                "estimated_time": 60,
+                "parallelizable": true
+              },
+              {
+                "task_id": "task_e5c5e517",
+                "name": "S\u00edntesis de resultados",
+                "description": "Consolidar resultados y generar respuesta final",
+                "type": "synthesis",
+                "dependencies": [
+                  "task_f37f04cb",
+                  "task_ccddef87"
+                ],
+                "tools": [
+                  "python_executor"
+                ],
+                "priority": 99,
+                "estimated_time": 20
+              }
+            ],
+            "llm_suggestions": "# [Modo Fallback - Respuesta Local]\n\n## An\u00e1lisis del Prompt\n----------------------------------------\nDescomp\u00f3n la siguiente tarea en subtareas ejecutables:\n\nObjetivo: Verificar el estado del sistema y la base de datos PostgreSQL\nEstrategia: breadth_first\nAgentes disponibles: 2\nHerramientas: python_executor, search_engine\n\nProporciona un plan estructurado con:\n1. Subtareas claras y accionables\n2. Dependencias entre tareas\n3. Criterios de \u00e9xito por subtarea\n4. Herramientas necesarias\n\n\n## Informaci\u00f3n del Sistema\n- **Estado**: Todos los proveedores de LLM est\u00e1n temporalmente indisponibles\n- **Modelo Solicitado**: llama70b\n- **Timestamp**: 2026-08-01T19:25:13.488045\n\n## Recomendaciones Inmediatas\n\n### 1. Verificar Configuraci\u00f3n de API Keys\n```bash\n# Verificar variables de entorno\necho $MINIMAX_API_KEY\necho $OPENROUTER_API_KEY\n\n# Si est\u00e1n vac\u00edas, configurar en .env:\nMINIMAX_API_KEY=tu_clave_minimax\nOPENROUTER_API_KEY=tu_clave_openrouter\n```\n\n### 2. Verificar Conectividad de Red\n- Verificar que los servicios est\u00e9n ejecut\u00e1ndose\n- Comprobar conectividad a internet\n- Validar endpoints de API\n\n### 3. Soluciones Alternativas\n- Usar proveedores alternativos (Azure OpenAI, AWS Bedrock)\n- Configurar modelos locales (Ollama, LM Studio)\n- Implementar caching de respuestas\n\n### 4. Pr\u00f3ximos Pasos\n1. Revisar logs del sistema: `docker-compose logs backend`\n2. Verificar l\u00edmites de rate limiting\n3. Contactar soporte t\u00e9cnico si persiste\n\n---\n*Esta es una respuesta generada localmente. Configure API keys para respuestas reales.*\n",
+            "execution_order": [
+              "task_1a4677a3",
+              "task_f37f04cb",
+              "task_ccddef87",
+              "task_e5c5e517"
+            ]
+          },
+          "tool_assignments": {
+            "task_1a4677a3": [
+              "search_engine"
+            ],
+            "task_f37f04cb": [
+              "python_executor"
+            ],
+            "task_ccddef87": [
+              "search_engine"
+            ],
+            "task_e5c5e517": [
+              "python_executor"
+            ]
+          },
+          "delegations": [
+            {
+              "task_id": "task_f37f04cb",
+              "objetivo": "Ejecutar python_executor en paso 1",
+              "tool_map": [
+                "python_executor"
+              ],
+              "limites": {
+                "tokens": 4000,
+                "time_seconds": 120,
+                "tools_max": 3
+              },
+              "criterio_exito": "Completar: Exploraci\u00f3n 1: python_executor",
+              "dependencies": [],
+              "parallelizable": true
+            },
+            {
+              "task_id": "task_ccddef87",
+              "objetivo": "Ejecutar search_engine en paso 2",
+              "tool_map": [
+                "search_engine"
+              ],
+              "limites": {
+                "tokens": 4000,
+                "time_seconds": 120,
+                "tools_max": 3
+              },
+              "criterio_exito": "Completar: Exploraci\u00f3n 2: search_engine",
+              "dependencies": [],
+              "parallelizable": true
+            }
+          ],
+          "execution_graph": {
+            "nodes": {
+              "task_1a4677a3": {
+                "name": "Preparaci\u00f3n de contexto",
+                "type": "preparation",
+                "priority": 1
+              },
+              "task_f37f04cb": {
+                "name": "Exploraci\u00f3n 1: python_executor",
+                "type": "exploration",
+                "priority": 2
+              },
+              "task_ccddef87": {
+                "name": "Exploraci\u00f3n 2: search_engine",
+                "type": "exploration",
+                "priority": 2
+              },
+              "task_e5c5e517": {
+                "name": "S\u00edntesis de resultados",
+                "type": "synthesis",
+                "priority": 99
+              }
+            },
+            "edges": [
+              {
+                "from": "task_f37f04cb",
+                "to": "task_e5c5e517"
+              },
+              {
+                "from": "task_ccddef87",
+                "to": "task_e5c5e517"
+              }
+            ]
+          },
+          "estimated_time": 90,
+          "parallelizable_tasks": [
+            "task_f37f04cb",
+            "task_ccddef87"
+          ]
+        },
+        "execution": {
+          "executions": [
+            {
+              "task_id": "task_f37f04cb",
+              "executor": "executor_code",
+              "status": "done",
+              "result": {
+                "execution_summary": {
+                  "tools_executed": 1,
+                  "successful": 1,
+                  "failed": 0,
+                  "total_time_ms": 12420.483
+                },
+                "results": {
+                  "tools_results": {
+                    "python_executor": {
+                      "tool": "python_executor",
+                      "success": true,
+                      "result": {
+                        "code": "# [Modo Fallback - Respuesta Local]\n\n## An\u00e1lisis del Prompt\n----------------------------------------\nGenera c\u00f3digo Python para cumplir el siguiente objetivo:\n            \nObjetivo: Ejecutar python_executor en paso 1\n\nRequisitos:\n- C\u00f3digo limpio y bien documentado\n- Manejo adecuado de errores\n- Incluye imports necesarios\n- C\u00f3digo ejecutable directamente\n\nProporciona solo el c\u00f3digo Python sin explicaciones adicionales.\n\n\n## Informaci\u00f3n del Sistema\n- **Estado**: Todos los proveedores de LLM est\u00e1n temporalmente indisponibles\n- **Modelo Solicitado**: claude3_5\n- **Timestamp**: 2026-08-01T19:25:25.700680\n\n## Recomendaciones Inmediatas\n\n### 1. Verificar Configuraci\u00f3n de API Keys\n```bash\n# Verificar variables de entorno\necho $MINIMAX_API_KEY\necho $OPENROUTER_API_KEY\n\n# Si est\u00e1n vac\u00edas, configurar en .env:\nMINIMAX_API_KEY=tu_clave_minimax\nOPENROUTER_API_KEY=tu_clave_openrouter\n```\n\n### 2. Verificar Conectividad de Red\n- Verificar que los servicios est\u00e9n ejecut\u00e1ndose\n- Comprobar conectividad a internet\n- Validar endpoints de API\n\n### 3. Soluciones Alternativas\n- Usar proveedores alternativos (Azure OpenAI, AWS Bedrock)\n- Configurar modelos locales (Ollama, LM Studio)\n- Implementar caching de respuestas\n\n### 4. Pr\u00f3ximos Pasos\n1. Revisar logs del sistema: `docker-compose logs backend`\n2. Verificar l\u00edmites de rate limiting\n3. Contactar soporte t\u00e9cnico si persiste\n\n---\n*Esta es una respuesta generada localmente. Configure API keys para respuestas reales.*\n",
+                        "executed": true,
+                        "output": "",
+                        "error": "Python was not found; run without arguments to install from the Microsoft Store, or disable this shortcut from Settings > Apps > Advanced app settings > App execution aliases.\r\n",
+                        "exit_code": 9009,
+                        "success": false
+                      },
+                      "time_ms": 12420.483
+                    }
+                  },
+                  "combined_output": "",
+                  "success_rate": 1.0
+                },
+                "artifacts": [
+                  "artifact://executor_code/python_executor/result.json"
+                ],
+                "evidence": [
+                  {
+                    "tool": "python_executor",
+                    "timestamp": "2026-08-01T19:25:25.910514",
+                    "summary": "Ejecutado exitosamente en 12420ms",
+                    "reference": "evidence://python_executor"
+                  }
+                ]
+              },
+              "execution_time_ms": 12420.838,
+              "errors": null
+            },
+            {
+              "task_id": "task_ccddef87",
+              "executor": "executor_general",
+              "status": "done",
+              "result": {
+                "execution_summary": {
+                  "tools_executed": 1,
+                  "successful": 1,
+                  "failed": 0,
+                  "total_time_ms": 0.0
+                },
+                "results": {
+                  "tools_results": {
+                    "search_engine": {
+                      "tool": "search_engine",
+                      "success": true,
+                      "result": {
+                        "query": "Ejecutar search_engine en paso 2",
+                        "searched": true,
+                        "data": {
+                          "mock_search": "Resultados simulados para: Ejecutar search_engine en paso 2"
+                        },
+                        "success": true
+                      },
+                      "time_ms": 0.0
+                    }
+                  },
+                  "combined_output": "",
+                  "success_rate": 1.0
+                },
+                "artifacts": [
+                  "artifact://executor_general/search_engine/result.json"
+                ],
+                "evidence": [
+                  {
+                    "tool": "search_engine",
+                    "timestamp": "2026-08-01T19:25:13.518905",
+                    "summary": "Ejecutado exitosamente en 0ms",
+                    "reference": "evidence://search_engine"
+                  }
+                ]
+              },
+              "execution_time_ms": 28.874,
+              "errors": null
+            }
+          ],
+          "num_parallel": 2,
+          "num_sequential": 0,
+          "total_executions": 2
+        },
+        "verification": {
+          "validation_report": {
+            "eval_type": "llm_judge_fallback",
+            "criterios_evaluated": [
+              "precision",
+              "completeness",
+              "consistency"
+            ],
+            "scores": {
+              "precision": {
+                "score": 0.7,
+                "threshold": 0.8,
+                "passed": false,
+                "justification": "Evaluaci\u00f3n heur\u00edstica autom\u00e1tica para: precision"
+              },
+              "completeness": {
+                "score": 0.8,
+                "threshold": 0.75,
+                "passed": true,
+                "justification": "Evaluaci\u00f3n heur\u00edstica autom\u00e1tica para: completeness"
+              },
+              "consistency": {
+                "score": 0.8,
+                "threshold": 0.85,
+                "passed": false,
+                "justification": "Evaluaci\u00f3n heur\u00edstica autom\u00e1tica para: consistency"
+              }
+            },
+            "overall_score": 0.7666666666666666,
+            "error": "'VerifierAgent' object has no attribute '_process_llm_evaluation_response'"
+          },
+          "trajectory_score": {
+            "score": 0.15,
+            "efficiency": 0.0,
+            "convergence": 0.3,
+            "num_steps": 2,
+            "successful_steps": 0
+          },
+          "consistency_check": {
+            "score": 1.0,
+            "checks": {
+              "structure_valid": true,
+              "no_contradictions": true,
+              "references_valid": true
+            },
+            "passed": true
+          },
+          "approved": true,
+          "recommendations": [
+            "Mejorar calidad de resultados - score de validaci\u00f3n bajo",
+            "Optimizar trayectoria de ejecuci\u00f3n - demasiados pasos fallidos"
+          ],
+          "quality_metrics": {
+            "overall_score": 0.6283333333333333,
+            "validation_score": 0.7666666666666666,
+            "trajectory_quality": 0.15,
+            "consistency_score": 1.0
+          }
+        }
+      },
+      "metadata": {
+        "agents_used": 5,
+        "total_time_ms": 45246.23441696167,
+        "quality_score": 0.6283333333333333
+      }
+    },
+    "updated_at": "2026-08-01T19:25:36.782229"
+  },
+  "conv_d0e0dce92cd8": {
+    "status": "COMPLETED",
+    "payload": {
+      "conversation_id": "conv_d0e0dce92cd8",
+      "status": "completed",
+      "result": {
+        "synthesis": "",
+        "approved": true,
+        "quality_score": 0.6283333333333333,
+        "recommendations": [
+          "Mejorar calidad de resultados - score de validaci\u00f3n bajo",
+          "Optimizar trayectoria de ejecuci\u00f3n - demasiados pasos fallidos"
+        ],
+        "conversation_id": "conv_d0e0dce92cd8"
+      },
+      "phases": {
+        "reasoning": {
+          "intent_analysis": {
+            "type": "general",
+            "complexity": "medium",
+            "main_intent": "Inicializar entorno de Sandbox Docker si est\u00e1 disponible",
+            "llm_analysis": "# [Modo Fallback - Respuesta Local]\n\n## An\u00e1lisis del Prompt\n----------------------------------------\nAnaliza la siguiente solicitud del usuario y extrae la intenci\u00f3n principal:\n\nObjetivo: Inicializar entorno de Sandbox Docker si est\u00e1 disponible\nContexto: {\n  \"source\": \"auto_startup\",\n  \"priority\": \"high\"\n}\n\nProporciona:\n1. Intenci\u00f3n principal\n2. Subtareas identificadas\n3. Requisitos de informaci\u00f3n\n4. Criterios de \u00e9xito\n\n\n## Informaci\u00f3n del Sistema\n- **Estado**: Todos los proveedores de LLM est\u00e1n temporalmente indisponibles\n- **Modelo Solicitado**: claude3_5\n- **Timestamp**: 2026-08-01T19:25:02.760773\n\n## Recomendaciones Inmediatas\n\n### 1. Verificar Configuraci\u00f3n de API Keys\n```bash\n# Verificar variables de entorno\necho $MINIMAX_API_KEY\necho $OPENROUTER_API_KEY\n\n# Si est\u00e1n vac\u00edas, configurar en .env:\nMINIMAX_API_KEY=tu_clave_minimax\nOPENROUTER_API_KEY=tu_clave_openrouter\n```\n\n### 2. Verificar Conectividad de Red\n- Verificar que los servicios est\u00e9n ejecut\u00e1ndose\n- Comprobar conectividad a internet\n- Validar endpoints de API\n\n### 3. Soluciones Alternativas\n- Usar proveedores alternativos (Azure OpenAI, AWS Bedrock)\n- Configurar modelos locales (Ollama, LM Studio)\n- Implementar caching de respuestas\n\n### 4. Pr\u00f3ximos Pasos\n1. Revisar logs del sistema: `docker-compose logs backend`\n2. Verificar l\u00edmites de rate limiting\n3. Contactar soporte t\u00e9cnico si persiste\n\n---\n*Esta es una respuesta generada localmente. Configure API keys para respuestas reales.*\n",
+            "requires_tools": false,
+            "requires_memory": false
+          },
+          "strategy": {
+            "approach": "breadth_first",
+            "agents_needed": 2,
+            "parallel": true,
+            "tools": [
+              "python_executor",
+              "search_engine"
+            ],
+            "task_type": "general",
+            "reasoning_model": "claude3_5",
+            "planning_model": "llama70b",
+            "budget": {
+              "tokens_per_agent": 4000,
+              "time_seconds": 120,
+              "max_iterations": 3
+            },
+            "criteria": {
+              "success_threshold": 0.85,
+              "quality_gate": true
+            }
+          },
+          "enriched_context": {
+            "objetivo": "Inicializar entorno de Sandbox Docker si est\u00e1 disponible",
+            "contexto_original": {
+              "source": "auto_startup",
+              "priority": "high"
+            },
+            "historial_resumido": "Sin historial previo",
+            "strategy": {
+              "approach": "breadth_first",
+              "agents_needed": 2,
+              "parallel": true,
+              "tools": [
+                "python_executor",
+                "search_engine"
+              ],
+              "task_type": "general",
+              "reasoning_model": "claude3_5",
+              "planning_model": "llama70b",
+              "budget": {
+                "tokens_per_agent": 4000,
+                "time_seconds": 120,
+                "max_iterations": 3
+              },
+              "criteria": {
+                "success_threshold": 0.85,
+                "quality_gate": true
+              }
+            },
+            "timestamp": "2026-08-01T19:25:02.761340",
+            "memory_hints": [],
+            "constraints": {
+              "max_time": null,
+              "max_cost": null,
+              "required_quality": 0.8,
+              "language": "es"
+            }
+          },
+          "recommendations": {
+            "agents_needed": 2,
+            "parallel_execution": true,
+            "tools_suggested": [
+              "python_executor",
+              "search_engine"
+            ]
+          }
+        },
+        "planning": {
+          "plan": {
+            "plan_id": "plan_c04cbf67d655",
+            "objetivo": "Inicializar entorno de Sandbox Docker si est\u00e1 disponible",
+            "approach": "breadth_first",
+            "subtasks": [
+              {
+                "task_id": "task_6646eb6d",
+                "name": "Preparaci\u00f3n de contexto",
+                "description": "Validar requisitos y preparar entorno",
+                "type": "preparation",
+                "dependencies": [],
+                "tools": [
+                  "search_engine"
+                ],
+                "priority": 1,
+                "estimated_time": 10
+              },
+              {
+                "task_id": "task_9fef1574",
+                "name": "Exploraci\u00f3n 1: python_executor",
+                "description": "Ejecutar python_executor en paso 1",
+                "type": "exploration",
+                "dependencies": [],
+                "tools": [
+                  "python_executor"
+                ],
+                "priority": 2,
+                "estimated_time": 60,
+                "parallelizable": true
+              },
+              {
+                "task_id": "task_43e3dba1",
+                "name": "Exploraci\u00f3n 2: search_engine",
+                "description": "Ejecutar search_engine en paso 2",
+                "type": "exploration",
+                "dependencies": [],
+                "tools": [
+                  "search_engine"
+                ],
+                "priority": 2,
+                "estimated_time": 60,
+                "parallelizable": true
+              },
+              {
+                "task_id": "task_c5ba8c61",
+                "name": "S\u00edntesis de resultados",
+                "description": "Consolidar resultados y generar respuesta final",
+                "type": "synthesis",
+                "dependencies": [
+                  "task_9fef1574",
+                  "task_43e3dba1"
+                ],
+                "tools": [
+                  "python_executor"
+                ],
+                "priority": 99,
+                "estimated_time": 20
+              }
+            ],
+            "llm_suggestions": "# [Modo Fallback - Respuesta Local]\n\n## An\u00e1lisis del Prompt\n----------------------------------------\nDescomp\u00f3n la siguiente tarea en subtareas ejecutables:\n\nObjetivo: Inicializar entorno de Sandbox Docker si est\u00e1 disponible\nEstrategia: breadth_first\nAgentes disponibles: 2\nHerramientas: python_executor, search_engine\n\nProporciona un plan estructurado con:\n1. Subtareas claras y accionables\n2. Dependencias entre tareas\n3. Criterios de \u00e9xito por subtarea\n4. Herramientas necesarias\n\n\n## Informaci\u00f3n del Sistema\n- **Estado**: Todos los proveedores de LLM est\u00e1n temporalmente indisponibles\n- **Modelo Solicitado**: llama70b\n- **Timestamp**: 2026-08-01T19:25:13.856271\n\n## Recomendaciones Inmediatas\n\n### 1. Verificar Configuraci\u00f3n de API Keys\n```bash\n# Verificar variables de entorno\necho $MINIMAX_API_KEY\necho $OPENROUTER_API_KEY\n\n# Si est\u00e1n vac\u00edas, configurar en .env:\nMINIMAX_API_KEY=tu_clave_minimax\nOPENROUTER_API_KEY=tu_clave_openrouter\n```\n\n### 2. Verificar Conectividad de Red\n- Verificar que los servicios est\u00e9n ejecut\u00e1ndose\n- Comprobar conectividad a internet\n- Validar endpoints de API\n\n### 3. Soluciones Alternativas\n- Usar proveedores alternativos (Azure OpenAI, AWS Bedrock)\n- Configurar modelos locales (Ollama, LM Studio)\n- Implementar caching de respuestas\n\n### 4. Pr\u00f3ximos Pasos\n1. Revisar logs del sistema: `docker-compose logs backend`\n2. Verificar l\u00edmites de rate limiting\n3. Contactar soporte t\u00e9cnico si persiste\n\n---\n*Esta es una respuesta generada localmente. Configure API keys para respuestas reales.*\n",
+            "execution_order": [
+              "task_6646eb6d",
+              "task_9fef1574",
+              "task_43e3dba1",
+              "task_c5ba8c61"
+            ]
+          },
+          "tool_assignments": {
+            "task_6646eb6d": [
+              "search_engine"
+            ],
+            "task_9fef1574": [
+              "python_executor"
+            ],
+            "task_43e3dba1": [
+              "search_engine"
+            ],
+            "task_c5ba8c61": [
+              "python_executor"
+            ]
+          },
+          "delegations": [
+            {
+              "task_id": "task_9fef1574",
+              "objetivo": "Ejecutar python_executor en paso 1",
+              "tool_map": [
+                "python_executor"
+              ],
+              "limites": {
+                "tokens": 4000,
+                "time_seconds": 120,
+                "tools_max": 3
+              },
+              "criterio_exito": "Completar: Exploraci\u00f3n 1: python_executor",
+              "dependencies": [],
+              "parallelizable": true
+            },
+            {
+              "task_id": "task_43e3dba1",
+              "objetivo": "Ejecutar search_engine en paso 2",
+              "tool_map": [
+                "search_engine"
+              ],
+              "limites": {
+                "tokens": 4000,
+                "time_seconds": 120,
+                "tools_max": 3
+              },
+              "criterio_exito": "Completar: Exploraci\u00f3n 2: search_engine",
+              "dependencies": [],
+              "parallelizable": true
+            }
+          ],
+          "execution_graph": {
+            "nodes": {
+              "task_6646eb6d": {
+                "name": "Preparaci\u00f3n de contexto",
+                "type": "preparation",
+                "priority": 1
+              },
+              "task_9fef1574": {
+                "name": "Exploraci\u00f3n 1: python_executor",
+                "type": "exploration",
+                "priority": 2
+              },
+              "task_43e3dba1": {
+                "name": "Exploraci\u00f3n 2: search_engine",
+                "type": "exploration",
+                "priority": 2
+              },
+              "task_c5ba8c61": {
+                "name": "S\u00edntesis de resultados",
+                "type": "synthesis",
+                "priority": 99
+              }
+            },
+            "edges": [
+              {
+                "from": "task_9fef1574",
+                "to": "task_c5ba8c61"
+              },
+              {
+                "from": "task_43e3dba1",
+                "to": "task_c5ba8c61"
+              }
+            ]
+          },
+          "estimated_time": 90,
+          "parallelizable_tasks": [
+            "task_9fef1574",
+            "task_43e3dba1"
+          ]
+        },
+        "execution": {
+          "executions": [
+            {
+              "task_id": "task_9fef1574",
+              "executor": "executor_code",
+              "status": "done",
+              "result": {
+                "execution_summary": {
+                  "tools_executed": 1,
+                  "successful": 1,
+                  "failed": 0,
+                  "total_time_ms": 11761.143
+                },
+                "results": {
+                  "tools_results": {
+                    "python_executor": {
+                      "tool": "python_executor",
+                      "success": true,
+                      "result": {
+                        "code": "# [Modo Fallback - Respuesta Local]\n\n## An\u00e1lisis del Prompt\n----------------------------------------\nGenera c\u00f3digo Python para cumplir el siguiente objetivo:\n            \nObjetivo: Ejecutar python_executor en paso 1\n\nRequisitos:\n- C\u00f3digo limpio y bien documentado\n- Manejo adecuado de errores\n- Incluye imports necesarios\n- C\u00f3digo ejecutable directamente\n\nProporciona solo el c\u00f3digo Python sin explicaciones adicionales.\n\n\n## Informaci\u00f3n del Sistema\n- **Estado**: Todos los proveedores de LLM est\u00e1n temporalmente indisponibles\n- **Modelo Solicitado**: claude3_5\n- **Timestamp**: 2026-08-01T19:25:25.312605\n\n## Recomendaciones Inmediatas\n\n### 1. Verificar Configuraci\u00f3n de API Keys\n```bash\n# Verificar variables de entorno\necho $MINIMAX_API_KEY\necho $OPENROUTER_API_KEY\n\n# Si est\u00e1n vac\u00edas, configurar en .env:\nMINIMAX_API_KEY=tu_clave_minimax\nOPENROUTER_API_KEY=tu_clave_openrouter\n```\n\n### 2. Verificar Conectividad de Red\n- Verificar que los servicios est\u00e9n ejecut\u00e1ndose\n- Comprobar conectividad a internet\n- Validar endpoints de API\n\n### 3. Soluciones Alternativas\n- Usar proveedores alternativos (Azure OpenAI, AWS Bedrock)\n- Configurar modelos locales (Ollama, LM Studio)\n- Implementar caching de respuestas\n\n### 4. Pr\u00f3ximos Pasos\n1. Revisar logs del sistema: `docker-compose logs backend`\n2. Verificar l\u00edmites de rate limiting\n3. Contactar soporte t\u00e9cnico si persiste\n\n---\n*Esta es una respuesta generada localmente. Configure API keys para respuestas reales.*\n",
+                        "executed": true,
+                        "output": "",
+                        "error": "Python was not found; run without arguments to install from the Microsoft Store, or disable this shortcut from Settings > Apps > Advanced app settings > App execution aliases.\r\n",
+                        "exit_code": 9009,
+                        "success": false
+                      },
+                      "time_ms": 11761.143
+                    }
+                  },
+                  "combined_output": "",
+                  "success_rate": 1.0
+                },
+                "artifacts": [
+                  "artifact://executor_code/python_executor/result.json"
+                ],
+                "evidence": [
+                  {
+                    "tool": "python_executor",
+                    "timestamp": "2026-08-01T19:25:25.620320",
+                    "summary": "Ejecutado exitosamente en 11761ms",
+                    "reference": "evidence://python_executor"
+                  }
+                ]
+              },
+              "execution_time_ms": 11763.247,
+              "errors": null
+            },
+            {
+              "task_id": "task_43e3dba1",
+              "executor": "executor_general",
+              "status": "done",
+              "result": {
+                "execution_summary": {
+                  "tools_executed": 1,
+                  "successful": 1,
+                  "failed": 0,
+                  "total_time_ms": 0.0
+                },
+                "results": {
+                  "tools_results": {
+                    "search_engine": {
+                      "tool": "search_engine",
+                      "success": true,
+                      "result": {
+                        "query": "Ejecutar search_engine en paso 2",
+                        "searched": true,
+                        "data": {
+                          "mock_search": "Resultados simulados para: Ejecutar search_engine en paso 2"
+                        },
+                        "success": true
+                      },
+                      "time_ms": 0.0
+                    }
+                  },
+                  "combined_output": "",
+                  "success_rate": 1.0
+                },
+                "artifacts": [
+                  "artifact://executor_general/search_engine/result.json"
+                ],
+                "evidence": [
+                  {
+                    "tool": "search_engine",
+                    "timestamp": "2026-08-01T19:25:13.892110",
+                    "summary": "Ejecutado exitosamente en 0ms",
+                    "reference": "evidence://search_engine"
+                  }
+                ]
+              },
+              "execution_time_ms": 34.016,
+              "errors": null
+            }
+          ],
+          "num_parallel": 2,
+          "num_sequential": 0,
+          "total_executions": 2
+        },
+        "verification": {
+          "validation_report": {
+            "eval_type": "llm_judge_fallback",
+            "criterios_evaluated": [
+              "precision",
+              "completeness",
+              "consistency"
+            ],
+            "scores": {
+              "precision": {
+                "score": 0.7,
+                "threshold": 0.8,
+                "passed": false,
+                "justification": "Evaluaci\u00f3n heur\u00edstica autom\u00e1tica para: precision"
+              },
+              "completeness": {
+                "score": 0.8,
+                "threshold": 0.75,
+                "passed": true,
+                "justification": "Evaluaci\u00f3n heur\u00edstica autom\u00e1tica para: completeness"
+              },
+              "consistency": {
+                "score": 0.8,
+                "threshold": 0.85,
+                "passed": false,
+                "justification": "Evaluaci\u00f3n heur\u00edstica autom\u00e1tica para: consistency"
+              }
+            },
+            "overall_score": 0.7666666666666666,
+            "error": "'VerifierAgent' object has no attribute '_process_llm_evaluation_response'"
+          },
+          "trajectory_score": {
+            "score": 0.15,
+            "efficiency": 0.0,
+            "convergence": 0.3,
+            "num_steps": 2,
+            "successful_steps": 0
+          },
+          "consistency_check": {
+            "score": 1.0,
+            "checks": {
+              "structure_valid": true,
+              "no_contradictions": true,
+              "references_valid": true
+            },
+            "passed": true
+          },
+          "approved": true,
+          "recommendations": [
+            "Mejorar calidad de resultados - score de validaci\u00f3n bajo",
+            "Optimizar trayectoria de ejecuci\u00f3n - demasiados pasos fallidos"
+          ],
+          "quality_metrics": {
+            "overall_score": 0.6283333333333333,
+            "validation_score": 0.7666666666666666,
+            "trajectory_quality": 0.15,
+            "consistency_score": 1.0
+          }
+        }
+      },
+      "metadata": {
+        "agents_used": 5,
+        "total_time_ms": 45217.27728843689,
+        "quality_score": 0.6283333333333333
+      }
+    },
+    "updated_at": "2026-08-01T19:25:36.766219"
+  },
+  "conv_3641b839a24e": {
+    "status": "COMPLETED",
+    "payload": {
+      "conversation_id": "conv_3641b839a24e",
+      "status": "completed",
+      "result": {
+        "synthesis": "",
+        "approved": true,
+        "quality_score": 0.6283333333333333,
+        "recommendations": [
+          "Mejorar calidad de resultados - score de validaci\u00f3n bajo",
+          "Optimizar trayectoria de ejecuci\u00f3n - demasiados pasos fallidos"
+        ],
+        "conversation_id": "conv_3641b839a24e"
+      },
+      "phases": {
+        "reasoning": {
+          "intent_analysis": {
+            "type": "general",
+            "complexity": "medium",
+            "main_intent": "Crea una API en Python con FastAPI para gestionar una lista de tareas (To-Do List)",
+            "llm_analysis": "# [Modo Fallback - Respuesta Local]\n\n## An\u00e1lisis del Prompt\n----------------------------------------\nAnaliza la siguiente solicitud del usuario y extrae la intenci\u00f3n principal:\n\nObjetivo: Crea una API en Python con FastAPI para gestionar una lista de tareas (To-Do List)\nContexto: {}\n\nProporciona:\n1. Intenci\u00f3n principal\n2. Subtareas identificadas\n3. Requisitos de informaci\u00f3n\n4. Criterios de \u00e9xito\n\n\n## Informaci\u00f3n del Sistema\n- **Estado**: Todos los proveedores de LLM est\u00e1n temporalmente indisponibles\n- **Modelo Solicitado**: claude3_5\n- **Timestamp**: 2026-08-01T19:25:07.050518\n\n## Recomendaciones Inmediatas\n\n### 1. Verificar Configuraci\u00f3n de API Keys\n```bash\n# Verificar variables de entorno\necho $MINIMAX_API_KEY\necho $OPENROUTER_API_KEY\n\n# Si est\u00e1n vac\u00edas, configurar en .env:\nMINIMAX_API_KEY=tu_clave_minimax\nOPENROUTER_API_KEY=tu_clave_openrouter\n```\n\n### 2. Verificar Conectividad de Red\n- Verificar que los servicios est\u00e9n ejecut\u00e1ndose\n- Comprobar conectividad a internet\n- Validar endpoints de API\n\n### 3. Soluciones Alternativas\n- Usar proveedores alternativos (Azure OpenAI, AWS Bedrock)\n- Configurar modelos locales (Ollama, LM Studio)\n- Implementar caching de respuestas\n\n### 4. Pr\u00f3ximos Pasos\n1. Revisar logs del sistema: `docker-compose logs backend`\n2. Verificar l\u00edmites de rate limiting\n3. Contactar soporte t\u00e9cnico si persiste\n\n---\n*Esta es una respuesta generada localmente. Configure API keys para respuestas reales.*\n",
+            "requires_tools": false,
+            "requires_memory": false
+          },
+          "strategy": {
+            "approach": "breadth_first",
+            "agents_needed": 2,
+            "parallel": true,
+            "tools": [
+              "python_executor",
+              "search_engine"
+            ],
+            "task_type": "general",
+            "reasoning_model": "claude3_5",
+            "planning_model": "llama70b",
+            "budget": {
+              "tokens_per_agent": 4000,
+              "time_seconds": 120,
+              "max_iterations": 3
+            },
+            "criteria": {
+              "success_threshold": 0.85,
+              "quality_gate": true
+            }
+          },
+          "enriched_context": {
+            "objetivo": "Crea una API en Python con FastAPI para gestionar una lista de tareas (To-Do List)",
+            "contexto_original": {},
+            "historial_resumido": "Sin historial previo",
+            "strategy": {
+              "approach": "breadth_first",
+              "agents_needed": 2,
+              "parallel": true,
+              "tools": [
+                "python_executor",
+                "search_engine"
+              ],
+              "task_type": "general",
+              "reasoning_model": "claude3_5",
+              "planning_model": "llama70b",
+              "budget": {
+                "tokens_per_agent": 4000,
+                "time_seconds": 120,
+                "max_iterations": 3
+              },
+              "criteria": {
+                "success_threshold": 0.85,
+                "quality_gate": true
+              }
+            },
+            "timestamp": "2026-08-01T19:25:07.051504",
+            "memory_hints": [],
+            "constraints": {
+              "max_time": null,
+              "max_cost": null,
+              "required_quality": 0.8,
+              "language": "es"
+            }
+          },
+          "recommendations": {
+            "agents_needed": 2,
+            "parallel_execution": true,
+            "tools_suggested": [
+              "python_executor",
+              "search_engine"
+            ]
+          }
+        },
+        "planning": {
+          "plan": {
+            "plan_id": "plan_a90c7717b1dc",
+            "objetivo": "Crea una API en Python con FastAPI para gestionar una lista de tareas (To-Do List)",
+            "approach": "breadth_first",
+            "subtasks": [
+              {
+                "task_id": "task_3892b8f2",
+                "name": "Preparaci\u00f3n de contexto",
+                "description": "Validar requisitos y preparar entorno",
+                "type": "preparation",
+                "dependencies": [],
+                "tools": [
+                  "search_engine"
+                ],
+                "priority": 1,
+                "estimated_time": 10
+              },
+              {
+                "task_id": "task_806a209b",
+                "name": "Exploraci\u00f3n 1: python_executor",
+                "description": "Ejecutar python_executor en paso 1",
+                "type": "exploration",
+                "dependencies": [],
+                "tools": [
+                  "python_executor"
+                ],
+                "priority": 2,
+                "estimated_time": 60,
+                "parallelizable": true
+              },
+              {
+                "task_id": "task_8a1d07be",
+                "name": "Exploraci\u00f3n 2: search_engine",
+                "description": "Ejecutar search_engine en paso 2",
+                "type": "exploration",
+                "dependencies": [],
+                "tools": [
+                  "search_engine"
+                ],
+                "priority": 2,
+                "estimated_time": 60,
+                "parallelizable": true
+              },
+              {
+                "task_id": "task_7e1e0a36",
+                "name": "S\u00edntesis de resultados",
+                "description": "Consolidar resultados y generar respuesta final",
+                "type": "synthesis",
+                "dependencies": [
+                  "task_806a209b",
+                  "task_8a1d07be"
+                ],
+                "tools": [
+                  "python_executor"
+                ],
+                "priority": 99,
+                "estimated_time": 20
+              }
+            ],
+            "llm_suggestions": "# [Modo Fallback - Respuesta Local]\n\n## An\u00e1lisis del Prompt\n----------------------------------------\nDescomp\u00f3n la siguiente tarea en subtareas ejecutables:\n\nObjetivo: Crea una API en Python con FastAPI para gestionar una lista de tareas (To-Do List)\nEstrategia: breadth_first\nAgentes disponibles: 2\nHerramientas: python_executor, search_engine\n\nProporciona un plan estructurado con:\n1. Subtareas claras y accionables\n2. Dependencias entre tareas\n3. Criterios de \u00e9xito por subtarea\n4. Herramientas necesarias\n\n\n## Informaci\u00f3n del Sistema\n- **Estado**: Todos los proveedores de LLM est\u00e1n temporalmente indisponibles\n- **Modelo Solicitado**: llama70b\n- **Timestamp**: 2026-08-01T19:25:17.903597\n\n## Recomendaciones Inmediatas\n\n### 1. Verificar Configuraci\u00f3n de API Keys\n```bash\n# Verificar variables de entorno\necho $MINIMAX_API_KEY\necho $OPENROUTER_API_KEY\n\n# Si est\u00e1n vac\u00edas, configurar en .env:\nMINIMAX_API_KEY=tu_clave_minimax\nOPENROUTER_API_KEY=tu_clave_openrouter\n```\n\n### 2. Verificar Conectividad de Red\n- Verificar que los servicios est\u00e9n ejecut\u00e1ndose\n- Comprobar conectividad a internet\n- Validar endpoints de API\n\n### 3. Soluciones Alternativas\n- Usar proveedores alternativos (Azure OpenAI, AWS Bedrock)\n- Configurar modelos locales (Ollama, LM Studio)\n- Implementar caching de respuestas\n\n### 4. Pr\u00f3ximos Pasos\n1. Revisar logs del sistema: `docker-compose logs backend`\n2. Verificar l\u00edmites de rate limiting\n3. Contactar soporte t\u00e9cnico si persiste\n\n---\n*Esta es una respuesta generada localmente. Configure API keys para respuestas reales.*\n",
+            "execution_order": [
+              "task_3892b8f2",
+              "task_806a209b",
+              "task_8a1d07be",
+              "task_7e1e0a36"
+            ]
+          },
+          "tool_assignments": {
+            "task_3892b8f2": [
+              "search_engine"
+            ],
+            "task_806a209b": [
+              "python_executor"
+            ],
+            "task_8a1d07be": [
+              "search_engine"
+            ],
+            "task_7e1e0a36": [
+              "python_executor"
+            ]
+          },
+          "delegations": [
+            {
+              "task_id": "task_806a209b",
+              "objetivo": "Ejecutar python_executor en paso 1",
+              "tool_map": [
+                "python_executor"
+              ],
+              "limites": {
+                "tokens": 4000,
+                "time_seconds": 120,
+                "tools_max": 3
+              },
+              "criterio_exito": "Completar: Exploraci\u00f3n 1: python_executor",
+              "dependencies": [],
+              "parallelizable": true
+            },
+            {
+              "task_id": "task_8a1d07be",
+              "objetivo": "Ejecutar search_engine en paso 2",
+              "tool_map": [
+                "search_engine"
+              ],
+              "limites": {
+                "tokens": 4000,
+                "time_seconds": 120,
+                "tools_max": 3
+              },
+              "criterio_exito": "Completar: Exploraci\u00f3n 2: search_engine",
+              "dependencies": [],
+              "parallelizable": true
+            }
+          ],
+          "execution_graph": {
+            "nodes": {
+              "task_3892b8f2": {
+                "name": "Preparaci\u00f3n de contexto",
+                "type": "preparation",
+                "priority": 1
+              },
+              "task_806a209b": {
+                "name": "Exploraci\u00f3n 1: python_executor",
+                "type": "exploration",
+                "priority": 2
+              },
+              "task_8a1d07be": {
+                "name": "Exploraci\u00f3n 2: search_engine",
+                "type": "exploration",
+                "priority": 2
+              },
+              "task_7e1e0a36": {
+                "name": "S\u00edntesis de resultados",
+                "type": "synthesis",
+                "priority": 99
+              }
+            },
+            "edges": [
+              {
+                "from": "task_806a209b",
+                "to": "task_7e1e0a36"
+              },
+              {
+                "from": "task_8a1d07be",
+                "to": "task_7e1e0a36"
+              }
+            ]
+          },
+          "estimated_time": 90,
+          "parallelizable_tasks": [
+            "task_806a209b",
+            "task_8a1d07be"
+          ]
+        },
+        "execution": {
+          "executions": [
+            {
+              "task_id": "task_806a209b",
+              "executor": "executor_code",
+              "status": "done",
+              "result": {
+                "execution_summary": {
+                  "tools_executed": 1,
+                  "successful": 1,
+                  "failed": 0,
+                  "total_time_ms": 10661.419
+                },
+                "results": {
+                  "tools_results": {
+                    "python_executor": {
+                      "tool": "python_executor",
+                      "success": true,
+                      "result": {
+                        "code": "# [Modo Fallback - Respuesta Local]\n\n## An\u00e1lisis del Prompt\n----------------------------------------\nGenera c\u00f3digo Python para cumplir el siguiente objetivo:\n            \nObjetivo: Ejecutar python_executor en paso 1\n\nRequisitos:\n- C\u00f3digo limpio y bien documentado\n- Manejo adecuado de errores\n- Incluye imports necesarios\n- C\u00f3digo ejecutable directamente\n\nProporciona solo el c\u00f3digo Python sin explicaciones adicionales.\n\n\n## Informaci\u00f3n del Sistema\n- **Estado**: Todos los proveedores de LLM est\u00e1n temporalmente indisponibles\n- **Modelo Solicitado**: claude3_5\n- **Timestamp**: 2026-08-01T19:25:28.310915\n\n## Recomendaciones Inmediatas\n\n### 1. Verificar Configuraci\u00f3n de API Keys\n```bash\n# Verificar variables de entorno\necho $MINIMAX_API_KEY\necho $OPENROUTER_API_KEY\n\n# Si est\u00e1n vac\u00edas, configurar en .env:\nMINIMAX_API_KEY=tu_clave_minimax\nOPENROUTER_API_KEY=tu_clave_openrouter\n```\n\n### 2. Verificar Conectividad de Red\n- Verificar que los servicios est\u00e9n ejecut\u00e1ndose\n- Comprobar conectividad a internet\n- Validar endpoints de API\n\n### 3. Soluciones Alternativas\n- Usar proveedores alternativos (Azure OpenAI, AWS Bedrock)\n- Configurar modelos locales (Ollama, LM Studio)\n- Implementar caching de respuestas\n\n### 4. Pr\u00f3ximos Pasos\n1. Revisar logs del sistema: `docker-compose logs backend`\n2. Verificar l\u00edmites de rate limiting\n3. Contactar soporte t\u00e9cnico si persiste\n\n---\n*Esta es una respuesta generada localmente. Configure API keys para respuestas reales.*\n",
+                        "executed": true,
+                        "output": "",
+                        "error": "Python was not found; run without arguments to install from the Microsoft Store, or disable this shortcut from Settings > Apps > Advanced app settings > App execution aliases.\r\n",
+                        "exit_code": 9009,
+                        "success": false
+                      },
+                      "time_ms": 10661.419
+                    }
+                  },
+                  "combined_output": "",
+                  "success_rate": 1.0
+                },
+                "artifacts": [
+                  "artifact://executor_code/python_executor/result.json"
+                ],
+                "evidence": [
+                  {
+                    "tool": "python_executor",
+                    "timestamp": "2026-08-01T19:25:28.567366",
+                    "summary": "Ejecutado exitosamente en 10661ms",
+                    "reference": "evidence://python_executor"
+                  }
+                ]
+              },
+              "execution_time_ms": 10663.563999999998,
+              "errors": null
+            },
+            {
+              "task_id": "task_8a1d07be",
+              "executor": "executor_general",
+              "status": "done",
+              "result": {
+                "execution_summary": {
+                  "tools_executed": 1,
+                  "successful": 1,
+                  "failed": 0,
+                  "total_time_ms": 0.0
+                },
+                "results": {
+                  "tools_results": {
+                    "search_engine": {
+                      "tool": "search_engine",
+                      "success": true,
+                      "result": {
+                        "query": "Ejecutar search_engine en paso 2",
+                        "searched": true,
+                        "data": {
+                          "mock_search": "Resultados simulados para: Ejecutar search_engine en paso 2"
+                        },
+                        "success": true
+                      },
+                      "time_ms": 0.0
+                    }
+                  },
+                  "combined_output": "",
+                  "success_rate": 1.0
+                },
+                "artifacts": [
+                  "artifact://executor_general/search_engine/result.json"
+                ],
+                "evidence": [
+                  {
+                    "tool": "search_engine",
+                    "timestamp": "2026-08-01T19:25:17.941266",
+                    "summary": "Ejecutado exitosamente en 0ms",
+                    "reference": "evidence://search_engine"
+                  }
+                ]
+              },
+              "execution_time_ms": 36.406,
+              "errors": null
+            }
+          ],
+          "num_parallel": 2,
+          "num_sequential": 0,
+          "total_executions": 2
+        },
+        "verification": {
+          "validation_report": {
+            "eval_type": "llm_judge_fallback",
+            "criterios_evaluated": [
+              "precision",
+              "completeness",
+              "consistency"
+            ],
+            "scores": {
+              "precision": {
+                "score": 0.7,
+                "threshold": 0.8,
+                "passed": false,
+                "justification": "Evaluaci\u00f3n heur\u00edstica autom\u00e1tica para: precision"
+              },
+              "completeness": {
+                "score": 0.8,
+                "threshold": 0.75,
+                "passed": true,
+                "justification": "Evaluaci\u00f3n heur\u00edstica autom\u00e1tica para: completeness"
+              },
+              "consistency": {
+                "score": 0.8,
+                "threshold": 0.85,
+                "passed": false,
+                "justification": "Evaluaci\u00f3n heur\u00edstica autom\u00e1tica para: consistency"
+              }
+            },
+            "overall_score": 0.7666666666666666,
+            "error": "'VerifierAgent' object has no attribute '_process_llm_evaluation_response'"
+          },
+          "trajectory_score": {
+            "score": 0.15,
+            "efficiency": 0.0,
+            "convergence": 0.3,
+            "num_steps": 2,
+            "successful_steps": 0
+          },
+          "consistency_check": {
+            "score": 1.0,
+            "checks": {
+              "structure_valid": true,
+              "no_contradictions": true,
+              "references_valid": true
+            },
+            "passed": true
+          },
+          "approved": true,
+          "recommendations": [
+            "Mejorar calidad de resultados - score de validaci\u00f3n bajo",
+            "Optimizar trayectoria de ejecuci\u00f3n - demasiados pasos fallidos"
+          ],
+          "quality_metrics": {
+            "overall_score": 0.6283333333333333,
+            "validation_score": 0.7666666666666666,
+            "trajectory_quality": 0.15,
+            "consistency_score": 1.0
+          }
+        }
+      },
+      "metadata": {
+        "agents_used": 5,
+        "total_time_ms": 35997.07841873169,
+        "quality_score": 0.6283333333333333
+      }
+    },
+    "updated_at": "2026-08-01T19:25:38.578476"
+  },
+  "conv_fee57cd46db7": {
+    "status": "COMPLETED",
+    "payload": {
+      "conversation_id": "conv_fee57cd46db7",
+      "status": "completed",
+      "result": {
+        "synthesis": "",
+        "approved": true,
+        "quality_score": 0.6283333333333333,
+        "recommendations": [
+          "Mejorar calidad de resultados - score de validaci\u00f3n bajo",
+          "Optimizar trayectoria de ejecuci\u00f3n - demasiados pasos fallidos"
+        ],
+        "conversation_id": "conv_fee57cd46db7"
+      },
+      "phases": {
+        "reasoning": {
+          "intent_analysis": {
+            "type": "general",
+            "complexity": "medium",
+            "main_intent": "Crea una API en Python con FastAPI para gestionar una lista de tareas (To-Do List)",
+            "llm_analysis": "# [Modo Fallback - Respuesta Local]\n\n## An\u00e1lisis del Prompt\n----------------------------------------\nAnaliza la siguiente solicitud del usuario y extrae la intenci\u00f3n principal:\n\nObjetivo: Crea una API en Python con FastAPI para gestionar una lista de tareas (To-Do List)\nContexto: {}\n\nProporciona:\n1. Intenci\u00f3n principal\n2. Subtareas identificadas\n3. Requisitos de informaci\u00f3n\n4. Criterios de \u00e9xito\n\n\n## Informaci\u00f3n del Sistema\n- **Estado**: Todos los proveedores de LLM est\u00e1n temporalmente indisponibles\n- **Modelo Solicitado**: claude3_5\n- **Timestamp**: 2026-08-01T19:26:15.828072\n\n## Recomendaciones Inmediatas\n\n### 1. Verificar Configuraci\u00f3n de API Keys\n```bash\n# Verificar variables de entorno\necho $MINIMAX_API_KEY\necho $OPENROUTER_API_KEY\n\n# Si est\u00e1n vac\u00edas, configurar en .env:\nMINIMAX_API_KEY=tu_clave_minimax\nOPENROUTER_API_KEY=tu_clave_openrouter\n```\n\n### 2. Verificar Conectividad de Red\n- Verificar que los servicios est\u00e9n ejecut\u00e1ndose\n- Comprobar conectividad a internet\n- Validar endpoints de API\n\n### 3. Soluciones Alternativas\n- Usar proveedores alternativos (Azure OpenAI, AWS Bedrock)\n- Configurar modelos locales (Ollama, LM Studio)\n- Implementar caching de respuestas\n\n### 4. Pr\u00f3ximos Pasos\n1. Revisar logs del sistema: `docker-compose logs backend`\n2. Verificar l\u00edmites de rate limiting\n3. Contactar soporte t\u00e9cnico si persiste\n\n---\n*Esta es una respuesta generada localmente. Configure API keys para respuestas reales.*\n",
+            "requires_tools": false,
+            "requires_memory": false
+          },
+          "strategy": {
+            "approach": "breadth_first",
+            "agents_needed": 2,
+            "parallel": true,
+            "tools": [
+              "python_executor",
+              "search_engine"
+            ],
+            "task_type": "general",
+            "reasoning_model": "claude3_5",
+            "planning_model": "llama70b",
+            "budget": {
+              "tokens_per_agent": 4000,
+              "time_seconds": 120,
+              "max_iterations": 3
+            },
+            "criteria": {
+              "success_threshold": 0.85,
+              "quality_gate": true
+            }
+          },
+          "enriched_context": {
+            "objetivo": "Crea una API en Python con FastAPI para gestionar una lista de tareas (To-Do List)",
+            "contexto_original": {},
+            "historial_resumido": "Sin historial previo",
+            "strategy": {
+              "approach": "breadth_first",
+              "agents_needed": 2,
+              "parallel": true,
+              "tools": [
+                "python_executor",
+                "search_engine"
+              ],
+              "task_type": "general",
+              "reasoning_model": "claude3_5",
+              "planning_model": "llama70b",
+              "budget": {
+                "tokens_per_agent": 4000,
+                "time_seconds": 120,
+                "max_iterations": 3
+              },
+              "criteria": {
+                "success_threshold": 0.85,
+                "quality_gate": true
+              }
+            },
+            "timestamp": "2026-08-01T19:26:15.828072",
+            "memory_hints": [],
+            "constraints": {
+              "max_time": null,
+              "max_cost": null,
+              "required_quality": 0.8,
+              "language": "es"
+            }
+          },
+          "recommendations": {
+            "agents_needed": 2,
+            "parallel_execution": true,
+            "tools_suggested": [
+              "python_executor",
+              "search_engine"
+            ]
+          }
+        },
+        "planning": {
+          "plan": {
+            "plan_id": "plan_7fcd59d1cd9d",
+            "objetivo": "Crea una API en Python con FastAPI para gestionar una lista de tareas (To-Do List)",
+            "approach": "breadth_first",
+            "subtasks": [
+              {
+                "task_id": "task_e9c89e12",
+                "name": "Preparaci\u00f3n de contexto",
+                "description": "Validar requisitos y preparar entorno",
+                "type": "preparation",
+                "dependencies": [],
+                "tools": [
+                  "search_engine"
+                ],
+                "priority": 1,
+                "estimated_time": 10
+              },
+              {
+                "task_id": "task_ab894673",
+                "name": "Exploraci\u00f3n 1: python_executor",
+                "description": "Ejecutar python_executor en paso 1",
+                "type": "exploration",
+                "dependencies": [],
+                "tools": [
+                  "python_executor"
+                ],
+                "priority": 2,
+                "estimated_time": 60,
+                "parallelizable": true
+              },
+              {
+                "task_id": "task_b5335d6b",
+                "name": "Exploraci\u00f3n 2: search_engine",
+                "description": "Ejecutar search_engine en paso 2",
+                "type": "exploration",
+                "dependencies": [],
+                "tools": [
+                  "search_engine"
+                ],
+                "priority": 2,
+                "estimated_time": 60,
+                "parallelizable": true
+              },
+              {
+                "task_id": "task_c5d4fc4c",
+                "name": "S\u00edntesis de resultados",
+                "description": "Consolidar resultados y generar respuesta final",
+                "type": "synthesis",
+                "dependencies": [
+                  "task_ab894673",
+                  "task_b5335d6b"
+                ],
+                "tools": [
+                  "python_executor"
+                ],
+                "priority": 99,
+                "estimated_time": 20
+              }
+            ],
+            "llm_suggestions": "# [Modo Fallback - Respuesta Local]\n\n## An\u00e1lisis del Prompt\n----------------------------------------\nDescomp\u00f3n la siguiente tarea en subtareas ejecutables:\n\nObjetivo: Crea una API en Python con FastAPI para gestionar una lista de tareas (To-Do List)\nEstrategia: breadth_first\nAgentes disponibles: 2\nHerramientas: python_executor, search_engine\n\nProporciona un plan estructurado con:\n1. Subtareas claras y accionables\n2. Dependencias entre tareas\n3. Criterios de \u00e9xito por subtarea\n4. Herramientas necesarias\n\n\n## Informaci\u00f3n del Sistema\n- **Estado**: Todos los proveedores de LLM est\u00e1n temporalmente indisponibles\n- **Modelo Solicitado**: llama70b\n- **Timestamp**: 2026-08-01T19:26:15.855828\n\n## Recomendaciones Inmediatas\n\n### 1. Verificar Configuraci\u00f3n de API Keys\n```bash\n# Verificar variables de entorno\necho $MINIMAX_API_KEY\necho $OPENROUTER_API_KEY\n\n# Si est\u00e1n vac\u00edas, configurar en .env:\nMINIMAX_API_KEY=tu_clave_minimax\nOPENROUTER_API_KEY=tu_clave_openrouter\n```\n\n### 2. Verificar Conectividad de Red\n- Verificar que los servicios est\u00e9n ejecut\u00e1ndose\n- Comprobar conectividad a internet\n- Validar endpoints de API\n\n### 3. Soluciones Alternativas\n- Usar proveedores alternativos (Azure OpenAI, AWS Bedrock)\n- Configurar modelos locales (Ollama, LM Studio)\n- Implementar caching de respuestas\n\n### 4. Pr\u00f3ximos Pasos\n1. Revisar logs del sistema: `docker-compose logs backend`\n2. Verificar l\u00edmites de rate limiting\n3. Contactar soporte t\u00e9cnico si persiste\n\n---\n*Esta es una respuesta generada localmente. Configure API keys para respuestas reales.*\n",
+            "execution_order": [
+              "task_e9c89e12",
+              "task_ab894673",
+              "task_b5335d6b",
+              "task_c5d4fc4c"
+            ]
+          },
+          "tool_assignments": {
+            "task_e9c89e12": [
+              "search_engine"
+            ],
+            "task_ab894673": [
+              "python_executor"
+            ],
+            "task_b5335d6b": [
+              "search_engine"
+            ],
+            "task_c5d4fc4c": [
+              "python_executor"
+            ]
+          },
+          "delegations": [
+            {
+              "task_id": "task_ab894673",
+              "objetivo": "Ejecutar python_executor en paso 1",
+              "tool_map": [
+                "python_executor"
+              ],
+              "limites": {
+                "tokens": 4000,
+                "time_seconds": 120,
+                "tools_max": 3
+              },
+              "criterio_exito": "Completar: Exploraci\u00f3n 1: python_executor",
+              "dependencies": [],
+              "parallelizable": true
+            },
+            {
+              "task_id": "task_b5335d6b",
+              "objetivo": "Ejecutar search_engine en paso 2",
+              "tool_map": [
+                "search_engine"
+              ],
+              "limites": {
+                "tokens": 4000,
+                "time_seconds": 120,
+                "tools_max": 3
+              },
+              "criterio_exito": "Completar: Exploraci\u00f3n 2: search_engine",
+              "dependencies": [],
+              "parallelizable": true
+            }
+          ],
+          "execution_graph": {
+            "nodes": {
+              "task_e9c89e12": {
+                "name": "Preparaci\u00f3n de contexto",
+                "type": "preparation",
+                "priority": 1
+              },
+              "task_ab894673": {
+                "name": "Exploraci\u00f3n 1: python_executor",
+                "type": "exploration",
+                "priority": 2
+              },
+              "task_b5335d6b": {
+                "name": "Exploraci\u00f3n 2: search_engine",
+                "type": "exploration",
+                "priority": 2
+              },
+              "task_c5d4fc4c": {
+                "name": "S\u00edntesis de resultados",
+                "type": "synthesis",
+                "priority": 99
+              }
+            },
+            "edges": [
+              {
+                "from": "task_ab894673",
+                "to": "task_c5d4fc4c"
+              },
+              {
+                "from": "task_b5335d6b",
+                "to": "task_c5d4fc4c"
+              }
+            ]
+          },
+          "estimated_time": 90,
+          "parallelizable_tasks": [
+            "task_ab894673",
+            "task_b5335d6b"
+          ]
+        },
+        "execution": {
+          "executions": [
+            {
+              "task_id": "task_ab894673",
+              "executor": "executor_code",
+              "status": "done",
+              "result": {
+                "execution_summary": {
+                  "tools_executed": 1,
+                  "successful": 1,
+                  "failed": 0,
+                  "total_time_ms": 164.95399999999998
+                },
+                "results": {
+                  "tools_results": {
+                    "python_executor": {
+                      "tool": "python_executor",
+                      "success": true,
+                      "result": {
+                        "code": "# [Modo Fallback - Respuesta Local]\n\n## An\u00e1lisis del Prompt\n----------------------------------------\nGenera c\u00f3digo Python para cumplir el siguiente objetivo:\n            \nObjetivo: Ejecutar python_executor en paso 1\n\nRequisitos:\n- C\u00f3digo limpio y bien documentado\n- Manejo adecuado de errores\n- Incluye imports necesarios\n- C\u00f3digo ejecutable directamente\n\nProporciona solo el c\u00f3digo Python sin explicaciones adicionales.\n\n\n## Informaci\u00f3n del Sistema\n- **Estado**: Todos los proveedores de LLM est\u00e1n temporalmente indisponibles\n- **Modelo Solicitado**: claude3_5\n- **Timestamp**: 2026-08-01T19:26:15.884278\n\n## Recomendaciones Inmediatas\n\n### 1. Verificar Configuraci\u00f3n de API Keys\n```bash\n# Verificar variables de entorno\necho $MINIMAX_API_KEY\necho $OPENROUTER_API_KEY\n\n# Si est\u00e1n vac\u00edas, configurar en .env:\nMINIMAX_API_KEY=tu_clave_minimax\nOPENROUTER_API_KEY=tu_clave_openrouter\n```\n\n### 2. Verificar Conectividad de Red\n- Verificar que los servicios est\u00e9n ejecut\u00e1ndose\n- Comprobar conectividad a internet\n- Validar endpoints de API\n\n### 3. Soluciones Alternativas\n- Usar proveedores alternativos (Azure OpenAI, AWS Bedrock)\n- Configurar modelos locales (Ollama, LM Studio)\n- Implementar caching de respuestas\n\n### 4. Pr\u00f3ximos Pasos\n1. Revisar logs del sistema: `docker-compose logs backend`\n2. Verificar l\u00edmites de rate limiting\n3. Contactar soporte t\u00e9cnico si persiste\n\n---\n*Esta es una respuesta generada localmente. Configure API keys para respuestas reales.*\n",
+                        "executed": true,
+                        "output": "",
+                        "error": "Python was not found; run without arguments to install from the Microsoft Store, or disable this shortcut from Settings > Apps > Advanced app settings > App execution aliases.\r\n",
+                        "exit_code": 9009,
+                        "success": false
+                      },
+                      "time_ms": 164.95399999999998
+                    }
+                  },
+                  "combined_output": "",
+                  "success_rate": 1.0
+                },
+                "artifacts": [
+                  "artifact://executor_code/python_executor/result.json"
+                ],
+                "evidence": [
+                  {
+                    "tool": "python_executor",
+                    "timestamp": "2026-08-01T19:26:16.020782",
+                    "summary": "Ejecutado exitosamente en 165ms",
+                    "reference": "evidence://python_executor"
+                  }
+                ]
+              },
+              "execution_time_ms": 164.95399999999998,
+              "errors": null
+            },
+            {
+              "task_id": "task_b5335d6b",
+              "executor": "executor_general",
+              "status": "done",
+              "result": {
+                "execution_summary": {
+                  "tools_executed": 1,
+                  "successful": 1,
+                  "failed": 0,
+                  "total_time_ms": 0.0
+                },
+                "results": {
+                  "tools_results": {
+                    "search_engine": {
+                      "tool": "search_engine",
+                      "success": true,
+                      "result": {
+                        "query": "Ejecutar search_engine en paso 2",
+                        "searched": true,
+                        "data": {
+                          "mock_search": "Resultados simulados para: Ejecutar search_engine en paso 2"
+                        },
+                        "success": true
+                      },
+                      "time_ms": 0.0
+                    }
+                  },
+                  "combined_output": "",
+                  "success_rate": 1.0
+                },
+                "artifacts": [
+                  "artifact://executor_general/search_engine/result.json"
+                ],
+                "evidence": [
+                  {
+                    "tool": "search_engine",
+                    "timestamp": "2026-08-01T19:26:15.885394",
+                    "summary": "Ejecutado exitosamente en 0ms",
+                    "reference": "evidence://search_engine"
+                  }
+                ]
+              },
+              "execution_time_ms": 29.566,
+              "errors": null
+            }
+          ],
+          "num_parallel": 2,
+          "num_sequential": 0,
+          "total_executions": 2
+        },
+        "verification": {
+          "validation_report": {
+            "eval_type": "llm_judge_fallback",
+            "criterios_evaluated": [
+              "precision",
+              "completeness",
+              "consistency"
+            ],
+            "scores": {
+              "precision": {
+                "score": 0.7,
+                "threshold": 0.8,
+                "passed": false,
+                "justification": "Evaluaci\u00f3n heur\u00edstica autom\u00e1tica para: precision"
+              },
+              "completeness": {
+                "score": 0.8,
+                "threshold": 0.75,
+                "passed": true,
+                "justification": "Evaluaci\u00f3n heur\u00edstica autom\u00e1tica para: completeness"
+              },
+              "consistency": {
+                "score": 0.8,
+                "threshold": 0.85,
+                "passed": false,
+                "justification": "Evaluaci\u00f3n heur\u00edstica autom\u00e1tica para: consistency"
+              }
+            },
+            "overall_score": 0.7666666666666666,
+            "error": "'VerifierAgent' object has no attribute '_process_llm_evaluation_response'"
+          },
+          "trajectory_score": {
+            "score": 0.15,
+            "efficiency": 0.0,
+            "convergence": 0.3,
+            "num_steps": 2,
+            "successful_steps": 0
+          },
+          "consistency_check": {
+            "score": 1.0,
+            "checks": {
+              "structure_valid": true,
+              "no_contradictions": true,
+              "references_valid": true
+            },
+            "passed": true
+          },
+          "approved": true,
+          "recommendations": [
+            "Mejorar calidad de resultados - score de validaci\u00f3n bajo",
+            "Optimizar trayectoria de ejecuci\u00f3n - demasiados pasos fallidos"
+          ],
+          "quality_metrics": {
+            "overall_score": 0.6283333333333333,
+            "validation_score": 0.7666666666666666,
+            "trajectory_quality": 0.15,
+            "consistency_score": 1.0
+          }
+        }
+      },
+      "metadata": {
+        "agents_used": 5,
+        "total_time_ms": 251.72853469848633,
+        "quality_score": 0.6283333333333333
+      }
+    },
+    "updated_at": "2026-08-01T19:26:16.056517"
+  },
+  "conv_d29e2056deb6": {
+    "status": "COMPLETED",
+    "payload": {
+      "conversation_id": "conv_d29e2056deb6",
+      "status": "completed",
+      "result": {
+        "synthesis": "",
+        "approved": true,
+        "quality_score": 0.6283333333333333,
+        "recommendations": [
+          "Mejorar calidad de resultados - score de validaci\u00f3n bajo",
+          "Optimizar trayectoria de ejecuci\u00f3n - demasiados pasos fallidos"
+        ],
+        "conversation_id": "conv_d29e2056deb6"
+      },
+      "phases": {
+        "reasoning": {
+          "intent_analysis": {
+            "type": "general",
+            "complexity": "medium",
+            "main_intent": "Crea una API en Python con FastAPI para gestionar una lista de tareas (To-Do List)",
+            "llm_analysis": "# [Modo Fallback - Respuesta Local]\n\n## An\u00e1lisis del Prompt\n----------------------------------------\nAnaliza la siguiente solicitud del usuario y extrae la intenci\u00f3n principal:\n\nObjetivo: Crea una API en Python con FastAPI para gestionar una lista de tareas (To-Do List)\nContexto: {}\n\nProporciona:\n1. Intenci\u00f3n principal\n2. Subtareas identificadas\n3. Requisitos de informaci\u00f3n\n4. Criterios de \u00e9xito\n\n\n## Informaci\u00f3n del Sistema\n- **Estado**: Todos los proveedores de LLM est\u00e1n temporalmente indisponibles\n- **Modelo Solicitado**: claude3_5\n- **Timestamp**: 2026-08-01T19:26:28.107633\n\n## Recomendaciones Inmediatas\n\n### 1. Verificar Configuraci\u00f3n de API Keys\n```bash\n# Verificar variables de entorno\necho $MINIMAX_API_KEY\necho $OPENROUTER_API_KEY\n\n# Si est\u00e1n vac\u00edas, configurar en .env:\nMINIMAX_API_KEY=tu_clave_minimax\nOPENROUTER_API_KEY=tu_clave_openrouter\n```\n\n### 2. Verificar Conectividad de Red\n- Verificar que los servicios est\u00e9n ejecut\u00e1ndose\n- Comprobar conectividad a internet\n- Validar endpoints de API\n\n### 3. Soluciones Alternativas\n- Usar proveedores alternativos (Azure OpenAI, AWS Bedrock)\n- Configurar modelos locales (Ollama, LM Studio)\n- Implementar caching de respuestas\n\n### 4. Pr\u00f3ximos Pasos\n1. Revisar logs del sistema: `docker-compose logs backend`\n2. Verificar l\u00edmites de rate limiting\n3. Contactar soporte t\u00e9cnico si persiste\n\n---\n*Esta es una respuesta generada localmente. Configure API keys para respuestas reales.*\n",
+            "requires_tools": false,
+            "requires_memory": false
+          },
+          "strategy": {
+            "approach": "breadth_first",
+            "agents_needed": 2,
+            "parallel": true,
+            "tools": [
+              "python_executor",
+              "search_engine"
+            ],
+            "task_type": "general",
+            "reasoning_model": "claude3_5",
+            "planning_model": "llama70b",
+            "budget": {
+              "tokens_per_agent": 4000,
+              "time_seconds": 120,
+              "max_iterations": 3
+            },
+            "criteria": {
+              "success_threshold": 0.85,
+              "quality_gate": true
+            }
+          },
+          "enriched_context": {
+            "objetivo": "Crea una API en Python con FastAPI para gestionar una lista de tareas (To-Do List)",
+            "contexto_original": {},
+            "historial_resumido": "Sin historial previo",
+            "strategy": {
+              "approach": "breadth_first",
+              "agents_needed": 2,
+              "parallel": true,
+              "tools": [
+                "python_executor",
+                "search_engine"
+              ],
+              "task_type": "general",
+              "reasoning_model": "claude3_5",
+              "planning_model": "llama70b",
+              "budget": {
+                "tokens_per_agent": 4000,
+                "time_seconds": 120,
+                "max_iterations": 3
+              },
+              "criteria": {
+                "success_threshold": 0.85,
+                "quality_gate": true
+              }
+            },
+            "timestamp": "2026-08-01T19:26:28.107633",
+            "memory_hints": [],
+            "constraints": {
+              "max_time": null,
+              "max_cost": null,
+              "required_quality": 0.8,
+              "language": "es"
+            }
+          },
+          "recommendations": {
+            "agents_needed": 2,
+            "parallel_execution": true,
+            "tools_suggested": [
+              "python_executor",
+              "search_engine"
+            ]
+          }
+        },
+        "planning": {
+          "plan": {
+            "plan_id": "plan_f5e03f040f20",
+            "objetivo": "Crea una API en Python con FastAPI para gestionar una lista de tareas (To-Do List)",
+            "approach": "breadth_first",
+            "subtasks": [
+              {
+                "task_id": "task_403239c6",
+                "name": "Preparaci\u00f3n de contexto",
+                "description": "Validar requisitos y preparar entorno",
+                "type": "preparation",
+                "dependencies": [],
+                "tools": [
+                  "search_engine"
+                ],
+                "priority": 1,
+                "estimated_time": 10
+              },
+              {
+                "task_id": "task_c360d1ac",
+                "name": "Exploraci\u00f3n 1: python_executor",
+                "description": "Ejecutar python_executor en paso 1",
+                "type": "exploration",
+                "dependencies": [],
+                "tools": [
+                  "python_executor"
+                ],
+                "priority": 2,
+                "estimated_time": 60,
+                "parallelizable": true
+              },
+              {
+                "task_id": "task_2626cde9",
+                "name": "Exploraci\u00f3n 2: search_engine",
+                "description": "Ejecutar search_engine en paso 2",
+                "type": "exploration",
+                "dependencies": [],
+                "tools": [
+                  "search_engine"
+                ],
+                "priority": 2,
+                "estimated_time": 60,
+                "parallelizable": true
+              },
+              {
+                "task_id": "task_42e35b24",
+                "name": "S\u00edntesis de resultados",
+                "description": "Consolidar resultados y generar respuesta final",
+                "type": "synthesis",
+                "dependencies": [
+                  "task_c360d1ac",
+                  "task_2626cde9"
+                ],
+                "tools": [
+                  "python_executor"
+                ],
+                "priority": 99,
+                "estimated_time": 20
+              }
+            ],
+            "llm_suggestions": "# [Modo Fallback - Respuesta Local]\n\n## An\u00e1lisis del Prompt\n----------------------------------------\nDescomp\u00f3n la siguiente tarea en subtareas ejecutables:\n\nObjetivo: Crea una API en Python con FastAPI para gestionar una lista de tareas (To-Do List)\nEstrategia: breadth_first\nAgentes disponibles: 2\nHerramientas: python_executor, search_engine\n\nProporciona un plan estructurado con:\n1. Subtareas claras y accionables\n2. Dependencias entre tareas\n3. Criterios de \u00e9xito por subtarea\n4. Herramientas necesarias\n\n\n## Informaci\u00f3n del Sistema\n- **Estado**: Todos los proveedores de LLM est\u00e1n temporalmente indisponibles\n- **Modelo Solicitado**: llama70b\n- **Timestamp**: 2026-08-01T19:26:28.125986\n\n## Recomendaciones Inmediatas\n\n### 1. Verificar Configuraci\u00f3n de API Keys\n```bash\n# Verificar variables de entorno\necho $MINIMAX_API_KEY\necho $OPENROUTER_API_KEY\n\n# Si est\u00e1n vac\u00edas, configurar en .env:\nMINIMAX_API_KEY=tu_clave_minimax\nOPENROUTER_API_KEY=tu_clave_openrouter\n```\n\n### 2. Verificar Conectividad de Red\n- Verificar que los servicios est\u00e9n ejecut\u00e1ndose\n- Comprobar conectividad a internet\n- Validar endpoints de API\n\n### 3. Soluciones Alternativas\n- Usar proveedores alternativos (Azure OpenAI, AWS Bedrock)\n- Configurar modelos locales (Ollama, LM Studio)\n- Implementar caching de respuestas\n\n### 4. Pr\u00f3ximos Pasos\n1. Revisar logs del sistema: `docker-compose logs backend`\n2. Verificar l\u00edmites de rate limiting\n3. Contactar soporte t\u00e9cnico si persiste\n\n---\n*Esta es una respuesta generada localmente. Configure API keys para respuestas reales.*\n",
+            "execution_order": [
+              "task_403239c6",
+              "task_c360d1ac",
+              "task_2626cde9",
+              "task_42e35b24"
+            ]
+          },
+          "tool_assignments": {
+            "task_403239c6": [
+              "search_engine"
+            ],
+            "task_c360d1ac": [
+              "python_executor"
+            ],
+            "task_2626cde9": [
+              "search_engine"
+            ],
+            "task_42e35b24": [
+              "python_executor"
+            ]
+          },
+          "delegations": [
+            {
+              "task_id": "task_c360d1ac",
+              "objetivo": "Ejecutar python_executor en paso 1",
+              "tool_map": [
+                "python_executor"
+              ],
+              "limites": {
+                "tokens": 4000,
+                "time_seconds": 120,
+                "tools_max": 3
+              },
+              "criterio_exito": "Completar: Exploraci\u00f3n 1: python_executor",
+              "dependencies": [],
+              "parallelizable": true
+            },
+            {
+              "task_id": "task_2626cde9",
+              "objetivo": "Ejecutar search_engine en paso 2",
+              "tool_map": [
+                "search_engine"
+              ],
+              "limites": {
+                "tokens": 4000,
+                "time_seconds": 120,
+                "tools_max": 3
+              },
+              "criterio_exito": "Completar: Exploraci\u00f3n 2: search_engine",
+              "dependencies": [],
+              "parallelizable": true
+            }
+          ],
+          "execution_graph": {
+            "nodes": {
+              "task_403239c6": {
+                "name": "Preparaci\u00f3n de contexto",
+                "type": "preparation",
+                "priority": 1
+              },
+              "task_c360d1ac": {
+                "name": "Exploraci\u00f3n 1: python_executor",
+                "type": "exploration",
+                "priority": 2
+              },
+              "task_2626cde9": {
+                "name": "Exploraci\u00f3n 2: search_engine",
+                "type": "exploration",
+                "priority": 2
+              },
+              "task_42e35b24": {
+                "name": "S\u00edntesis de resultados",
+                "type": "synthesis",
+                "priority": 99
+              }
+            },
+            "edges": [
+              {
+                "from": "task_c360d1ac",
+                "to": "task_42e35b24"
+              },
+              {
+                "from": "task_2626cde9",
+                "to": "task_42e35b24"
+              }
+            ]
+          },
+          "estimated_time": 90,
+          "parallelizable_tasks": [
+            "task_c360d1ac",
+            "task_2626cde9"
+          ]
+        },
+        "execution": {
+          "executions": [
+            {
+              "task_id": "task_c360d1ac",
+              "executor": "executor_code",
+              "status": "done",
+              "result": {
+                "execution_summary": {
+                  "tools_executed": 1,
+                  "successful": 1,
+                  "failed": 0,
+                  "total_time_ms": 128.134
+                },
+                "results": {
+                  "tools_results": {
+                    "python_executor": {
+                      "tool": "python_executor",
+                      "success": true,
+                      "result": {
+                        "code": "# [Modo Fallback - Respuesta Local]\n\n## An\u00e1lisis del Prompt\n----------------------------------------\nGenera c\u00f3digo Python para cumplir el siguiente objetivo:\n            \nObjetivo: Ejecutar python_executor en paso 1\n\nRequisitos:\n- C\u00f3digo limpio y bien documentado\n- Manejo adecuado de errores\n- Incluye imports necesarios\n- C\u00f3digo ejecutable directamente\n\nProporciona solo el c\u00f3digo Python sin explicaciones adicionales.\n\n\n## Informaci\u00f3n del Sistema\n- **Estado**: Todos los proveedores de LLM est\u00e1n temporalmente indisponibles\n- **Modelo Solicitado**: claude3_5\n- **Timestamp**: 2026-08-01T19:26:28.144181\n\n## Recomendaciones Inmediatas\n\n### 1. Verificar Configuraci\u00f3n de API Keys\n```bash\n# Verificar variables de entorno\necho $MINIMAX_API_KEY\necho $OPENROUTER_API_KEY\n\n# Si est\u00e1n vac\u00edas, configurar en .env:\nMINIMAX_API_KEY=tu_clave_minimax\nOPENROUTER_API_KEY=tu_clave_openrouter\n```\n\n### 2. Verificar Conectividad de Red\n- Verificar que los servicios est\u00e9n ejecut\u00e1ndose\n- Comprobar conectividad a internet\n- Validar endpoints de API\n\n### 3. Soluciones Alternativas\n- Usar proveedores alternativos (Azure OpenAI, AWS Bedrock)\n- Configurar modelos locales (Ollama, LM Studio)\n- Implementar caching de respuestas\n\n### 4. Pr\u00f3ximos Pasos\n1. Revisar logs del sistema: `docker-compose logs backend`\n2. Verificar l\u00edmites de rate limiting\n3. Contactar soporte t\u00e9cnico si persiste\n\n---\n*Esta es una respuesta generada localmente. Configure API keys para respuestas reales.*\n",
+                        "executed": true,
+                        "output": "",
+                        "error": "Python was not found; run without arguments to install from the Microsoft Store, or disable this shortcut from Settings > Apps > Advanced app settings > App execution aliases.\r\n",
+                        "exit_code": 9009,
+                        "success": false
+                      },
+                      "time_ms": 128.134
+                    }
+                  },
+                  "combined_output": "",
+                  "success_rate": 1.0
+                },
+                "artifacts": [
+                  "artifact://executor_code/python_executor/result.json"
+                ],
+                "evidence": [
+                  {
+                    "tool": "python_executor",
+                    "timestamp": "2026-08-01T19:26:28.255452",
+                    "summary": "Ejecutado exitosamente en 128ms",
+                    "reference": "evidence://python_executor"
+                  }
+                ]
+              },
+              "execution_time_ms": 129.136,
+              "errors": null
+            },
+            {
+              "task_id": "task_2626cde9",
+              "executor": "executor_general",
+              "status": "done",
+              "result": {
+                "execution_summary": {
+                  "tools_executed": 1,
+                  "successful": 1,
+                  "failed": 0,
+                  "total_time_ms": 0.0
+                },
+                "results": {
+                  "tools_results": {
+                    "search_engine": {
+                      "tool": "search_engine",
+                      "success": true,
+                      "result": {
+                        "query": "Ejecutar search_engine en paso 2",
+                        "searched": true,
+                        "data": {
+                          "mock_search": "Resultados simulados para: Ejecutar search_engine en paso 2"
+                        },
+                        "success": true
+                      },
+                      "time_ms": 0.0
+                    }
+                  },
+                  "combined_output": "",
+                  "success_rate": 1.0
+                },
+                "artifacts": [
+                  "artifact://executor_general/search_engine/result.json"
+                ],
+                "evidence": [
+                  {
+                    "tool": "search_engine",
+                    "timestamp": "2026-08-01T19:26:28.147068",
+                    "summary": "Ejecutado exitosamente en 0ms",
+                    "reference": "evidence://search_engine"
+                  }
+                ]
+              },
+              "execution_time_ms": 19.75,
+              "errors": null
+            }
+          ],
+          "num_parallel": 2,
+          "num_sequential": 0,
+          "total_executions": 2
+        },
+        "verification": {
+          "validation_report": {
+            "eval_type": "llm_judge_fallback",
+            "criterios_evaluated": [
+              "precision",
+              "completeness",
+              "consistency"
+            ],
+            "scores": {
+              "precision": {
+                "score": 0.7,
+                "threshold": 0.8,
+                "passed": false,
+                "justification": "Evaluaci\u00f3n heur\u00edstica autom\u00e1tica para: precision"
+              },
+              "completeness": {
+                "score": 0.8,
+                "threshold": 0.75,
+                "passed": true,
+                "justification": "Evaluaci\u00f3n heur\u00edstica autom\u00e1tica para: completeness"
+              },
+              "consistency": {
+                "score": 0.8,
+                "threshold": 0.85,
+                "passed": false,
+                "justification": "Evaluaci\u00f3n heur\u00edstica autom\u00e1tica para: consistency"
+              }
+            },
+            "overall_score": 0.7666666666666666,
+            "error": "'VerifierAgent' object has no attribute '_process_llm_evaluation_response'"
+          },
+          "trajectory_score": {
+            "score": 0.15,
+            "efficiency": 0.0,
+            "convergence": 0.3,
+            "num_steps": 2,
+            "successful_steps": 0
+          },
+          "consistency_check": {
+            "score": 1.0,
+            "checks": {
+              "structure_valid": true,
+              "no_contradictions": true,
+              "references_valid": true
+            },
+            "passed": true
+          },
+          "approved": true,
+          "recommendations": [
+            "Mejorar calidad de resultados - score de validaci\u00f3n bajo",
+            "Optimizar trayectoria de ejecuci\u00f3n - demasiados pasos fallidos"
+          ],
+          "quality_metrics": {
+            "overall_score": 0.6283333333333333,
+            "validation_score": 0.7666666666666666,
+            "trajectory_quality": 0.15,
+            "consistency_score": 1.0
+          }
+        }
+      },
+      "metadata": {
+        "agents_used": 5,
+        "total_time_ms": 202.87823677062988,
+        "quality_score": 0.6283333333333333
+      }
+    },
+    "updated_at": "2026-08-01T19:26:28.287065"
+  }
+}

@@ -3,3 +3,17 @@
 2026-08-01 13:41:34,681 - SilhouetteMCPServer - INFO - Dashboard static files mounted from D:\Proyectos personales\SilhouetteAppcreator\dashboard-static
 2026-08-01 13:41:37,843 - SilhouetteMCPServer - INFO - Datos cargados desde silhouettemcp_data.json
 2026-08-01 13:41:39,210 - SilhouetteMCPServer - INFO - Initializing SilhouetteMCP Auto-Bootstrap...
+2026-08-01 14:22:32,627 - SilhouetteMCPServer - INFO - Dashboard static files mounted from D:\Proyectos personales\SilhouetteAppcreator\dashboard-static
+2026-08-01 14:22:36,717 - SilhouetteMCPServer - INFO - Datos cargados desde silhouettemcp_data.json
+2026-08-01 14:22:36,821 - SilhouetteMCPServer - INFO - Initializing SilhouetteMCP Auto-Bootstrap...
+2026-08-01 14:23:13,240 - SilhouetteMCPServer - INFO - Dashboard static files mounted from D:\Proyectos personales\SilhouetteAppcreator\dashboard-static
+2026-08-01 14:23:17,411 - SilhouetteMCPServer - INFO - Datos cargados desde silhouettemcp_data.json
+2026-08-01 14:23:17,462 - SilhouetteMCPServer - INFO - Initializing SilhouetteMCP Auto-Bootstrap...
+2026-08-01 14:23:23,086 - SilhouetteMCPServer - ERROR - Error en /api/agents/chat: name 'orchestrator' is not defined
+2026-08-01 14:24:07,273 - SilhouetteMCPServer - INFO - Dashboard static files mounted from D:\Proyectos personales\SilhouetteAppcreator\dashboard-static
+2026-08-01 14:24:10,608 - SilhouetteMCPServer - INFO - Datos cargados desde silhouettemcp_data.json
+2026-08-01 14:24:10,657 - SilhouetteMCPServer - INFO - Initializing SilhouetteMCP Auto-Bootstrap...
+2026-08-01 14:24:15,147 - SilhouetteMCPServer - ERROR - Error en /api/agents/chat: 'MultiAgentOrchestrator' object has no attribute 'create_task'
+2026-08-01 14:24:48,155 - SilhouetteMCPServer - INFO - Dashboard static files mounted from D:\Proyectos personales\SilhouetteAppcreator\dashboard-static
+2026-08-01 14:24:51,474 - SilhouetteMCPServer - INFO - Datos cargados desde silhouettemcp_data.json
+2026-08-01 14:24:51,535 - SilhouetteMCPServer - INFO - Initializing SilhouetteMCP Auto-Bootstrap...

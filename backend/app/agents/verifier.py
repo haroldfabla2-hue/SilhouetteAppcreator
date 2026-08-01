@@ -201,18 +201,6 @@ Responde ÚNICAMENTE en formato JSON válido:
                 "scores": scores,
                 "overall_score": overall_score,
                 "llm_response": llm_response,
-                "parsing_success": "scores" in locals()
-            }
-            
-        except Exception as e:
-            self.logger.exception(f"Error en evaluación LLM: {str(e)}")
-            # Fallback a evaluación heurística
-            scores = await self._heuristic_fallback_evaluation(criterios, thresholds, results)
-            overall_score = sum(s["score"] for s in scores.values()) / len(scores) if scores else 0.0
-            
-            return {
-                "eval_type": "llm_judge_fallback",
-                "criterios_evaluated": criterios,
                 "scores": scores,
                 "overall_score": overall_score,
                 "error": str(e)

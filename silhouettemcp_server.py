@@ -625,6 +625,38 @@ async def get_app_agents(request: Request):
         "total_agents": len(app.agents)
     }
 
+class ChatAgentRequest(BaseModel):
+    prompt: str
+    model: Optional[str] = "glm-5.2-max"
+    enable_verification: Optional[bool] = True
+
+@app.post("/api/agents/chat")
+async def chat_with_orchestrator(req: ChatAgentRequest):
+    """Ejecuta una instrucción a través del Orquestador Multi-Agente"""
+    store.record_request()
+    try:
+        if system_orchestrator:
+            # Ejecutar el flujo completo multi-agente (Reasoner -> Planner -> Executor -> Verifier)
+            res = await system_orchestrator.process_request(req.prompt)
+            return {
+                "success": True,
+                "orchestrator": "MultiAgentOrchestrator",
+                "result": res
+            }
+        else:
+            # Fallback a router directo
+            from backend.app.core.llm_router import LLMRouter
+            router = LLMRouter()
+            res = await router.chat_completion(prompt=req.prompt, model=req.model or "llama70b")
+            return {
+                "success": True,
+                "orchestrator": "LLMRouter",
+                "result": res
+            }
+    except Exception as e:
+        logger.error(f"Error en /api/agents/chat: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 @app.post("/api/agents/deploy")
 async def deploy_agent(request: Request):
     """Desplegar nuevo agente"""

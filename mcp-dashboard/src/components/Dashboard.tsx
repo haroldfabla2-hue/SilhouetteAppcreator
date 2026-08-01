@@ -45,10 +45,11 @@ interface LogEntry {
 }
 
 import { ModelManager } from './ModelManager';
-import { Settings } from 'lucide-react';
+import { AppCreatorChat } from './AppCreatorChat';
+import { Settings, MessageSquare } from 'lucide-react';
 
 const Dashboard = () => {
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'settings'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'chat' | 'settings'>('chat');
   const [metrics, setMetrics] = useState<SystemMetrics[]>([]);
   const [agents, setAgents] = useState<AgentStatus[]>([]);
   const [logs, setLogs] = useState<LogEntry[]>([]);
@@ -167,12 +168,21 @@ const Dashboard = () => {
         {/* Pestañas de Navegación */}
         <div className="flex gap-2 bg-gray-200 p-1.5 rounded-xl">
           <button
+            onClick={() => setActiveTab('chat')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition ${
+              activeTab === 'chat' ? 'bg-indigo-600 text-white shadow-sm' : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            <MessageSquare className="w-4 h-4" />
+            App Creator (Chat)
+          </button>
+          <button
             onClick={() => setActiveTab('dashboard')}
             className={`px-4 py-2 rounded-lg text-sm font-semibold transition ${
               activeTab === 'dashboard' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'
             }`}
           >
-            Dashboard
+            Métricas y Telemetría
           </button>
           <button
             onClick={() => setActiveTab('settings')}
@@ -186,7 +196,9 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {activeTab === 'settings' ? (
+      {activeTab === 'chat' ? (
+        <AppCreatorChat />
+      ) : activeTab === 'settings' ? (
         <ModelManager />
       ) : (
         <>
