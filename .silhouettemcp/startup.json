@@ -1,0 +1,6 @@
+{
+  "commands": [
+    "Verificar el estado del sistema y la base de datos PostgreSQL",
+    "Inicializar entorno de Sandbox Docker si est\u00e1 disponible"
+  ]
+}

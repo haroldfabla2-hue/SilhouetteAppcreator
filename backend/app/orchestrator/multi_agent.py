@@ -115,12 +115,12 @@ class MultiAgentOrchestrator:
             try:
                 async with self.db_pool.acquire() as conn:
                     await conn.execute(
-                        \"\"\"
+                        """
                         INSERT INTO agent_tasks (conversation_id, status, payload, updated_at)
                         VALUES ($1, $2, $3, $4)
                         ON CONFLICT (conversation_id) DO UPDATE 
                         SET status = EXCLUDED.status, payload = EXCLUDED.payload, updated_at = EXCLUDED.updated_at
-                        \"\"\",
+                        """,
                         conversation_id, status, str(payload or {}), datetime.utcnow()
                     )
             except Exception as e:

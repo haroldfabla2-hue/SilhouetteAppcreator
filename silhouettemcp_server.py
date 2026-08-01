@@ -854,8 +854,17 @@ async def global_omni_search(query: str):
 
 # ==================== PROMETHEUS METRICS ====================
 
-cpu_usage_gauge = Gauge("silhouette_cpu_usage_percent", "CPU usage percent")
-active_agents_gauge = Gauge("silhouette_active_agents", "Number of active agents")
+from prometheus_client import REGISTRY
+
+if "silhouette_cpu_usage_percent" not in REGISTRY._names_to_collectors:
+    cpu_usage_gauge = Gauge("silhouette_cpu_usage_percent", "CPU usage percent")
+else:
+    cpu_usage_gauge = REGISTRY._names_to_collectors["silhouette_cpu_usage_percent"]
+
+if "silhouette_active_agents" not in REGISTRY._names_to_collectors:
+    active_agents_gauge = Gauge("silhouette_active_agents", "Number of active agents")
+else:
+    active_agents_gauge = REGISTRY._names_to_collectors["silhouette_active_agents"]
 
 @app.get("/metrics")
 async def metrics_endpoint():

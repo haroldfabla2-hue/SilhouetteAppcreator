@@ -44,7 +44,6 @@ interface LogEntry {
   source: string;
 }
 
-import { OmniSearchModal } from './OmniSearchModal';
 import { ModelManager } from './ModelManager';
 import { Settings } from 'lucide-react';
 
@@ -345,7 +344,6 @@ const Dashboard = () => {
               )}
             </div>
           ))}
-        </div>
         </div>
       </div>
       </>
