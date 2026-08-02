@@ -753,6 +753,47 @@ async def create_dynamic_mcp_server(req: CreateMCPServerRequest):
     factory = DynamicMCPFactory()
     return factory.create_server(req.name, req.description or "")
 
+# ==================== ENDPOINTS COGNITIVOS AVANZADOS ====================
+
+class Z3VerifyRequest(BaseModel):
+    type: str
+    target_path: Optional[str] = None
+    memory_mb: Optional[int] = 256
+
+@app.post("/api/system/z3-verify")
+async def verify_z3_invariants(req: Z3VerifyRequest):
+    """Evalúa formalmente reglas de seguridad con Microsoft Z3 Solver"""
+    from backend.app.logic_engine.z3_verifier import Z3LogicVerifier
+    verifier = Z3LogicVerifier()
+    return verifier.verify_action_invariants(req.dict())
+
+class DebateSwarmRequest(BaseModel):
+    prompt: str
+
+@app.post("/api/swarm/debate")
+async def run_debate_swarm(req: DebateSwarmRequest):
+    """Ejecuta una ronda de debate tripartito (Creator vs Critic + Judge)"""
+    from backend.app.swarm.debate_matrix import DebateSwarmMatrix
+    matrix = DebateSwarmMatrix()
+    return await matrix.execute_debate_round(req.prompt)
+
+@app.get("/api/brain/stats")
+async def get_brain_stats():
+    """Obtiene el estado del sistema de memoria en 4 niveles y motores daemons"""
+    from backend.app.services.silhouette_brain_service import SilhouetteBrainService
+    brain = SilhouetteBrainService()
+    return brain.get_stats()
+
+class SecurityGuardRequest(BaseModel):
+    text: str
+
+@app.post("/api/security/guard")
+async def check_security_guard(req: SecurityGuardRequest):
+    """Filtra y sanitiza prompts detectando ataques de inyección (Jailbreaks)"""
+    from backend.app.security.prompt_injection_guard import PromptInjectionGuard
+    guard = PromptInjectionGuard()
+    return guard.sanitize_and_validate(req.text)
+
 @app.post("/api/agents/deploy")
 async def deploy_agent(request: Request):
     """Desplegar nuevo agente"""
