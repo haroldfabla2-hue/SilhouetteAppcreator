@@ -57,20 +57,24 @@ export const DynamicMCPFactory: React.FC = () => {
         })
       });
 
-      const newServer: MCPServerItem = {
-        id: `mcp_${Date.now()}`,
-        name: serverName,
-        transport: 'sse',
-        toolsCount: 4,
-        status: 'active',
-        description: serverDescription || 'Servidor MCP creado dinámicamente con FastMCP.'
-      };
-
-      setServers(prev => [...prev, newServer]);
-      setServerName('');
-      setServerDescription('');
-    } catch (err) {
-      console.error(err);
+      if (res.ok) {
+        const data = await res.json();
+        const newServer: MCPServerItem = {
+          id: data.id || `mcp_${Date.now()}`,
+          name: data.name || serverName,
+          transport: data.transport || 'sse',
+          toolsCount: data.tools_count || 4,
+          status: 'active',
+          description: data.description || serverDescription || 'Servidor FastMCP activo.'
+        };
+        setServers(prev => [...prev, newServer]);
+        setServerName('');
+        setServerDescription('');
+      } else {
+        throw new Error(`Error HTTP ${res.status}`);
+      }
+    } catch (err: any) {
+      console.error("Error creando servidor MCP:", err.message);
     } finally {
       setIsCreating(false);
     }

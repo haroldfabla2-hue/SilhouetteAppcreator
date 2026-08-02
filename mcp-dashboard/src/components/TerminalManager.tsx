@@ -52,23 +52,49 @@ export const TerminalManager: React.FC = () => {
 
   const activeTab = tabs.find(t => t.id === activeTabId) || tabs[0];
 
-  const handleRunCommand = (e: React.FormEvent) => {
+  const handleRunCommand = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!inputCmd.trim()) return;
 
     const cmdToExec = inputCmd;
     setInputCmd('');
 
-    setTabs(prev => prev.map(t => {
-      if (t.id === activeTabId) {
-        return {
-          ...t,
-          status: 'running',
-          logs: [...t.logs, `$ ${cmdToExec}`, `[SYSTEM] Comando enviado a la consola ${t.name}...`, `[OUT] Proceso ejecutado con éxito.`]
-        };
-      }
-      return t;
-    }));
+    try {
+      const res = await fetch('http://localhost:8001/api/system/os-launch', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ app_name: cmdToExec })
+      });
+      const data = await res.json();
+
+      setTabs(prev => prev.map(t => {
+        if (t.id === activeTabId) {
+          return {
+            ...t,
+            status: data.success ? 'running' : 'error',
+            logs: [
+              ...t.logs,
+              `$ ${cmdToExec}`,
+              data.success
+                ? `[SUCCESS] ${data.message}`
+                : `[ERROR] ${data.error || 'Fallo en ejecución'}`
+            ]
+          };
+        }
+        return t;
+      }));
+    } catch (err: any) {
+      setTabs(prev => prev.map(t => {
+        if (t.id === activeTabId) {
+          return {
+            ...t,
+            status: 'error',
+            logs: [...t.logs, `$ ${cmdToExec}`, `[ERROR] No se pudo conectar al backend: ${err.message}`]
+          };
+        }
+        return t;
+      }));
+    }
   };
 
   const handleAddNewTerminal = () => {

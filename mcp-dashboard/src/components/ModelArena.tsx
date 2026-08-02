@@ -48,32 +48,9 @@ export const ModelArena: React.FC = () => {
         });
         setWinningModel(data.winner);
       } else {
-        // Fallback simulated comparative response for robust UI experience
-        setTimeout(() => {
-          const resA: ArenaResult = {
-            modelId: modelA,
-            modelName: modelA === 'glm-5.2-max' ? 'GLM-5.2 (Zhipu AI)' : modelA,
-            codeOutput: `# [${modelA}] Implementación propuesta:\nfrom fastapi import FastAPI\n\napp = FastAPI(title="Arena App")\n\n@app.get("/api/data")\nasync def get_data():\n    return {"status": "ok", "provider": "${modelA}"}`,
-            executionTimeMs: 185,
-            qualityScore: 0.94,
-            syntaxValid: true,
-            securityPassed: true
-          };
-          const resB: ArenaResult = {
-            modelId: modelB,
-            modelName: modelB === 'cli_antigravity' ? 'Antigravity AGY CLI' : modelB,
-            codeOutput: `# [${modelB}] Implementación propuesta:\nfrom fastapi import FastAPI\n\napp = FastAPI()\n\n@app.get("/")\ndef read_root():\n    return {"hello": "antigravity"}`,
-            executionTimeMs: 240,
-            qualityScore: 0.89,
-            syntaxValid: true,
-            securityPassed: true
-          };
-          setResults({ modelA: resA, modelB: resB });
-          setWinningModel(modelA);
-          setIsComparing(false);
-        }, 1200);
+        throw new Error(`Error HTTP ${res.status}: Servidor indisponible`);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("Arena execution error:", err);
     } finally {
       setIsComparing(false);
