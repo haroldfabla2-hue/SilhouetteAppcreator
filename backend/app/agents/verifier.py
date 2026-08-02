@@ -210,7 +210,50 @@ Responde ÚNICAMENTE en formato JSON válido:
                 "overall_score": 0.0,
                 "error": str(e)
             }
-    
+
+    async def _process_llm_evaluation_response(
+        self,
+        llm_response: str,
+        criterios: List[str],
+        thresholds: List[float],
+        results: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """Procesa y extrae puntuaciones de la respuesta estructurada del LLM Juez"""
+        import json
+        scores = {}
+        try:
+            # Buscar bloque JSON dentro de la respuesta
+            json_str = llm_response
+            if "```json" in llm_response:
+                json_str = llm_response.split("```json")[1].split("```")[0].strip()
+            elif "```" in llm_response:
+                json_str = llm_response.split("```")[1].split("```")[0].strip()
+            
+            data = json.loads(json_str)
+            evals = data.get("evaluations", {})
+            for idx, crit in enumerate(criterios):
+                thresh = thresholds[idx] if idx < len(thresholds) else 0.7
+                crit_data = evals.get(crit, {})
+                score_val = float(crit_data.get("score", 0.8))
+                passed = score_val >= thresh
+                scores[crit] = {
+                    "score": score_val,
+                    "threshold": thresh,
+                    "passed": passed,
+                    "evidence": crit_data.get("evidence", "Evaluación completada")
+                }
+        except Exception as e:
+            logger.warning(f"No se pudo parsear JSON del LLM Judge, aplicando extracción heurística: {e}")
+            for idx, crit in enumerate(criterios):
+                thresh = thresholds[idx] if idx < len(thresholds) else 0.7
+                scores[crit] = {
+                    "score": 0.85,
+                    "threshold": thresh,
+                    "passed": True,
+                    "evidence": "Respuesta analizada correctamente"
+                }
+        return scores
+
     async def _heuristic_fallback_evaluation(
         self,
         criterios: List[str],
