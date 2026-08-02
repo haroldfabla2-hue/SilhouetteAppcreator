@@ -200,9 +200,14 @@ Responde ÚNICAMENTE en formato JSON válido:
                 "criterios_evaluated": criterios,
                 "scores": scores,
                 "overall_score": overall_score,
-                "llm_response": llm_response,
-                "scores": scores,
-                "overall_score": overall_score,
+                "llm_response": llm_response
+            }
+        except Exception as e:
+            return {
+                "eval_type": "llm_judge_fallback",
+                "criterios_evaluated": criterios,
+                "scores": {},
+                "overall_score": 0.0,
                 "error": str(e)
             }
     
