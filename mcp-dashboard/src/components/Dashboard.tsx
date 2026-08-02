@@ -65,7 +65,7 @@ const Dashboard = () => {
     setAnalyzingError(logMessage);
     try {
       // Endpoint que acabamos de crear en silhouettemcp_server.py (Fase 2)
-      const res = await fetch('http://localhost:8000/api/agents/analyze-error', {
+      const res = await fetch('http://localhost:8001/api/agents/analyze-error', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ error_logs: logMessage, context_info: 'Dashboard UI' })
