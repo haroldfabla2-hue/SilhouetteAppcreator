@@ -46,10 +46,12 @@ interface LogEntry {
 
 import { ModelManager } from './ModelManager';
 import { AppCreatorChat } from './AppCreatorChat';
-import { Settings, MessageSquare } from 'lucide-react';
+import { ModelArena } from './ModelArena';
+import { DesignInspector } from './DesignInspector';
+import { Settings, MessageSquare, Swords, Eye, BarChart3 } from 'lucide-react';
 
 const Dashboard = () => {
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'chat' | 'settings'>('chat');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'chat' | 'arena' | 'design' | 'settings'>('chat');
   const [metrics, setMetrics] = useState<SystemMetrics[]>([]);
   const [agents, setAgents] = useState<AgentStatus[]>([]);
   const [logs, setLogs] = useState<LogEntry[]>([]);
@@ -166,7 +168,7 @@ const Dashboard = () => {
         </div>
 
         {/* Pestañas de Navegación */}
-        <div className="flex gap-2 bg-gray-200 p-1.5 rounded-xl">
+        <div className="flex flex-wrap gap-2 bg-gray-200 p-1.5 rounded-xl">
           <button
             onClick={() => setActiveTab('chat')}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition ${
@@ -177,12 +179,31 @@ const Dashboard = () => {
             App Creator (Chat)
           </button>
           <button
+            onClick={() => setActiveTab('arena')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition ${
+              activeTab === 'arena' ? 'bg-rose-600 text-white shadow-sm' : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            <Swords className="w-4 h-4" />
+            Arena Multi-Modelo
+          </button>
+          <button
+            onClick={() => setActiveTab('design')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition ${
+              activeTab === 'design' ? 'bg-purple-600 text-white shadow-sm' : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            <Eye className="w-4 h-4" />
+            Design Inspector
+          </button>
+          <button
             onClick={() => setActiveTab('dashboard')}
-            className={`px-4 py-2 rounded-lg text-sm font-semibold transition ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition ${
               activeTab === 'dashboard' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'
             }`}
           >
-            Métricas y Telemetría
+            <BarChart3 className="w-4 h-4" />
+            Métricas & Telemetría
           </button>
           <button
             onClick={() => setActiveTab('settings')}
@@ -198,6 +219,10 @@ const Dashboard = () => {
 
       {activeTab === 'chat' ? (
         <AppCreatorChat />
+      ) : activeTab === 'arena' ? (
+        <ModelArena />
+      ) : activeTab === 'design' ? (
+        <DesignInspector />
       ) : activeTab === 'settings' ? (
         <ModelManager />
       ) : (
