@@ -705,6 +705,54 @@ async def battle_arena(req: ArenaRequest):
         logger.error(f"Error en /api/agents/arena: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.get("/api/system/file-content")
+async def get_file_content(path: str):
+    """Lee el contenido de un archivo del proyecto"""
+    try:
+        if os.path.exists(path):
+            with open(path, "r", encoding="utf-8") as f:
+                content = f.read()
+            return {"success": True, "path": path, "content": content}
+        return {"success": False, "error": "Archivo no encontrado"}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+class SaveFileRequest(BaseModel):
+    path: str
+    content: str
+
+@app.post("/api/system/save-file")
+async def save_file_content(req: SaveFileRequest):
+    """Guarda el contenido de un archivo del proyecto"""
+    try:
+        with open(req.path, "w", encoding="utf-8") as f:
+            f.write(req.content)
+        return {"success": True, "message": "Archivo guardado exitosamente"}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+class OSLaunchRequest(BaseModel):
+    app_name: str
+    args: Optional[str] = None
+
+@app.post("/api/system/os-launch")
+async def launch_os_app(req: OSLaunchRequest):
+    """Lanza una aplicación de escritorio local (ej. Blender, VSCode)"""
+    from backend.app.agents.os_control_agent import OSControlAgent
+    agent = OSControlAgent()
+    return await agent.launch_application(req.app_name, req.args)
+
+class CreateMCPServerRequest(BaseModel):
+    name: str
+    description: Optional[str] = ""
+
+@app.post("/api/mcp/create-server")
+async def create_dynamic_mcp_server(req: CreateMCPServerRequest):
+    """Genera dinámicamente un nuevo servidor MCP usando FastMCP"""
+    from backend.app.core.dynamic_mcp_factory import DynamicMCPFactory
+    factory = DynamicMCPFactory()
+    return factory.create_server(req.name, req.description or "")
+
 @app.post("/api/agents/deploy")
 async def deploy_agent(request: Request):
     """Desplegar nuevo agente"""

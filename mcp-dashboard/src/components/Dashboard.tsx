@@ -48,10 +48,13 @@ import { ModelManager } from './ModelManager';
 import { AppCreatorChat } from './AppCreatorChat';
 import { ModelArena } from './ModelArena';
 import { DesignInspector } from './DesignInspector';
-import { Settings, MessageSquare, Swords, Eye, BarChart3 } from 'lucide-react';
+import { CodeEditor } from './CodeEditor';
+import { TerminalManager } from './TerminalManager';
+import { DynamicMCPFactory } from './DynamicMCPFactory';
+import { Settings, MessageSquare, Swords, Eye, BarChart3, Code, Terminal, Cpu } from 'lucide-react';
 
 const Dashboard = () => {
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'chat' | 'arena' | 'design' | 'settings'>('chat');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'chat' | 'arena' | 'editor' | 'terminals' | 'mcp' | 'design' | 'settings'>('chat');
   const [metrics, setMetrics] = useState<SystemMetrics[]>([]);
   const [agents, setAgents] = useState<AgentStatus[]>([]);
   const [logs, setLogs] = useState<LogEntry[]>([]);
@@ -188,6 +191,33 @@ const Dashboard = () => {
             Arena Multi-Modelo
           </button>
           <button
+            onClick={() => setActiveTab('editor')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition ${
+              activeTab === 'editor' ? 'bg-indigo-600 text-white shadow-sm' : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            <Code className="w-4 h-4" />
+            Editor de Código
+          </button>
+          <button
+            onClick={() => setActiveTab('terminals')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition ${
+              activeTab === 'terminals' ? 'bg-emerald-600 text-white shadow-sm' : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            <Terminal className="w-4 h-4" />
+            Consolas Múltiples
+          </button>
+          <button
+            onClick={() => setActiveTab('mcp')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition ${
+              activeTab === 'mcp' ? 'bg-amber-600 text-white shadow-sm' : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            <Cpu className="w-4 h-4" />
+            Dynamic FastMCP
+          </button>
+          <button
             onClick={() => setActiveTab('design')}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition ${
               activeTab === 'design' ? 'bg-purple-600 text-white shadow-sm' : 'text-gray-600 hover:text-gray-900'
@@ -221,6 +251,12 @@ const Dashboard = () => {
         <AppCreatorChat />
       ) : activeTab === 'arena' ? (
         <ModelArena />
+      ) : activeTab === 'editor' ? (
+        <CodeEditor />
+      ) : activeTab === 'terminals' ? (
+        <TerminalManager />
+      ) : activeTab === 'mcp' ? (
+        <DynamicMCPFactory />
       ) : activeTab === 'design' ? (
         <DesignInspector />
       ) : activeTab === 'settings' ? (
