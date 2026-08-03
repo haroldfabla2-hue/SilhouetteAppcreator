@@ -204,7 +204,7 @@ export const AppCreatorChat: React.FC = () => {
             </div>
             <div className="bg-gray-800/90 border border-gray-700 text-gray-300 rounded-xl p-4 flex items-center gap-3">
               <Loader2 className="w-4 h-4 animate-spin text-indigo-400" />
-              <span className="text-xs">El equipo de agentes (Reasoner -> Planner -> Executor -> Verifier) está procesando tu aplicación...</span>
+              <span className="text-xs">{"El equipo de agentes (Reasoner -> Planner -> Executor -> Verifier) está procesando tu aplicación..."}</span>
             </div>
           </div>
         )}
