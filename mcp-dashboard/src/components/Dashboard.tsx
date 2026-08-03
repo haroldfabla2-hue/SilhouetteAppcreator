@@ -119,7 +119,7 @@ const Dashboard = () => {
     return () => clearInterval(interval);
   }, []);
 
-  // Atajos de Teclado Globales (Alt + 1..8)
+  // Atajos de Teclado Globales (Alt + 1..8, Ctrl + `, Ctrl + Shift + L)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.altKey) {
@@ -131,6 +131,12 @@ const Dashboard = () => {
         else if (e.key === '6') { e.preventDefault(); setActiveTab('design'); }
         else if (e.key === '7') { e.preventDefault(); setActiveTab('dashboard'); }
         else if (e.key === '8') { e.preventDefault(); setActiveTab('settings'); }
+      } else if (e.ctrlKey && e.key === '`') {
+        e.preventDefault();
+        setActiveTab(prev => prev === 'terminals' ? 'chat' : 'terminals');
+      } else if (e.ctrlKey && e.shiftKey && (e.key === 'L' || e.key === 'l')) {
+        e.preventDefault();
+        setLogs([]);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
