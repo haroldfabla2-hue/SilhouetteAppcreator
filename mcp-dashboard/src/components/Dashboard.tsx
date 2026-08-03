@@ -119,6 +119,24 @@ const Dashboard = () => {
     return () => clearInterval(interval);
   }, []);
 
+  // Atajos de Teclado Globales (Alt + 1..8)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.altKey) {
+        if (e.key === '1') { e.preventDefault(); setActiveTab('chat'); }
+        else if (e.key === '2') { e.preventDefault(); setActiveTab('arena'); }
+        else if (e.key === '3') { e.preventDefault(); setActiveTab('editor'); }
+        else if (e.key === '4') { e.preventDefault(); setActiveTab('terminals'); }
+        else if (e.key === '5') { e.preventDefault(); setActiveTab('mcp'); }
+        else if (e.key === '6') { e.preventDefault(); setActiveTab('design'); }
+        else if (e.key === '7') { e.preventDefault(); setActiveTab('dashboard'); }
+        else if (e.key === '8') { e.preventDefault(); setActiveTab('settings'); }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'active': return 'text-green-500';
