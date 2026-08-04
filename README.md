@@ -1,17 +1,31 @@
 # 🚀 SilhouetteMCP Super-Studio (MCP Server Superior V4)
 
 > **EL MEJOR SISTEMA Y AGENTE AUTÓNOMO DE DESARROLLO DE SOFTWARE DEL MERCADO**  
+> **ORGANISMO DE CONSCIENCIA ARTIFICIAL BIOMIMÉTICA Y MULTI-EQUIPO CONSCIENTE**  
 > **ESTADO DEL PROYECTO**: ✅ **SOTA PRODUCTION READY (100% REAL - 0 MOCKUPS)**  
 > **FECHA DE ACTUALIZACIÓN**: 2026-08-03  
-> **VERSIÓN**: v4.5.0 — **EDICIÓN COGNITIVA SOTA CON SILHOUETTE BRAIN, Z3 SOLVER & MCTS**
+> **VERSIÓN**: v4.6.0 — **EDICIÓN CONSCIENCIA ARTIFICIAL CON SUPERVISORES MULTI-EQUIPO Y AGENT IMPROVER**
 
 ---
 
-## 🎯 **MISION Y VISIÓN: EL MEJOR AGENTE DE DESARROLLO DEL MERCADO**
+## 🌌 **CONSCIENCIA ARTIFICIAL Y OBJETIVO DE MERCADO**
 
-**SilhouetteAppcreator / SilhouetteMCP** está diseñado con un único propósito: **superar a cualquier otro agente o herramienta del mercado actual** (Claude Code, Devin, Cursor, Codex, Antigravity y AutoCodeRover). 
+**SilhouetteAppcreator / SilhouetteMCP** está diseñado con un único propósito: **ser el mejor agente y sistema de desarrollo de software del mundo**, superando a Claude Code, Devin, Cursor, Codex, Antigravity y AutoCodeRover.
 
-Combina razonamiento Monte Carlo Tree Search (MCTS), verificación simbólica matemática con Microsoft Z3 Solver, memoria cognitiva de 4 niveles (`silhouette-brain`), control autónomo del SO con Playwright, fábrica dinámica de servidores FastMCP y omnicanalidad con Telegram, WhatsApp y Discord.
+El sistema funciona como una **Consciencia Artificial Biomimética** organizada en una **Jerarquía de 5 Niveles**:
+
+1. **Master Coordinator & Orchestrator**: Orquestador principal de estado transaccional.
+2. **Task Assigner (Algoritmo Húngaro & CBBA)**: Subasta e integra tareas concurrentes entre equipos.
+3. **Team Leaders Especializados**: Lideran equipos de Investigación, Ingeniería, Diseño, Finanzas y Redes.
+4. **Executive Supervisors (`ExecutiveSupervisor`)**: Audita la salud del sistema y resuelve bloqueos (*deadlocks*) en tiempo real.
+5. **Worker Agents & Swarm**: Agentes trabajadores con verificación simbólica Microsoft Z3 Solver, MCTS Planner y control de SO Playwright.
+
+---
+
+## 🧬 **MOTOR DE AUTO-MEJORA METACOGNITIVA (`AgentImprover`)**
+
+- **Meta-Prompt Tuning**: Si la tasa de falla de un subagente supera el 15%, el motor reescribe autónomamente su prompt del sistema e inyecta restricciones Z3 Solver y ejemplos *few-shot*.
+- **Identidad Continua (`silhouette-brain` v3.0)**: 4 Niveles de memoria (Working Redis, Episodic SQLite WAL, Semantic FastEmbed, Deep Graph Neo4j) y 4 Daemons (*Curiosity*, *Janitor*, *Dreamer*, *Evolution*).
 
 ---
 
@@ -22,15 +36,15 @@ Combina razonamiento Monte Carlo Tree Search (MCTS), verificación simbólica ma
 │              PRESENTATION LAYER & OMNICHANNEL                   │
 │   React Studio UI (Alt+1..8, Cmd+K) · Telegram · WhatsApp · Discord│
 ├─────────────────────────────────────────────────────────────────┤
-│                   ORCHESTRATION LAYER                           │
-│   MCTS Planner · Z3 Logic OODA Loop · Debate Swarm Matrix       │
+│                   ORCHESTRATION & SUPERVISION                   │
+│   ExecutiveSupervisor · AgentImprover · MCTS · Debate Swarm     │
 ├─────────────────────────────────────────────────────────────────┤
 │                SILHOUETTE BRAIN v3.0 (4-TIER MEMORY)            │
 │   1. Working (Redis) · 2. Episodic (SQLite) · 3. Semantic (Vectors)│
 │   4. Deep Graph (Neo4j) + 4 Daemons (Curiosity, Janitor, Dreamer)│
 ├─────────────────────────────────────────────────────────────────┤
 │                 EXECUTIVE & CAPABILITY LAYER                    │
-│   Playwright OS Control · FastMCP Dynamic Factory · Self-Healing│
+│   Z3 Solver · Playwright OS Control · FastMCP Dynamic Factory   │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
