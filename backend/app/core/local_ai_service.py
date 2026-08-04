@@ -1,10 +1,11 @@
 """
 Servicio de Autodescubrimiento e Instalación de IAs Locales (Ollama, LM Studio)
 """
-import httpx
 import asyncio
 import logging
-from typing import Dict, Any, List, Optional
+from typing import Any
+
+import httpx
 
 logger = logging.getLogger(__name__)
 
@@ -15,7 +16,7 @@ class LocalAIService:
     def __init__(self):
         self.client = httpx.AsyncClient(timeout=5.0)
 
-    async def check_ollama(self) -> Dict[str, Any]:
+    async def check_ollama(self) -> dict[str, Any]:
         """Verifica si Ollama está activo y retorna la lista de modelos instalados."""
         try:
             res = await self.client.get(f"{OLLAMA_BASE_URL}/api/tags")
@@ -27,7 +28,7 @@ class LocalAIService:
             logger.debug(f"Ollama no disponible en {OLLAMA_BASE_URL}: {e}")
         return {"online": False, "provider": "ollama", "models": [], "base_url": OLLAMA_BASE_URL}
 
-    async def check_lm_studio(self) -> Dict[str, Any]:
+    async def check_lm_studio(self) -> dict[str, Any]:
         """Verifica si LM Studio está activo (API OpenAI compatible) y retorna los modelos."""
         try:
             res = await self.client.get(f"{LM_STUDIO_BASE_URL}/v1/models")
@@ -39,7 +40,7 @@ class LocalAIService:
             logger.debug(f"LM Studio no disponible en {LM_STUDIO_BASE_URL}: {e}")
         return {"online": False, "provider": "lm_studio", "models": [], "base_url": f"{LM_STUDIO_BASE_URL}/v1"}
 
-    async def discover_all(self) -> List[Dict[str, Any]]:
+    async def discover_all(self) -> list[dict[str, Any]]:
         """Descubre todas las IAs locales disponibles simultáneamente."""
         results = await asyncio.gather(self.check_ollama(), self.check_lm_studio())
         return [r for r in results if r["online"]]

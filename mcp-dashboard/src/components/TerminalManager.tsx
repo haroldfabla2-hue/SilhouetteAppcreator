@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Terminal, Play, Square, RefreshCw, Plus, Trash2, CheckCircle2, ShieldAlert, Cpu } from 'lucide-react';
+import { API_BASE } from "@/lib/api";
 
 interface TerminalTab {
   id: string;
@@ -60,7 +61,7 @@ export const TerminalManager: React.FC = () => {
     setInputCmd('');
 
     try {
-      const res = await fetch('http://localhost:8001/api/system/os-launch', {
+      const res = await fetch(`${API_BASE}/api/system/os-launch`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ app_name: cmdToExec })

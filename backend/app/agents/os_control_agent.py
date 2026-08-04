@@ -1,11 +1,13 @@
 import asyncio
 import logging
 import subprocess
-import shutil
-import os
-import psutil
-from typing import Dict, Any, Optional, List
 from pathlib import Path
+from typing import TYPE_CHECKING, Any
+
+import psutil
+
+if TYPE_CHECKING:
+    from backend.app.security.process_policy import LaunchPlan
 
 logger = logging.getLogger("OSControlAgent")
 
@@ -21,39 +23,54 @@ class OSControlAgent:
         self.artifacts_dir.mkdir(parents=True, exist_ok=True)
         logger.info(f"OSControlAgent inicializado. Artefactos web en: {self.artifacts_dir}")
 
-    async def launch_application(self, app_name: str, args: Optional[str] = None) -> Dict[str, Any]:
-        """Abre una aplicación instalada en el sistema local (Windows / Linux / macOS)."""
-        logger.info(f"[OS Control] Solicitando lanzamiento de app: {app_name}")
-        
-        executable_path = shutil.which(app_name) or app_name
-        cmd = [executable_path]
-        if args:
-            cmd.extend(args.split())
+    async def launch_plan(self, plan: "LaunchPlan") -> dict[str, Any]:
+        """Ejecuta un `LaunchPlan` ya validado por `security.process_policy`.
+
+        Este método NO valida: espera que la lista blanca y el saneado de
+        argumentos se hayan aplicado antes. Es el único camino de lanzamiento.
+        """
+        logger.info("[OS Control] Lanzando '%s' (%s)", plan.app_name, plan.executable)
+        try:
+            process = subprocess.Popen(
+                plan.argv, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False
+            )
+        except OSError as e:
+            logger.error("[OS Control] Error lanzando %s: %s", plan.app_name, e)
+            return {"success": False, "app": plan.app_name, "error": str(e)}
+
+        return {
+            "success": True,
+            "app": plan.app_name,
+            "pid": process.pid,
+            "message": f"Aplicación '{plan.app_name}' lanzada con PID {process.pid}",
+        }
+
+    async def launch_application(self, app_name: str, args: str | None = None) -> dict[str, Any]:
+        """Valida contra la lista blanca y lanza la aplicación.
+
+        Conveniencia para quien llama desde dentro del proceso; la validación es
+        la misma que aplica la API.
+        """
+        from backend.app.security.process_policy import (
+            AppNotAllowed,
+            ArgumentRejected,
+            plan_launch,
+        )
 
         try:
-            process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            return {
-                "success": True,
-                "app": app_name,
-                "pid": process.pid,
-                "executable_path": executable_path,
-                "message": f"Aplicación '{app_name}' lanzada exitosamente con PID {process.pid}"
-            }
-        except Exception as e:
-            logger.error(f"[OS Control] Error lanzando {app_name}: {e}")
-            return {
-                "success": False,
-                "app": app_name,
-                "error": str(e)
-            }
+            plan = plan_launch(app_name, args)
+        except (AppNotAllowed, ArgumentRejected) as exc:
+            logger.warning("[OS Control] Lanzamiento rechazado (%s): %s", app_name, exc)
+            return {"success": False, "app": app_name, "error": str(exc)}
+        return await self.launch_plan(plan)
 
-    async def inspect_web_browser(self, url: str, headless: bool = True, wait_seconds: int = 2) -> Dict[str, Any]:
+    async def inspect_web_browser(self, url: str, headless: bool = True, wait_seconds: int = 2) -> dict[str, Any]:
         """
         Inspecciona y automatiza navegación web en vivo mediante Playwright.
         Navega a la URL, extrae título real, métricas del DOM y genera una captura de pantalla.
         """
         logger.info(f"[OS Control - Playwright] Navegando a: {url}")
-        
+
         try:
             from playwright.async_api import async_playwright
         except ImportError:
@@ -108,7 +125,7 @@ class OSControlAgent:
                 "error": str(e)
             }
 
-    def list_running_processes(self, filter_name: Optional[str] = None) -> List[Dict[str, Any]]:
+    def list_running_processes(self, filter_name: str | None = None) -> list[dict[str, Any]]:
         """Obtiene la lista de procesos activos en el sistema operativo local."""
         processes = []
         for proc in psutil.process_iter(['pid', 'name', 'status', 'memory_info']):
@@ -123,7 +140,7 @@ class OSControlAgent:
                 pass
         return processes[:50]  # Limitar a los primeros 50 para legibilidad
 
-    def kill_process(self, pid: int) -> Dict[str, Any]:
+    def kill_process(self, pid: int) -> dict[str, Any]:
         """Finaliza un proceso por su PID."""
         try:
             proc = psutil.Process(pid)

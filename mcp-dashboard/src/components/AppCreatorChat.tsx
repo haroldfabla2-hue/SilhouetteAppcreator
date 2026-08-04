@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Send, Bot, User, Cpu, Sparkles, CheckCircle2, Code, Layers, ShieldCheck, Terminal, Loader2 } from 'lucide-react';
+import { API_BASE } from "@/lib/api";
 
 interface ChatMessage {
   id: string;
@@ -26,7 +27,7 @@ export const AppCreatorChat: React.FC = () => {
 
   useEffect(() => {
     // Fetch available models from backend
-    fetch('http://localhost:8001/api/system/models')
+    fetch(`${API_BASE}/api/system/models`)
       .then(res => res.json())
       .then(data => {
         const cloud = data.cloud_and_custom_models || [];
@@ -53,7 +54,7 @@ export const AppCreatorChat: React.FC = () => {
     setIsProcessing(true);
 
     try {
-      const res = await fetch('http://localhost:8001/api/agents/chat', {
+      const res = await fetch(`${API_BASE}/api/agents/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

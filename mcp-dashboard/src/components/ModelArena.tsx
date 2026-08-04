@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Swords, Play, GitCompare, CheckCircle2, AlertTriangle, Zap, Code, ShieldCheck, ArrowRight, Sparkles, RefreshCw } from 'lucide-react';
+import { API_BASE } from "@/lib/api";
 
 interface ArenaResult {
   modelId: string;
@@ -30,7 +31,7 @@ export const ModelArena: React.FC = () => {
     setWinningModel(null);
 
     try {
-      const res = await fetch('http://localhost:8001/api/agents/arena', {
+      const res = await fetch(`${API_BASE}/api/agents/arena`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

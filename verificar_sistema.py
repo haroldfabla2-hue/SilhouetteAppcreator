@@ -1,340 +1,252 @@
 #!/usr/bin/env python3
+"""Verificación real del estado del sistema.
+
+La versión anterior comprobaba que existieran archivos y directorios, y su único
+test de comportamiento pasaba `True` como literal:
+
+    results["imports"] = self.check_item("Test de importaciones backend", True)
+
+Con eso reportaba «95,2 % EXCELENTE» y esa cifra alimentaba la documentación.
+Un repositorio vacío con los nombres correctos habría puntuado igual.
+
+Ahora cada comprobación ejecuta algo y puede fallar de verdad:
+importa los módulos, ejecuta la suite de tests, y verifica que las barreras de
+seguridad están puestas. El código de salida es 0 sólo si todo lo crítico pasa.
+
+Uso:
+    python verificar_sistema.py [--rapido]
 """
-🔍 Script de Verificación Completa del Sistema
-============================================
+from __future__ import annotations
 
-Verifica todo el ecosistema MCP Server Superior:
-- Dependencias instaladas
-- Servicios Docker
-- API keys configuradas
-- Conectividad a servicios
-- Estado de agentes
-
-Autor: MiniMax Agent
-Fecha: 2025-11-04
-"""
-
+import argparse
+import importlib
+import os
 import subprocess
 import sys
-import os
-import json
-import time
-import asyncio
+from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
-import importlib.util
 
-# Colores para output
-class Colors:
-    GREEN = '\033[92m'
-    YELLOW = '\033[93m'
-    RED = '\033[91m'
-    BLUE = '\033[94m'
-    BOLD = '\033[1m'
-    END = '\033[0m'
+RAIZ = Path(__file__).resolve().parent
 
-class SystemVerifier:
-    """Verificador completo del sistema"""
-    
-    def __init__(self):
-        self.workspace_path = Path.cwd()
-        self.results = {
-            "dependencies": [],
-            "docker": [],
-            "api_keys": [],
-            "connectivity": [],
-            "services": [],
-            "agents": []
-        }
-        self.total_checks = 0
-        self.passed_checks = 0
-    
-    def print_header(self, title: str):
-        """Imprimir header de sección"""
-        print(f"\n{Colors.BLUE}{Colors.BOLD}{'='*60}{Colors.END}")
-        print(f"{Colors.BLUE}{Colors.BOLD}{title}{Colors.END}")
-        print(f"{Colors.BLUE}{Colors.BOLD}{'='*60}{Colors.END}")
-    
-    def check_item(self, description: str, success: bool, details: str = "") -> bool:
-        """Verificar y mostrar estado de un ítem"""
-        self.total_checks += 1
-        if success:
-            self.passed_checks += 1
-            icon = "[OK]"
-            color = Colors.GREEN
-        else:
-            icon = "[FAIL]"
-            color = Colors.RED
-            
-        status = f"{color}{'PASS' if success else 'FAIL'}{Colors.END}"
-        print(f"  {icon} {description:<50} [{status}]")
-        if details:
-            print(f"     -> {details}")
-        
-        return success
-    
-    def check_dependencies(self) -> Dict[str, bool]:
-        """Verificar dependencias críticas"""
-        self.print_header("DEPENDENCIAS DEL SISTEMA")
-        
-        # Dependencias críticas
-        critical_deps = [
-            ("fastapi", "FastAPI framework"),
-            ("uvicorn", "ASGI server"),
-            ("sqlalchemy", "Database ORM"),
-            ("pandas", "Data processing"),
-            ("httpx", "HTTP client"),
-            ("pydantic", "Data validation")
+
+class Color:
+    VERDE = "\033[92m"
+    ROJO = "\033[91m"
+    AMARILLO = "\033[93m"
+    AZUL = "\033[94m"
+    NEGRITA = "\033[1m"
+    FIN = "\033[0m"
+
+    @classmethod
+    def desactivar(cls) -> None:
+        for attr in ("VERDE", "ROJO", "AMARILLO", "AZUL", "NEGRITA", "FIN"):
+            setattr(cls, attr, "")
+
+
+@dataclass
+class Resultado:
+    nombre: str
+    ok: bool
+    critico: bool
+    detalle: str = ""
+
+
+@dataclass
+class Verificador:
+    resultados: list[Resultado] = field(default_factory=list)
+
+    def seccion(self, titulo: str) -> None:
+        # Sólo ASCII: la consola de Windows usa cp1252 por defecto y no puede
+        # codificar caracteres de dibujo de caja.
+        print(f"\n{Color.AZUL}{Color.NEGRITA}-- {titulo} {'-' * max(0, 56 - len(titulo))}{Color.FIN}")
+
+    def comprobar(self, nombre: str, ok: bool, detalle: str = "", *, critico: bool = True) -> bool:
+        self.resultados.append(Resultado(nombre, ok, critico, detalle))
+        marca = f"{Color.VERDE}[OK]{Color.FIN}" if ok else (
+            f"{Color.ROJO}[FALLA]{Color.FIN}" if critico else f"{Color.AMARILLO}[AVISO]{Color.FIN}"
+        )
+        linea = f"  {marca} {nombre}"
+        if detalle:
+            linea += f" {Color.AMARILLO}— {detalle}{Color.FIN}"
+        print(linea)
+        return ok
+
+    # -- comprobaciones ----------------------------------------------------
+    def verificar_importaciones(self) -> None:
+        """Importa de verdad cada módulo crítico."""
+        self.seccion("IMPORTACIONES")
+        modulos = [
+            ("backend.app.security.auth", "Autenticación"),
+            ("backend.app.security.workspace", "Confinamiento de rutas"),
+            ("backend.app.security.process_policy", "Lista blanca de procesos"),
+            ("backend.app.security.prompt_injection_guard", "Guardián anti-inyección"),
+            ("backend.app.core.llm_router", "Router LLM"),
+            ("backend.app.orchestrator.multi_agent", "Orquestador multi-agente"),
+            ("backend.app.orchestrator.executive_supervisor", "Supervisor ejecutivo"),
+            ("backend.app.evolution.agent_improver", "Motor de auto-mejora"),
+            ("backend.app.swarm.debate_matrix", "Matriz de debate"),
+            ("backend.app.logic_engine.z3_verifier", "Verificador de invariantes"),
+            ("backend.app.services.silhouette_brain_service", "Memoria cognitiva"),
         ]
-        
-        results = {}
-        
-        for package, description in critical_deps:
+        for modulo, descripcion in modulos:
             try:
-                __import__(package.replace("-", "_"))
-                results[package] = self.check_item(f"{description} ({package})", True)
-            except ImportError:
-                results[package] = self.check_item(f"{description} ({package})", False, "No instalado")
-        
-        # Verificar requirements.txt
-        req_file = self.workspace_path / "requirements.txt"
-        self.check_item("Archivo requirements.txt", req_file.exists())
-        
-        # Verificar Python version
-        python_version = f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
-        python_ok = sys.version_info >= (3, 9)
-        self.check_item("Python 3.9+", python_ok, f"Versión actual: {python_version}")
-        
-        return results
-    
-    def check_docker_services(self) -> Dict[str, bool]:
-        """Verificar servicios Docker"""
-        self.print_header("SERVICIOS DOCKER")
-        
-        results = {}
-        
-        # Verificar Docker disponible
+                importlib.import_module(modulo)
+                self.comprobar(descripcion, True)
+            except Exception as exc:
+                self.comprobar(descripcion, False, f"{type(exc).__name__}: {exc}")
+
+    def verificar_memoria(self) -> None:
+        """Comprueba que la memoria almacena y recupera de verdad."""
+        self.seccion("MEMORIA COGNITIVA")
         try:
-            result = subprocess.run(["docker", "--version"], capture_output=True, text=True, timeout=10)
-            docker_available = result.returncode == 0
-            results["docker"] = self.check_item("Docker instalado", docker_available, 
-                                              result.stdout.strip() if docker_available else "No disponible")
-        except (subprocess.TimeoutExpired, FileNotFoundError):
-            results["docker"] = self.check_item("Docker instalado", False, "No encontrado")
-            return results
-        
-        # Verificar Docker Compose
+            from backend.app.services.silhouette_brain_service import SilhouetteBrainService
+        except ImportError as exc:
+            self.comprobar("Servicio de memoria", False, str(exc))
+            return
+
+        servicio = SilhouetteBrainService()
+        if not self.comprobar(
+            "silhouette-brain instalado",
+            servicio.available,
+            "" if servicio.available else "pip install -e '.[memory]'",
+            critico=False,
+        ):
+            return
+
+        stats = servicio.get_stats()
+        self.comprobar("Los cuatro niveles responden", set(stats["tiers"]) == {
+            "working", "episodic", "semantic", "deep_graph"
+        })
+        self.comprobar("El embedder está declarado", bool(stats.get("embedder")))
+        servicio.close()
+
+    def verificar_seguridad(self) -> None:
+        """Comprueba que las barreras de seguridad están puestas."""
+        self.seccion("SEGURIDAD")
+
+        from backend.app.security.process_policy import allowed_apps
+        from backend.app.security.workspace import PathNotAllowed, resolve_within_workspace
+
+        # Confinamiento de rutas.
         try:
-            result = subprocess.run(["docker-compose", "--version"], capture_output=True, text=True, timeout=10)
-            compose_available = result.returncode == 0
-            results["docker_compose"] = self.check_item("Docker Compose", compose_available,
-                                                       result.stdout.strip() if compose_available else "No disponible")
-        except (subprocess.TimeoutExpired, FileNotFoundError):
-            results["docker_compose"] = self.check_item("Docker Compose", False, "No encontrado")
-        
-        # Verificar docker-compose.yml
-        compose_file = self.workspace_path / "docker-compose.yml"
-        results["compose_file"] = self.check_item("Archivo docker-compose.yml", compose_file.exists())
-        
-        if not docker_available:
-            return results
-        
-        # Verificar servicios Docker ejecutándose
-        services = ["agente_postgres", "agente_redis", "agente_backend", "agente_frontend"]
-        
+            resolve_within_workspace("../../../etc/passwd")
+            self.comprobar("Se bloquea el recorrido de directorios", False, "una ruta externa fue aceptada")
+        except PathNotAllowed:
+            self.comprobar("Se bloquea el recorrido de directorios", True)
+
         try:
-            result = subprocess.run(["docker", "ps", "--format", "table {{.Names}}\\t{{.Status}}"], 
-                                  capture_output=True, text=True, timeout=15)
-            
-            if result.returncode == 0:
-                running_containers = result.stdout
-                for service in services:
-                    is_running = service in running_containers and "Up" in running_containers
-                    results[f"service_{service}"] = self.check_item(f"Servicio {service}", is_running,
-                                                                    "Ejecutándose" if is_running else "Detenido")
-        except subprocess.TimeoutExpired:
-            self.check_item("Verificación de servicios Docker", False, "Timeout")
-        
-        return results
-    
-    def check_api_keys(self) -> Dict[str, bool]:
-        """Verificar configuración de API keys"""
-        self.print_header("CONFIGURACIÓN DE API KEYS")
-        
-        results = {}
-        
-        # Verificar archivo .env
-        env_file = self.workspace_path / ".env"
-        env_exists = env_file.exists()
-        results["env_file"] = self.check_item("Archivo .env", env_exists)
-        
-        if not env_exists:
-            # Verificar template
-            template_file = self.workspace_path / ".env.template"
-            results["env_template"] = self.check_item("Template .env.template", template_file.exists())
-            return results
-        
-        # Leer variables de .env
-        env_vars = {}
+            resolve_within_workspace(".env")
+            self.comprobar("Se bloquea el acceso a secretos", False, ".env fue accesible")
+        except PathNotAllowed:
+            self.comprobar("Se bloquea el acceso a secretos", True)
+
+        # Lanzamiento de procesos.
+        permitidas = allowed_apps()
+        self.comprobar(
+            "Lanzamiento de procesos bajo lista blanca",
+            True,
+            f"{len(permitidas)} app(s) permitida(s)" if permitidas else "desactivado",
+            critico=False,
+        )
+
+        # Autenticación configurada.
+        from backend.app.security.auth import auth_service
+
+        self.comprobar(
+            "Administrador configurado",
+            auth_service.is_configured,
+            "" if auth_service.is_configured else "defina SILHOUETTE_ADMIN_EMAIL y _PASSWORD_HASH",
+            critico=False,
+        )
+
+        # Nada de secretos versionados.
         try:
-            with open(env_file, 'r') as f:
-                for line in f:
-                    line = line.strip()
-                    if '=' in line and not line.startswith('#'):
-                        key, value = line.split('=', 1)
-                        env_vars[key] = value.strip('"').strip("'")
-        except Exception as e:
-            self.check_item("Lectura de .env", False, f"Error: {e}")
-            return results
+            versionados = subprocess.run(
+                ["git", "ls-files"], cwd=RAIZ, capture_output=True, text=True, timeout=30
+            ).stdout.splitlines()
+            secretos = [
+                f for f in versionados
+                if f.endswith("/.env") or f == ".env" or f.endswith("master.key")
+            ]
+            self.comprobar(
+                "Ningún secreto en el control de versiones",
+                not secretos,
+                ", ".join(secretos[:3]) if secretos else "",
+            )
+        except (OSError, subprocess.SubprocessError) as exc:
+            self.comprobar("Ningún secreto versionado", False, str(exc), critico=False)
 
-        # Verificar keys críticas
-        critical_keys = {
-            "OPENROUTER_API_KEY": "OpenRouter (MiniMax M2 gratuito)",
-            "MINIMAX_MODEL_NAME": "Modelo MiniMax M2"
-        }
-        
-        for key, description in critical_keys.items():
-            value = env_vars.get(key, "")
-            is_configured = bool(value and not value.startswith("[INSERTAR") and len(value) > 10)
-            results[key] = self.check_item(f"{description}", is_configured,
-                                         "Configurado" if is_configured else "Falta configurar")
-        
-        # Verificar keys opcionales importantes
-        optional_keys = {
-            "GOOGLE_MAPS_API_KEY": "Google Maps",
-            "OPENAI_API_KEY": "OpenAI (backup)",
-            "MINIMAX_API_KEY": "MiniMax directo (backup)"
-        }
-        
-        for key, description in optional_keys.items():
-            value = env_vars.get(key, "")
-            is_configured = bool(value and not value.startswith("[INSERTAR") and len(value) > 10)
-            results[f"optional_{key}"] = is_configured
-            status_text = "Configurado" if is_configured else "Opcional (no configurado)"
-            color = Colors.GREEN if is_configured else Colors.YELLOW
-            print(f"  {color}{'✓' if is_configured else '⚠'}{Colors.END} {description:<50} [{color}{status_text}{Colors.END}]")
-        
-        return results
-
-    def check_connectivity(self) -> Dict[str, bool]:
-        """Verificar conectividad a servicios externos"""
-        self.print_header("CONECTIVIDAD A SERVICIOS")
-        
-        results = {}
-        
-        # Verificar conectividad a internet
+    def ejecutar_tests(self) -> None:
+        """Ejecuta la suite de tests de verdad."""
+        self.seccion("SUITE DE TESTS")
         try:
-            result = subprocess.run(["ping", "-n", "1", "8.8.8.8"], 
-                                  capture_output=True, timeout=10)
-            internet_ok = result.returncode == 0
-            results["internet"] = self.check_item("Conectividad a internet", internet_ok)
-        except subprocess.TimeoutExpired:
-            results["internet"] = self.check_item("Conectividad a internet", False, "Timeout")
-        
-        # Verificar servicios específicos
-        services_to_check = [
-            ("openrouter.ai", "OpenRouter API"),
-            ("api.openai.com", "OpenAI API"),
-            ("maps.googleapis.com", "Google Maps API")
-        ]
-        
-        for host, description in services_to_check:
-            try:
-                import socket
-                sock = socket.create_connection((host, 443), timeout=5)
-                sock.close()
-                results[host] = self.check_item(f"Acceso a {description}", True)
-            except (socket.error, socket.timeout):
-                results[host] = self.check_item(f"Acceso a {description}", False, "No accesible")
-        
-        return results
+            proceso = subprocess.run(
+                [sys.executable, "-m", "pytest", "tests/", "-q", "--no-header"],
+                cwd=RAIZ,
+                capture_output=True,
+                text=True,
+                timeout=600,
+            )
+        except (OSError, subprocess.SubprocessError) as exc:
+            self.comprobar("pytest", False, str(exc))
+            return
 
-    def check_project_structure(self) -> Dict[str, bool]:
-        """Verificar estructura del proyecto"""
-        self.print_header("ESTRUCTURA DEL PROYECTO")
-        
-        results = {}
-        
-        # Directorios críticos
-        critical_dirs = [
-            "backend",
-            "mcp-dashboard",
-            "docs"
-        ]
-        
-        for directory in critical_dirs:
-            dir_path = self.workspace_path / directory
-            results[directory] = self.check_item(f"Directorio {directory}/", dir_path.exists())
-        
-        # Archivos críticos
-        critical_files = [
-            "silhouettemcp_server.py",
-            "requirements.txt",
-            "README.md"
-        ]
-        
-        for file_name in critical_files:
-            file_path = self.workspace_path / file_name
-            results[file_name] = self.check_item(f"Archivo {file_name}", file_path.exists())
-        
-        return results
+        resumen = next(
+            (l for l in reversed(proceso.stdout.splitlines()) if "passed" in l or "failed" in l),
+            "sin resumen",
+        )
+        self.comprobar("Todos los tests pasan", proceso.returncode == 0, resumen.strip())
 
-    def run_basic_tests(self) -> Dict[str, bool]:
-        """Ejecutar tests básicos"""
-        self.print_header("TESTS BÁSICOS")
-        results = {}
-        results["imports"] = self.check_item("Test de importaciones backend", True, "Exitoso")
-        return results
+    # -- informe -----------------------------------------------------------
+    def informe(self) -> int:
+        self.seccion("RESUMEN")
+        criticos = [r for r in self.resultados if r.critico]
+        fallos = [r for r in criticos if not r.ok]
+        avisos = [r for r in self.resultados if not r.critico and not r.ok]
+        pasados = sum(1 for r in criticos if r.ok)
 
-    def generate_report(self) -> str:
-        """Generar reporte final"""
-        self.print_header("REPORTE FINAL")
-        
-        percentage = (self.passed_checks / self.total_checks * 100) if self.total_checks > 0 else 0
-        
-        if percentage >= 90:
-            status_color = Colors.GREEN
-            status_text = "EXCELENTE"
-        elif percentage >= 75:
-            status_color = Colors.YELLOW
-            status_text = "BUENO"
-        else:
-            status_color = Colors.RED
-            status_text = "NECESITA ATENCION"
-        
-        print(f"\n{status_color}{Colors.BOLD}ESTADO GENERAL: {status_text}{Colors.END}")
-        print(f"{status_color}Verificaciones: {self.passed_checks}/{self.total_checks} ({percentage:.1f}%){Colors.END}")
-        
-        print(f"\n{Colors.GREEN}Para iniciar el sistema:{Colors.END}")
-        print(f"  {Colors.BLUE}python silhouettemcp_server.py{Colors.END} (servidor backend)")
-        
-        return status_text
+        porcentaje = (pasados / len(criticos) * 100) if criticos else 0.0
+        color = Color.VERDE if not fallos else Color.ROJO
+        print(f"\n  Comprobaciones críticas: {color}{pasados}/{len(criticos)} ({porcentaje:.1f}%){Color.FIN}")
 
-def main():
-    print(f"{Colors.BLUE}{Colors.BOLD}")
-    print("="*80)
-    print("VERIFICACION COMPLETA DEL SISTEMA SILHOUETTE MCP SUPERIOR")
-    print("="*80)
-    print(f"{Colors.END}")
-    
-    verifier = SystemVerifier()
-    
-    try:
-        verifier.check_dependencies()
-        verifier.check_project_structure()
-        verifier.check_api_keys()
-        verifier.check_connectivity()
-        verifier.run_basic_tests()
-        
-        status = verifier.generate_report()
-        return 0 if status in ["EXCELENTE", "BUENO"] else 1
-        
-    except KeyboardInterrupt:
-        print(f"\n{Colors.YELLOW}⏹️  Verificación interrumpida por usuario{Colors.END}")
-        return 1
-    except Exception as e:
-        print(f"\n{Colors.RED}❌ Error durante verificación: {e}{Colors.END}")
-        return 1
+        if avisos:
+            print(f"  {Color.AMARILLO}Avisos: {len(avisos)}{Color.FIN}")
+            for a in avisos:
+                print(f"    - {a.nombre}: {a.detalle}")
+
+        if fallos:
+            print(f"\n  {Color.ROJO}{Color.NEGRITA}ESTADO: HAY FALLOS{Color.FIN}")
+            for f in fallos:
+                print(f"    {Color.ROJO}x{Color.FIN} {f.nombre}: {f.detalle}")
+            return 1
+
+        print(f"\n  {Color.VERDE}{Color.NEGRITA}ESTADO: TODO CORRECTO{Color.FIN}")
+        return 0
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description="Verificación real del sistema")
+    parser.add_argument("--rapido", action="store_true", help="omite la suite de tests")
+    args = parser.parse_args()
+
+    # La salida lleva acentos; sin esto la consola cp1252 de Windows aborta.
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+
+    if not sys.stdout.isatty() or os.getenv("NO_COLOR"):
+        Color.desactivar()
+
+    print(f"{Color.NEGRITA}Verificación de SilhouetteAppcreator{Color.FIN}")
+    print(f"Raíz: {RAIZ}")
+
+    v = Verificador()
+    v.verificar_importaciones()
+    v.verificar_memoria()
+    v.verificar_seguridad()
+    if not args.rapido:
+        v.ejecutar_tests()
+    return v.informe()
+
 
 if __name__ == "__main__":
     sys.exit(main())

@@ -1,10 +1,10 @@
-import subprocess
+import ast
 import os
 import re
-import asyncio
-import ast
-from typing import List
+import subprocess
+
 from backend.app.core.llm_router import LLMRouter
+
 
 class SemanticMerger:
     def __init__(self, llm_router: LLMRouter):
@@ -20,7 +20,7 @@ class SemanticMerger:
         """
         # Ensure we are on the target branch
         subprocess.run(["git", "checkout", target_branch], check=True, capture_output=True)
-        
+
         # 1. Run git merge --no-commit <source_branch> via subprocess
         result = subprocess.run(
             ["git", "merge", "--no-commit", source_branch],
@@ -41,7 +41,7 @@ class SemanticMerger:
 
         # 5. Run git add (handled in _resolve_conflicts for conflicted files, but let's add all)
         subprocess.run(["git", "add", "."], check=True, capture_output=True)
-        
+
         # Run git commit
         commit_msg = "Semantic merge resolved by AI"
         subprocess.run(["git", "commit", "-m", commit_msg], capture_output=True)
@@ -60,13 +60,13 @@ class SemanticMerger:
         for file_path in conflicted_files:
             if not os.path.exists(file_path):
                 continue
-                
-            with open(file_path, 'r', encoding='utf-8') as f:
+
+            with open(file_path, encoding='utf-8') as f:
                 content = f.read()
 
             # Read the conflicted files, extract the conflict blocks, and resolve
             resolved_content = await self._resolve_file_content(file_path, content)
-            
+
             # Syntax verification for Python files
             if file_path.endswith('.py'):
                 try:
@@ -81,7 +81,7 @@ class SemanticMerger:
 
             # 5. Run git add for the resolved file
             subprocess.run(["git", "add", file_path], check=True)
-            
+
         return True
 
     async def _resolve_file_content(self, file_path: str, content: str) -> str:
@@ -90,17 +90,17 @@ class SemanticMerger:
             r'<<<<<<< [^\n]*\n(.*?)\n=======\n(.*?)\n>>>>>>>[^\n]*\n?',
             re.DOTALL
         )
-        
+
         # Find all conflict blocks
         conflicts = list(conflict_pattern.finditer(content))
         if not conflicts:
             return content
-            
+
         resolved_blocks = []
         for match in conflicts:
             head_content = match.group(1)
             incoming_content = match.group(2)
-            
+
             # 3. Construct a prompt for the LLMRouter
             prompt = (
                 f"You are an AI assistant resolving a git merge conflict in the file '{file_path}'.\n"
@@ -109,17 +109,17 @@ class SemanticMerger:
                 f"=== HEAD (Current Branch) ===\n{head_content}\n\n"
                 f"=== INCOMING (Source Branch) ===\n{incoming_content}\n"
             )
-            
+
             try:
                 # Proper async call to LLMRouter
                 resolved = await self.llm_router.chat_completion(prompt=prompt, enable_fallback=True)
-                
+
                 resolved = resolved.strip()
                 if resolved.startswith('```'):
                     resolved = '\n'.join(resolved.split('\n')[1:])
                 if resolved.endswith('```'):
                     resolved = '\n'.join(resolved.split('\n')[:-1])
-                    
+
                 resolved_blocks.append(resolved.strip() + '\n')
             except Exception as e:
                 print(f"Error calling LLM for {file_path}: {e}")
@@ -131,5 +131,5 @@ class SemanticMerger:
         for i, match in enumerate(reversed(conflicts)):
             start, end = match.span()
             result_content = result_content[:start] + resolved_blocks[-(i+1)] + result_content[end:]
-            
+
         return result_content

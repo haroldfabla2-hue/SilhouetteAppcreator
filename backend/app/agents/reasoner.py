@@ -2,12 +2,12 @@
 Agente Reasoner - Analiza intención y prepara contexto
 Responsable de interpretar, resumir contexto y preparar prompts
 """
-from typing import List, Dict, Any
 import json
 from datetime import datetime
+from typing import Any
 
+from ..models import AgentMessage, AgentResponse, MessageStatus
 from .base import BaseAgent
-from ..models import AgentMessage, AgentResponse, MessageStatus, MessageIntent
 
 
 class ReasonerAgent(BaseAgent):
@@ -20,21 +20,21 @@ class ReasonerAgent(BaseAgent):
     - Preparar prompts enriquecidos
     - Definir estrategia de exploración
     """
-    
+
     def __init__(self, llm_client: Any = None):
         super().__init__(
             agent_id="reasoner",
             llm_client=llm_client
         )
-    
-    def get_capabilities(self) -> List[str]:
+
+    def get_capabilities(self) -> list[str]:
         return [
             "intent_analysis",
             "context_summarization",
             "strategy_definition",
             "prompt_preparation"
         ]
-    
+
     async def process_message(self, message: AgentMessage) -> AgentResponse:
         """
         Procesa mensaje analizando intención y preparando estrategia
@@ -43,19 +43,19 @@ class ReasonerAgent(BaseAgent):
             "message_id": message.message_id,
             "intent": message.intent
         })
-        
+
         try:
             # Extraer objetivo del payload
             objetivo = message.payload.get("objetivo", "")
             contexto = message.payload.get("contexto", {})
             historial = message.payload.get("historial", [])
-            
+
             # Analizar intención
             intent_analysis = await self._analyze_intent(objetivo, contexto)
-            
+
             # Definir estrategia
             strategy = await self._define_strategy(intent_analysis, contexto)
-            
+
             # Preparar contexto enriquecido
             enriched_context = await self._enrich_context(
                 objetivo,
@@ -63,7 +63,7 @@ class ReasonerAgent(BaseAgent):
                 historial,
                 strategy
             )
-            
+
             result = {
                 "intent_analysis": intent_analysis,
                 "strategy": strategy,
@@ -74,12 +74,12 @@ class ReasonerAgent(BaseAgent):
                     "tools_suggested": strategy.get("tools", [])
                 }
             }
-            
+
             self.log_trace("reasoner_complete", {
                 "message_id": message.message_id,
                 "agents_needed": result["recommendations"]["agents_needed"]
             })
-            
+
             return AgentResponse(
                 message_id=f"resp_{message.message_id}",
                 original_message_id=message.message_id,
@@ -87,24 +87,24 @@ class ReasonerAgent(BaseAgent):
                 status=MessageStatus.DONE,
                 result=result
             )
-            
-        except Exception as e:
+
+        except Exception:
             self.logger.exception("Error en Reasoner")
             raise
-    
+
     async def _analyze_intent(
         self,
         objetivo: str,
-        contexto: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        contexto: dict[str, Any]
+    ) -> dict[str, Any]:
         """Analiza la intención del usuario"""
-        
+
         # Categorizar tipo de tarea
         task_type = self._categorize_task(objetivo)
-        
+
         # Estimar complejidad
         complexity = self._estimate_complexity(objetivo, contexto)
-        
+
         prompt = f"""Analiza la siguiente solicitud del usuario y extrae la intención principal:
 
 Objetivo: {objetivo}
@@ -116,10 +116,10 @@ Proporciona:
 3. Requisitos de información
 4. Criterios de éxito
 """
-        
+
         # Llamar al LLM
         llm_response = await self.call_llm(prompt, temperature=0.3)
-        
+
         return {
             "type": task_type,
             "complexity": complexity,
@@ -128,17 +128,17 @@ Proporciona:
             "requires_tools": self._requires_tools(objetivo),
             "requires_memory": self._requires_memory(contexto)
         }
-    
+
     async def _define_strategy(
         self,
-        intent_analysis: Dict[str, Any],
-        contexto: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        intent_analysis: dict[str, Any],
+        contexto: dict[str, Any]
+    ) -> dict[str, Any]:
         """Define estrategia de ejecución basada en complejidad"""
-        
+
         complexity = intent_analysis.get("complexity", "medium")
         task_type = intent_analysis.get("type", "general")
-        
+
         # Herramientas recomendadas basadas en el tipo de tarea
         if task_type == "coding":
             tools = ["python_executor", "file_processor"]
@@ -150,7 +150,7 @@ Proporciona:
             tools = ["web_scraper", "search_engine"]
         else:
             tools = ["python_executor", "search_engine"]
-        
+
         # Estrategia según complejidad (basado en arquitectura)
         if complexity == "low":
             agents_needed = 1
@@ -164,7 +164,7 @@ Proporciona:
             agents_needed = min(5, len(tools) + 2)
             parallel = True
             tools = tools  # Todas las herramientas
-        
+
         return {
             "approach": "breadth_first" if parallel else "sequential",
             "agents_needed": agents_needed,
@@ -183,16 +183,16 @@ Proporciona:
                 "quality_gate": True
             }
         }
-    
+
     async def _enrich_context(
         self,
         objetivo: str,
-        contexto: Dict[str, Any],
-        historial: List[Dict],
-        strategy: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        contexto: dict[str, Any],
+        historial: list[dict],
+        strategy: dict[str, Any]
+    ) -> dict[str, Any]:
         """Enriquece el contexto con información relevante"""
-        
+
         return {
             "objetivo": objetivo,
             "contexto_original": contexto,
@@ -202,11 +202,11 @@ Proporciona:
             "memory_hints": self._extract_memory_hints(contexto),
             "constraints": self._extract_constraints(contexto)
         }
-    
+
     def _categorize_task(self, objetivo: str) -> str:
         """Categoriza el tipo de tarea"""
         objetivo_lower = objetivo.lower()
-        
+
         if any(kw in objetivo_lower for kw in ["código", "programar", "implementar", "desarrollar"]):
             return "coding"
         elif any(kw in objetivo_lower for kw in ["buscar", "investigar", "encontrar", "información"]):
@@ -217,42 +217,42 @@ Proporciona:
             return "web_interaction"
         else:
             return "general"
-    
-    def _estimate_complexity(self, objetivo: str, contexto: Dict) -> str:
+
+    def _estimate_complexity(self, objetivo: str, contexto: dict) -> str:
         """Estima complejidad de la tarea"""
         # Heurística simple basada en longitud y contexto
         words = len(objetivo.split())
         has_context = bool(contexto)
-        
+
         if words < 10 and not has_context:
             return "low"
         elif words < 30 or (words < 50 and not has_context):
             return "medium"
         else:
             return "high"
-    
+
     def _requires_tools(self, objetivo: str) -> bool:
         """Determina si requiere herramientas externas"""
         tool_keywords = ["código", "web", "buscar", "archivo", "git", "documento"]
         return any(kw in objetivo.lower() for kw in tool_keywords)
-    
-    def _requires_memory(self, contexto: Dict) -> bool:
+
+    def _requires_memory(self, contexto: dict) -> bool:
         """Determina si requiere acceso a memoria"""
         return bool(contexto.get("session_id") or contexto.get("user_id"))
-    
-    def _summarize_history(self, historial: List[Dict]) -> str:
+
+    def _summarize_history(self, historial: list[dict]) -> str:
         """Resume historial de conversación"""
         if not historial:
             return "Sin historial previo"
-        
+
         recent = historial[-3:] if len(historial) > 3 else historial
         summary = "\n".join([
             f"- {item.get('role', 'user')}: {item.get('content', '')[:100]}..."
             for item in recent
         ])
         return summary
-    
-    def _extract_memory_hints(self, contexto: Dict) -> List[str]:
+
+    def _extract_memory_hints(self, contexto: dict) -> list[str]:
         """Extrae pistas para búsqueda en memoria"""
         hints = []
         if contexto.get("user_id"):
@@ -262,8 +262,8 @@ Proporciona:
         if contexto.get("domain"):
             hints.append(f"domain:{contexto['domain']}")
         return hints
-    
-    async def enhance_with_external_info(self, objetivo: str) -> Dict[str, Any]:
+
+    async def enhance_with_external_info(self, objetivo: str) -> dict[str, Any]:
         """Enriquece el análisis con información externa usando búsqueda"""
         try:
             # Búsqueda web para contexto adicional
@@ -273,7 +273,7 @@ Proporciona:
                 operation="web_search",
                 sources=["duckduckgo", "wikipedia"]
             )
-            
+
             if search_result.get("success"):
                 return {
                     "external_context": search_result.get("data", {}),
@@ -281,10 +281,10 @@ Proporciona:
                 }
         except Exception as e:
             self.logger.warning(f"Error obteniendo contexto externo: {e}")
-        
+
         return {"enhanced": False}
-    
-    def _extract_constraints(self, contexto: Dict) -> Dict[str, Any]:
+
+    def _extract_constraints(self, contexto: dict) -> dict[str, Any]:
         """Extrae restricciones del contexto"""
         return {
             "max_time": contexto.get("max_time"),

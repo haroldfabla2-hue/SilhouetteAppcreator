@@ -1,7 +1,9 @@
 import os
 import subprocess
+from collections.abc import Iterator
+
 import docker
-from typing import Iterator
+
 
 class HybridSandboxManager:
     """
@@ -16,7 +18,7 @@ class HybridSandboxManager:
         Creates a new git worktree for a specific task.
         """
         worktree_path = os.path.join(self.repo_path, ".worktrees", task_id)
-        
+
         subprocess.run(
             ["git", "worktree", "add", "-b", branch_name, worktree_path],
             cwd=self.repo_path,
@@ -36,7 +38,7 @@ class HybridSandboxManager:
                 'mode': 'rw'
             }
         }
-        
+
         # Mount host CLI configs for AI authentication
         home_dir = os.path.expanduser("~")
         for cli_path in [".config", ".claude", ".gemini", ".codex"]:
@@ -46,7 +48,7 @@ class HybridSandboxManager:
                     'bind': f'/root/{cli_path}',
                     'mode': 'ro'
                 }
-                
+
         container = self.docker_client.containers.run(
             image="python:3.10-slim",
             command=command,
@@ -56,7 +58,7 @@ class HybridSandboxManager:
             detach=True,
             auto_remove=True
         )
-        
+
         return container.logs(stream=True)
 
     def cleanup_sandbox(self, worktree_path: str, branch_name: str):
@@ -68,7 +70,7 @@ class HybridSandboxManager:
             cwd=self.repo_path,
             check=True
         )
-        
+
         subprocess.run(
             ["git", "branch", "-D", branch_name],
             cwd=self.repo_path,

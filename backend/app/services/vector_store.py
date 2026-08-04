@@ -2,20 +2,17 @@
 VectorStore Service con PostgreSQL + pgvector
 Implementa almacenamiento y búsqueda de embeddings vectoriales
 """
-from typing import List, Dict, Any, Optional, Tuple
-import asyncio
-import logging
-import json
 import hashlib
-from datetime import datetime
-import numpy as np
-from sqlalchemy import text, create_engine
-from sqlalchemy.pool import StaticPool
-import psycopg2
-from psycopg2.extras import RealDictCursor
+import json
+import logging
+from typing import Any
 
+import numpy as np
+from sqlalchemy import create_engine, text
+from sqlalchemy.pool import StaticPool
+
+from .chunking_service import Chunk, DocumentChunker
 from .embedding_service import EmbeddingService
-from .chunking_service import DocumentChunker, Chunk
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +28,7 @@ class VectorStore:
     - Filtrado por metadatos
     - Cache de embeddings frecuentes
     """
-    
+
     def __init__(self, db_url: str, embedding_service: EmbeddingService):
         """
         Inicializa VectorStore
@@ -46,8 +43,8 @@ class VectorStore:
         self.chunker = DocumentChunker()
         self.embedding_cache = {}  # Cache de embeddings por hash de texto
         self.cache_size_limit = 5000
-        
-    async def initialize(self) -> Dict[str, Any]:
+
+    async def initialize(self) -> dict[str, Any]:
         """
         Inicializa VectorStore y crea tablas necesarias
         
@@ -60,17 +57,17 @@ class VectorStore:
                 self.db_url,
                 poolclass=StaticPool
             )
-            
+
             # Probar conexión primero
             with self.engine.connect() as conn:
                 conn.execute(text("SELECT 1"))
-            
+
             # Crear tablas si no existen
             await self._create_tables()
-            
+
             # Crear índices para optimización
             await self._create_indexes()
-            
+
             logger.info("VectorStore inicializado exitosamente")
             return {
                 "status": "initialized",
@@ -78,11 +75,11 @@ class VectorStore:
                 "embedding_dimensions": 384,
                 "cache_size_limit": self.cache_size_limit
             }
-            
+
         except Exception as e:
             logger.error(f"Error inicializando VectorStore: {e}")
             raise
-    
+
     async def _create_tables(self):
         """Crea las tablas necesarias para vector storage"""
         with self.engine.connect() as conn:
@@ -103,7 +100,7 @@ class VectorStore:
                     mime_type VARCHAR(100)
                 )
             """))
-            
+
             # Tabla de chunks con embeddings
             conn.execute(text("""
                 CREATE TABLE IF NOT EXISTS document_chunks (
@@ -119,7 +116,7 @@ class VectorStore:
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )
             """))
-            
+
             # Tabla de conversaciones para memoria
             conn.execute(text("""
                 CREATE TABLE IF NOT EXISTS conversations (
@@ -132,7 +129,7 @@ class VectorStore:
                     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )
             """))
-            
+
             # Tabla de mensajes con embeddings
             conn.execute(text("""
                 CREATE TABLE IF NOT EXISTS messages (
@@ -146,10 +143,10 @@ class VectorStore:
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )
             """))
-            
+
             conn.commit()
             logger.info("Tablas de VectorStore creadas exitosamente")
-    
+
     async def _create_indexes(self):
         """Crea índices para optimizar búsquedas"""
         with self.engine.connect() as conn:
@@ -158,27 +155,27 @@ class VectorStore:
                 CREATE INDEX IF NOT EXISTS idx_document_chunks_embedding 
                 ON document_chunks USING hnsw (embedding vector_cosine_ops)
             """))
-            
+
             # Índices para filtros
             conn.execute(text("CREATE INDEX IF NOT EXISTS idx_documents_user_id ON documents(user_id)"))
             conn.execute(text("CREATE INDEX IF NOT EXISTS idx_documents_conversation_id ON documents(conversation_id)"))
             conn.execute(text("CREATE INDEX IF NOT EXISTS idx_documents_content_type ON documents(content_type)"))
-            
+
             conn.execute(text("CREATE INDEX IF NOT EXISTS idx_messages_conversation_id ON messages(conversation_id)"))
             conn.execute(text("CREATE INDEX IF NOT EXISTS idx_messages_role ON messages(role)"))
             conn.execute(text("CREATE INDEX IF NOT EXISTS idx_messages_created_at ON messages(created_at)"))
-            
+
             conn.commit()
             logger.info("Índices de VectorStore creados exitosamente")
-    
+
     async def store_document(
-        self, 
-        title: str, 
-        content: str, 
+        self,
+        title: str,
+        content: str,
         content_type: str = "text",
-        user_id: str = None, 
+        user_id: str = None,
         conversation_id: str = None,
-        metadata: Dict[str, Any] = None,
+        metadata: dict[str, Any] = None,
         chunk_strategy: str = "recursive"
     ) -> str:
         """
@@ -199,11 +196,11 @@ class VectorStore:
         try:
             # Generar chunks usando DocumentChunker
             chunks = await self._chunk_document(content, chunk_strategy)
-            
+
             # Almacenar documento y chunks en transacción
             with self.engine.connect() as conn:
                 trans = conn.begin()
-                
+
                 try:
                     # Insertar documento
                     doc_result = conn.execute(text("""
@@ -218,13 +215,13 @@ class VectorStore:
                         "conversation_id": conversation_id,
                         "metadata": json.dumps(metadata or {})
                     })
-                    
+
                     document_id = doc_result.fetchone()[0]
-                    
+
                     # Generar embeddings y almacenar chunks
                     for i, chunk in enumerate(chunks):
                         embedding = await self._get_or_generate_embedding(chunk.content)
-                        
+
                         conn.execute(text("""
                             INSERT INTO document_chunks 
                             (document_id, chunk_index, content, start_position, end_position, token_count, metadata, embedding)
@@ -239,19 +236,19 @@ class VectorStore:
                             "metadata": json.dumps(chunk.metadata),
                             "embedding": f"[{','.join(map(str, embedding))}]"
                         })
-                    
+
                     trans.commit()
                     logger.info(f"Documento almacenado exitosamente: {document_id}")
                     return str(document_id)
-                    
+
                 except Exception as e:
                     trans.rollback()
                     raise e
-                    
+
         except Exception as e:
             logger.error(f"Error almacenando documento: {e}")
             raise
-    
+
     async def store_conversation_message(
         self,
         conversation_id: str,
@@ -259,7 +256,7 @@ class VectorStore:
         content: str,
         agent_id: str = None,
         user_id: str = None,
-        metadata: Dict[str, Any] = None
+        metadata: dict[str, Any] = None
     ) -> str:
         """
         Almacena un mensaje de conversación con embedding
@@ -278,7 +275,7 @@ class VectorStore:
         try:
             # Generar embedding del mensaje
             embedding = await self._get_or_generate_embedding(content)
-            
+
             with self.engine.connect() as conn:
                 result = conn.execute(text("""
                     INSERT INTO messages (conversation_id, role, content, agent_id, metadata, embedding)
@@ -292,15 +289,15 @@ class VectorStore:
                     "metadata": json.dumps(metadata or {}),
                     "embedding": f"[{','.join(map(str, embedding))}]"
                 })
-                
+
                 message_id = result.fetchone()[0]
                 logger.info(f"Mensaje almacenado: {message_id}")
                 return str(message_id)
-                
+
         except Exception as e:
             logger.error(f"Error almacenando mensaje: {e}")
             raise
-    
+
     async def semantic_search(
         self,
         query: str,
@@ -309,7 +306,7 @@ class VectorStore:
         conversation_id: str = None,
         content_type: str = None,
         time_range: str = None
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """
         Búsqueda semántica en documentos y mensajes
         
@@ -327,7 +324,7 @@ class VectorStore:
         try:
             # Generar embedding de la consulta
             query_embedding = await self._get_or_generate_embedding(query)
-            
+
             # Construir query con filtros
             base_query = """
                 SELECT 
@@ -343,45 +340,45 @@ class VectorStore:
                 JOIN documents d ON dc.document_id = d.id
                 WHERE 1=1
             """
-            
+
             filters = []
             params = {
                 "query_embedding": f"[{','.join(map(str, query_embedding))}]",
                 "limit": limit
             }
-            
+
             # Aplicar filtros
             if user_id:
                 filters.append("d.user_id = :user_id")
                 params["user_id"] = user_id
-            
+
             if conversation_id:
                 filters.append("d.conversation_id = :conversation_id")
                 params["conversation_id"] = conversation_id
-            
+
             if content_type:
                 filters.append("d.content_type = :content_type")
                 params["content_type"] = content_type
-            
+
             if time_range and time_range != "all":
                 time_filter = self._get_time_filter(time_range)
                 if time_filter:
                     filters.append(f"dc.created_at >= {time_filter}")
-            
+
             # Aplicar filtros a la query
             if filters:
                 base_query += " AND " + " AND ".join(filters)
-            
+
             # Ordenar por similitud y limitar
             base_query += """
                 ORDER BY dc.embedding <=> :query_embedding
                 LIMIT :limit
             """
-            
+
             with self.engine.connect() as conn:
                 result = conn.execute(text(base_query), params)
                 results = []
-                
+
                 for row in result.fetchall():
                     results.append({
                         "id": str(row[1]),
@@ -393,15 +390,15 @@ class VectorStore:
                         "created_at": row[7].isoformat() if row[7] else None,
                         "result_type": "document_chunk"
                     })
-                
+
                 logger.info(f"Búsqueda semántica completada: {len(results)} resultados")
                 return results
-                
+
         except Exception as e:
             logger.error(f"Error en búsqueda semántica: {e}")
             raise
-    
-    async def _chunk_document(self, content: str, strategy: str) -> List[Chunk]:
+
+    async def _chunk_document(self, content: str, strategy: str) -> list[Chunk]:
         """Genera chunks de un documento usando DocumentChunker"""
         # Usar el chunker existente
         if strategy == "recursive":
@@ -413,7 +410,7 @@ class VectorStore:
         else:
             # Fallback a recursive
             chunks = self.chunker.chunk_recursive(content, chunk_size=500, chunk_overlap=50)
-        
+
         # Convertir a objetos Chunk
         chunk_objects = []
         for i, chunk in enumerate(chunks):
@@ -426,10 +423,10 @@ class VectorStore:
                 metadata=chunk.get("metadata", {})
             )
             chunk_objects.append(chunk_obj)
-        
+
         return chunk_objects
-    
-    async def _get_or_generate_embedding(self, content: str) -> List[float]:
+
+    async def _get_or_generate_embedding(self, content: str) -> list[float]:
         """
         Obtiene embedding del cache o genera uno nuevo
         
@@ -443,40 +440,40 @@ class VectorStore:
         content_hash = hashlib.md5(content.encode()).hexdigest()
         if content_hash in self.embedding_cache:
             return self.embedding_cache[content_hash]
-        
+
         # Generar nuevo embedding
         try:
             embedding = await self.embedding_service.generate_embeddings([content])
             if embedding and len(embedding) > 0:
                 vector = embedding[0]
-                
+
                 # Agregar al cache
                 if len(self.embedding_cache) < self.cache_size_limit:
                     self.embedding_cache[content_hash] = vector
-                
+
                 return vector
             else:
                 # Fallback a embedding determinístico
                 logger.warning("Embedding service falló, usando embedding determinístico")
                 return self._generate_fallback_embedding(content)
-                
+
         except Exception as e:
             logger.warning(f"Error generando embedding real: {e}, usando fallback")
             return self._generate_fallback_embedding(content)
-    
-    def _generate_fallback_embedding(self, content: str) -> List[float]:
+
+    def _generate_fallback_embedding(self, content: str) -> list[float]:
         """Genera embedding determinístico como fallback"""
         seed = int(hashlib.md5(content.encode()).hexdigest(), 16) % (2**32)
         np.random.seed(seed)
         embedding = np.random.normal(0, 1, 384).tolist()
-        
+
         # Normalizar
         norm = np.linalg.norm(embedding)
         if norm > 0:
             embedding = (embedding / norm).tolist()
-        
+
         return embedding
-    
+
     def _get_time_filter(self, time_range: str) -> str:
         """Convierte rango temporal a filtro SQL"""
         if time_range == "1h":
@@ -489,8 +486,8 @@ class VectorStore:
             return "CURRENT_TIMESTAMP - INTERVAL '1 month'"
         else:
             return None
-    
-    async def get_stats(self) -> Dict[str, Any]:
+
+    async def get_stats(self) -> dict[str, Any]:
         """Obtiene estadísticas del VectorStore"""
         try:
             with self.engine.connect() as conn:
@@ -498,7 +495,7 @@ class VectorStore:
                 doc_count = conn.execute(text("SELECT COUNT(*) FROM documents")).fetchone()[0]
                 chunk_count = conn.execute(text("SELECT COUNT(*) FROM document_chunks")).fetchone()[0]
                 message_count = conn.execute(text("SELECT COUNT(*) FROM messages")).fetchone()[0]
-                
+
                 # Espacio usado (aproximado)
                 size_result = conn.execute(text("""
                     SELECT 
@@ -506,7 +503,7 @@ class VectorStore:
                         pg_size_pretty(pg_total_relation_size('document_chunks')) as chunks_size,
                         pg_size_pretty(pg_total_relation_size('messages')) as messages_size
                 """)).fetchone()
-                
+
                 return {
                     "total_documents": doc_count,
                     "total_chunks": chunk_count,
@@ -514,16 +511,16 @@ class VectorStore:
                     "cache_size": len(self.embedding_cache),
                     "database_size": {
                         "documents": size_result[0] if size_result else "N/A",
-                        "chunks": size_result[1] if size_result else "N/A", 
+                        "chunks": size_result[1] if size_result else "N/A",
                         "messages": size_result[2] if size_result else "N/A"
                     },
                     "status": "healthy"
                 }
-                
+
         except Exception as e:
             logger.error(f"Error obteniendo estadísticas: {e}")
             return {"status": "error", "error": str(e)}
-    
+
     async def close(self):
         """Cierra conexiones del VectorStore"""
         if self.engine:

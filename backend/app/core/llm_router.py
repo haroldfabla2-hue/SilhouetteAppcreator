@@ -2,19 +2,21 @@
 Router LLM Inteligente con conectividad real
 Maneja múltiples proveedores con fallbacks automáticos y rate limiting
 """
-import httpx
 import asyncio
-import time
-from typing import Dict, Any, Optional, List
-from enum import Enum
-import logging
 import json
-from datetime import datetime, timedelta
-from collections import defaultdict, deque
-import random
-import shutil
+import logging
 import os
 import re
+import shutil
+import time
+from collections import defaultdict, deque
+from datetime import datetime
+from enum import Enum
+from pathlib import Path
+from typing import Any
+
+import httpx
+
 try:
     from ..core.config import settings
 except Exception:
@@ -24,8 +26,8 @@ except Exception:
     settings = DummySettings()
 
 import litellm
+
 from .dynamic_model_registry import model_registry
-from .local_ai_service import local_ai_service
 
 logger = logging.getLogger(__name__)
 
@@ -53,9 +55,18 @@ class LLMProvider(str, Enum):
     CLI_ANTIGRAVITY = "cli_antigravity"
     FALLBACK_LOCAL = "fallback_local"
 
+class CLIExecutionError(RuntimeError):
+    """Un modelo CLI local no pudo ejecutarse o no devolvió salida.
+
+    Se propaga para que el router active el siguiente proveedor de la cadena de
+    fallback. Nunca se convierte en una respuesta de texto: un fallo tiene que
+    parecer un fallo.
+    """
+
+
 class CLIExecutor:
     """Helper class to execute local CLI models (Gemini, Antigravity, Claude, Codex)."""
-    
+
     @staticmethod
     async def execute_cli(command: str, prompt: str) -> str:
         """Executes a CLI command asynchronously, injecting the prompt."""
@@ -63,19 +74,31 @@ class CLIExecutor:
             # Detectar ejecutables en Windows (.cmd, .ps1, PATH)
             resolved_cmd = shutil.which(command)
             if not resolved_cmd:
+                # Rutas derivadas del entorno real, no del nombre de usuario de
+                # la máquina de desarrollo original.
+                home = Path.home()
+                appdata = os.getenv("APPDATA", str(home / "AppData" / "Roaming"))
                 potential_paths = [
-                    rf"C:\nvm4w\nodejs\{command}.cmd",
-                    rf"C:\nvm4w\nodejs\{command}.ps1",
-                    rf"C:\Users\USER\AppData\Roaming\npm\{command}.cmd",
-                    rf"C:\Users\USER\.gemini\antigravity\bin\{command}.exe"
+                    Path(appdata) / "npm" / f"{command}.cmd",
+                    home / ".gemini" / "antigravity" / "bin" / f"{command}.exe",
+                    home / ".local" / "bin" / command,
                 ]
+                nvm_root = os.getenv("NVM_SYMLINK") or os.getenv("NVM_HOME")
+                if nvm_root:
+                    potential_paths.insert(0, Path(nvm_root) / f"{command}.cmd")
+
                 for p in potential_paths:
-                    if os.path.exists(p):
-                        resolved_cmd = p
+                    if p.exists():
+                        resolved_cmd = str(p)
                         break
-            
+
             if not resolved_cmd:
-                resolved_cmd = shutil.which("gemini") or r"C:\nvm4w\nodejs\gemini.cmd"
+                # Antes se sustituía silenciosamente por `gemini`, de modo que
+                # pedir Claude podía acabar ejecutando otro modelo sin avisar.
+                raise CLIExecutionError(
+                    f"No se encontró el ejecutable del CLI '{command}' en el PATH "
+                    "ni en las ubicaciones conocidas."
+                )
 
             # En Windows, usar cmd.exe /c si es un script .cmd o .bat
             if resolved_cmd.endswith(".cmd") or resolved_cmd.endswith(".bat"):
@@ -89,74 +112,92 @@ class CLIExecutor:
                 cmd_args.extend(["exec", prompt])
             else:
                 cmd_args.append(prompt)
-                
+
             process = await asyncio.create_subprocess_exec(
                 *cmd_args,
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE
             )
-            stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=120.0)
-            
+            try:
+                stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=120.0)
+            except asyncio.TimeoutError:
+                process.kill()
+                await process.wait()
+                raise
+
             output = stdout.decode('utf-8', errors='ignore')
-            
+
+            # Un fallo se propaga como excepción para que el router pruebe el
+            # siguiente proveedor. Devolver una frase de relleno hacía que una
+            # cadena de fallos totales se reportara hacia arriba como éxitos.
             if process.returncode != 0 and not output.strip():
-                err_output = stderr.decode('utf-8', errors='ignore')
-                logger.warning(f"[CLIExecutor] CLI {command} retorno {process.returncode}: {err_output}")
-                return f"[Respuesta del Agente Local Silhouette MCP]: He procesado la solicitud '{prompt[:60]}...'. El entorno está activo y listo."
-            
+                err_output = stderr.decode('utf-8', errors='ignore').strip()
+                raise CLIExecutionError(
+                    f"El CLI '{command}' terminó con código {process.returncode}: "
+                    f"{err_output[:400] or '(sin salida de error)'}"
+                )
+
             # Limpiar banners o avisos de versión
             output = re.sub(r'Update available!.*?\n', '', output, flags=re.IGNORECASE)
             output = re.sub(r'A new version of .*? is available.*?\n', '', output, flags=re.IGNORECASE)
-            
+
             cleaned = output.strip()
-            return cleaned if cleaned else f"[Silhouette Local AI]: Procesado exitosamente prompt: '{prompt[:50]}...'"
-            
+            if not cleaned:
+                raise CLIExecutionError(
+                    f"El CLI '{command}' terminó correctamente pero no devolvió salida."
+                )
+            return cleaned
+
         except asyncio.TimeoutError:
-            logger.warning(f"CLI timeout execution for {command}, activando respuesta resiliente.")
-            return f"[Silhouette Timeout Fallback]: Procesado con éxito: {prompt[:50]}..."
+            logger.warning(f"[CLIExecutor] Timeout ejecutando {command} (120s)")
+            raise CLIExecutionError(
+                f"El CLI '{command}' agotó el tiempo límite de 120 s."
+            ) from None
+        except CLIExecutionError:
+            raise
         except Exception as e:
-            logger.warning(f"CLI execution failed for {command}: {e}")
-            return f"[Silhouette Engine]: Solicitud '{prompt[:50]}...' procesada con éxito por la arquitectura multi-agente local."
+            logger.warning(f"[CLIExecutor] Fallo ejecutando {command}: {e}")
+            raise CLIExecutionError(f"No se pudo ejecutar el CLI '{command}': {e}") from e
 
 
 class RateLimiter:
     """Rate limiter simple por proveedor"""
-    
+
     def __init__(self, max_calls: int, time_window: int):
         self.max_calls = max_calls
         self.time_window = time_window  # segundos
         self.calls = defaultdict(deque)
-    
+
     async def acquire(self, provider: str) -> bool:
         """Adquiere un slot de rate limit"""
         now = time.time()
         provider_calls = self.calls[provider]
-        
+
         # Limpiar calls antiguos
         while provider_calls and now - provider_calls[0] > self.time_window:
             provider_calls.popleft()
-        
+
         # Verificar si podemos hacer otra llamada
         if len(provider_calls) < self.max_calls:
             provider_calls.append(now)
             return True
-        
+
         return False
-    
+
     def time_until_next_call(self, provider: str) -> float:
         """Calcula tiempo hasta la siguiente llamada permitida"""
         now = time.time()
         provider_calls = self.calls[provider]
-        
+
         if not provider_calls:
             return 0.0
-        
+
         oldest_call = provider_calls[0]
         time_passed = now - oldest_call
-        
+
         if time_passed >= self.time_window:
             return 0.0
-        
+
         return self.time_window - time_passed
 
 
@@ -173,7 +214,7 @@ class LLMRouter:
     6. Timeout handling robusto
     7. Error handling avanzado
     """
-    
+
     # Modelos disponibles en OpenRouter
     OPENROUTER_MODELS = {
         "llama70b": "meta-llama/llama-3.3-70b-instruct",
@@ -191,7 +232,7 @@ class LLMRouter:
         "qwen_3_7_max": "qwen/qwen-3.7-max",
         "deepseek_v4": "deepseek/deepseek-v4-pro"
     }
-    
+
     # Rate limits por proveedor (calls por minuto)
     RATE_LIMITS = {
         LLMProvider.MINIMAX_M2: RateLimiter(60, 60),  # 60/min
@@ -210,15 +251,15 @@ class LLMRouter:
         LLMProvider.OPENROUTER_QWEN_3_7_MAX: RateLimiter(40, 60),
         LLMProvider.OPENROUTER_DEEPSEEK_V4: RateLimiter(40, 60),
     }
-    
+
     def __init__(
         self,
-        minimax_api_key: Optional[str] = None,
-        openrouter_api_key: Optional[str] = None
+        minimax_api_key: str | None = None,
+        openrouter_api_key: str | None = None
     ):
         self.minimax_api_key = minimax_api_key or settings.MINIMAX_API_KEY
         self.openrouter_api_key = openrouter_api_key or settings.OPENROUTER_API_KEY
-        
+
         # Estadísticas detalladas
         self.stats = defaultdict(lambda: {
             "calls": 0,
@@ -228,12 +269,12 @@ class LLMRouter:
             "last_success": None,
             "last_error": None
         })
-        
+
         # Historial de errores para circuit breaker
         self.error_history = defaultdict(list)
         self.circuit_breaker_threshold = 5  # Número de errores antes de abrir circuit
         self.circuit_breaker_timeout = 300  # 5 minutos de cooldown
-        
+
         # Cliente HTTP con timeout robusto
         timeout = httpx.Timeout(
             connect=10.0,
@@ -245,17 +286,17 @@ class LLMRouter:
             timeout=timeout,
             limits=httpx.Limits(max_keepalive_connections=20, max_connections=100)
         )
-        
+
         # Configurar logging
         self._setup_logging()
-        
+
         logger.info(f"LLMRouter inicializado - MiniMax: {'✓' if self.minimax_api_key else '✗'}, OpenRouter: {'✓' if self.openrouter_api_key else '✗'}")
-    
+
     def _setup_logging(self):
         """Configura logging detallado para el router"""
         self.request_logger = logging.getLogger(f"{__name__}.requests")
         self.error_logger = logging.getLogger(f"{__name__}.errors")
-        
+
         # Configurar formato detallado
         if not self.request_logger.handlers:
             handler = logging.StreamHandler()
@@ -265,39 +306,39 @@ class LLMRouter:
             handler.setFormatter(formatter)
             self.request_logger.addHandler(handler)
             self.request_logger.setLevel(logging.INFO)
-    
+
     def _is_circuit_breaker_open(self, provider: LLMProvider) -> bool:
         """Verifica si el circuit breaker está abierto para un proveedor"""
         errors = self.error_history[provider]
         if not errors:
             return False
-        
+
         # Verificar si hay errores recientes que exceden el threshold
         recent_errors = [
             error_time for error_time in errors
             if time.time() - error_time < self.circuit_breaker_timeout
         ]
-        
+
         return len(recent_errors) >= self.circuit_breaker_threshold
-    
+
     def _record_error(self, provider: LLMProvider):
         """Registra un error para circuit breaker"""
         self.error_history[provider].append(time.time())
-        
+
         # Limpiar errores antiguos
         cutoff = time.time() - self.circuit_breaker_timeout
         self.error_history[provider] = [
             error_time for error_time in self.error_history[provider]
             if error_time > cutoff
         ]
-    
+
     async def chat_completion(
         self,
         prompt: str,
         model: str = "llama70b",
         temperature: float = 0.7,
         max_tokens: int = 2000,
-        provider: Optional[LLMProvider] = None,
+        provider: LLMProvider | None = None,
         enable_fallback: bool = True
     ) -> str:
         """
@@ -314,45 +355,45 @@ class LLMRouter:
         Returns:
             Respuesta del LLM
         """
-        
+
         # Auto-routing si no se especifica proveedor
         if provider is None:
             provider = self._select_provider(model)
-        
+
         request_id = f"req_{int(time.time() * 1000)}"
-        
+
         # Log del request
         self.request_logger.info(
             f"[{request_id}] Iniciando request - Proveedor: {provider}, Modelo: {model}, Tokens: {max_tokens}"
         )
-        
+
         # Intentar el proveedor primario
         try:
             response = await self._call_provider(
                 provider, prompt, model, temperature, max_tokens, request_id
             )
-            
+
             if enable_fallback:
                 # Verificar si el response es válido
                 if not self._is_response_valid(response):
                     raise ValueError("Respuesta inválida del proveedor")
-            
+
             return response
-            
+
         except Exception as e:
             self.error_logger.error(f"[{request_id}] Error con proveedor {provider}: {e}")
             self.stats[provider]["errors"] += 1
             self.stats[provider]["last_error"] = datetime.utcnow().isoformat()
             self._record_error(provider)
-            
+
             if not enable_fallback:
                 raise
-            
+
             # Fallback automático
             return await self._handle_fallback(
                 provider, prompt, model, temperature, max_tokens, request_id
             )
-    
+
     async def _handle_fallback(
         self,
         failed_provider: LLMProvider,
@@ -363,36 +404,36 @@ class LLMRouter:
         request_id: str
     ) -> str:
         """Maneja el fallback a otros proveedores"""
-        
+
         # Obtener lista de fallbacks ordenada por preferencia
         fallback_order = self._get_fallback_order(failed_provider, model)
-        
+
         for fallback_provider in fallback_order:
             if self._is_provider_available(fallback_provider):
                 try:
                     self.request_logger.info(f"[{request_id}] Fallback a {fallback_provider}")
-                    
+
                     return await self._call_provider(
                         fallback_provider, prompt, model, temperature, max_tokens, request_id
                     )
-                    
+
                 except Exception as e:
                     self.error_logger.error(f"[{request_id}] Fallback {fallback_provider} también falló: {e}")
                     self.stats[fallback_provider]["errors"] += 1
                     self._record_error(fallback_provider)
                     continue
-        
+
         # Último recurso: fallback local
         self.request_logger.warning(f"[{request_id}] Todos los proveedores fallaron, usando fallback local")
         return await self._call_fallback(prompt, model, request_id)
-    
+
     def _get_fallback_order(
         self,
         failed_provider: LLMProvider,
         model: str
-    ) -> List[LLMProvider]:
+    ) -> list[LLMProvider]:
         """Obtiene el orden de fallback basado en el proveedor que falló"""
-        
+
         if failed_provider == LLMProvider.MINIMAX_M2:
             base_fallback = [
                 LLMProvider.OPENROUTER_LLAMA70B,
@@ -425,30 +466,30 @@ class LLMRouter:
                     ]
         else:
             base_fallback = []
-            
+
         # Append CLI fallbacks as a safety net if APIs are fully exhausted
         base_fallback.extend([
             LLMProvider.CLI_CLAUDE_CODE,
             LLMProvider.CLI_GEMINI,
             LLMProvider.CLI_CODEX
         ])
-        
+
         return base_fallback
-    
+
     def _is_provider_available(self, provider: LLMProvider) -> bool:
         """Verifica si un proveedor está disponible"""
-        
+
         # Verificar circuit breaker
         if self._is_circuit_breaker_open(provider):
             return False
-        
+
         # Verificar API keys
         if provider == LLMProvider.MINIMAX_M2 and not self.minimax_api_key:
             return False
-        
+
         if "openrouter" in provider.value and not self.openrouter_api_key:
             return False
-            
+
         # Verificar CLI availability using shutil.which
         if provider == LLMProvider.CLI_GEMINI:
             return shutil.which('gemini') is not None
@@ -456,14 +497,14 @@ class LLMRouter:
             return shutil.which('claude') is not None
         if provider == LLMProvider.CLI_CODEX:
             return shutil.which('codex') is not None
-        
+
         # Verificar rate limit (sincronizado para compatibilidad)
         if provider in self.RATE_LIMITS:
             # Por ahora retornar True para evitar warnings, el rate limit real se maneja en _call_provider
             return True
-        
+
         return True
-    
+
     async def _call_provider(
         self,
         provider: LLMProvider,
@@ -474,15 +515,15 @@ class LLMRouter:
         request_id: str
     ) -> str:
         """Llama a un proveedor específico"""
-        
+
         start_time = time.time()
-        
+
         if not await asyncio.wait_for(
             asyncio.create_task(self._check_rate_limit(provider)),
             timeout=5.0
         ):
             raise TimeoutError(f"Rate limit excedido para {provider}")
-        
+
         if provider == LLMProvider.MINIMAX_M2:
             return await self._call_minimax_m2(prompt, temperature, max_tokens, request_id)
         elif provider == LLMProvider.OPENROUTER_LLAMA70B:
@@ -548,7 +589,7 @@ class LLMRouter:
 
     async def _call_dynamic_litellm(
         self,
-        model_info: Dict[str, Any],
+        model_info: dict[str, Any],
         prompt: str,
         temperature: float,
         max_tokens: int,
@@ -578,7 +619,7 @@ class LLMRouter:
             self.request_logger.info(f"[{request_id}] Calling dynamic LiteLLM model: {model_name} (base_url: {base_url})")
             response = await litellm.acompletion(**kwargs)
             content = response.choices[0].message.content
-            
+
             self.stats[provider_name]["calls"] += 1
             self.stats[provider_name]["last_success"] = datetime.utcnow().isoformat()
             if hasattr(response, "usage") and response.usage:
@@ -588,11 +629,11 @@ class LLMRouter:
         except Exception as e:
             self.error_logger.error(f"[{request_id}] Error calling dynamic model {model_name}: {e}")
             raise
-    
+
     async def _call_cli_provider(self, provider: LLMProvider, prompt: str, request_id: str) -> str:
         """Call a local CLI tool as an LLM provider."""
         self.stats[provider]["calls"] += 1
-        
+
         cmd = None
         if provider == LLMProvider.CLI_GEMINI:
             cmd = shutil.which("gemini") or "gemini"
@@ -603,32 +644,32 @@ class LLMRouter:
         elif provider == LLMProvider.CLI_ANTIGRAVITY:
             antigravity_bin = r"C:\Users\USER\AppData\Local\Programs\Antigravity\Antigravity.exe"
             cmd = shutil.which("agy") or shutil.which("antigravity") or (antigravity_bin if os.path.exists(antigravity_bin) else "antigravity")
-            
+
         try:
             self.request_logger.info(f"[{request_id}] Executing CLI fallback: {cmd}")
             content = await CLIExecutor.execute_cli(cmd, prompt)
-            
+
             self.request_logger.info(f"[{request_id}] {cmd} CLI - Respuesta exitosa: {len(content)} chars")
             self.stats[provider]["last_success"] = datetime.utcnow().isoformat()
             # Estimating tokens: roughly 4 chars per token
             estimated_tokens = len(content) // 4
             self.stats[provider]["total_tokens"] += estimated_tokens
-            
+
             return content
         except Exception as e:
             self.error_logger.error(f"[{request_id}] Error in CLI {cmd}: {e}")
             raise
-    
+
     async def _check_rate_limit(self, provider: LLMProvider) -> bool:
         """Verifica rate limit para un proveedor"""
         if provider in self.RATE_LIMITS:
             # Por ahora simular rate limiting, en producción usar acquire() con await
             return True
         return True
-    
+
     def _select_provider(self, model: str) -> LLMProvider:
         """Selecciona proveedor óptimo según modelo y disponibilidad"""
-        
+
         # Mapear modelo a proveedor
         model_to_provider = {
             "llama70b": LLMProvider.OPENROUTER_LLAMA70B,
@@ -639,42 +680,42 @@ class LLMRouter:
             "claude3_5": LLMProvider.OPENROUTER_CLAUDE_3_5,
             "gemini": LLMProvider.OPENROUTER_GEMINI
         }
-        
+
         # Verificar fecha: MiniMax M2 gratis hasta 7 Nov 2025
         current_date = datetime.utcnow()
         minimax_free_until = datetime(2025, 11, 7, 23, 59, 59)
-        
+
         # Prioridad a MiniMax M2 si está disponible y dentro del período gratis
-        if (current_date <= minimax_free_until and 
-            self.minimax_api_key and 
+        if (current_date <= minimax_free_until and
+            self.minimax_api_key and
             not self._is_circuit_breaker_open(LLMProvider.MINIMAX_M2)):
             return LLMProvider.MINIMAX_M2
-        
+
         # Si no, usar el proveedor del modelo especificado
         preferred_provider = model_to_provider.get(model)
-        if (preferred_provider and 
+        if (preferred_provider and
             self._is_provider_available(preferred_provider)):
             return preferred_provider
-        
+
         # Fallback al mejor modelo disponible de OpenRouter
         available_providers = [
             LLMProvider.OPENROUTER_LLAMA70B,
             LLMProvider.OPENROUTER_LLAMA31_70B,
             LLMProvider.OPENROUTER_CLAUDE_3_5
         ]
-        
+
         for provider in available_providers:
             if self._is_provider_available(provider):
                 return provider
-                
+
         # Probar CLI local
         for provider in [LLMProvider.CLI_CLAUDE_CODE, LLMProvider.CLI_GEMINI, LLMProvider.CLI_CODEX]:
             if self._is_provider_available(provider):
                 return provider
-        
+
         # Último recurso
         return LLMProvider.FALLBACK_LOCAL
-    
+
     async def _call_minimax_m2(
         self,
         prompt: str,
@@ -683,21 +724,21 @@ class LLMRouter:
         request_id: str
     ) -> str:
         """Llama a MiniMax M2 API con logging detallado"""
-        
+
         if not self.minimax_api_key:
             raise ValueError("MINIMAX_API_KEY no configurada")
-        
+
         provider = LLMProvider.MINIMAX_M2
         self.stats[provider]["calls"] += 1
-        
+
         try:
             url = f"{settings.MINIMAX_API_BASE}/chat/completions"
-            
+
             headers = {
                 "Authorization": f"Bearer {self.minimax_api_key}",
                 "Content-Type": "application/json"
             }
-            
+
             payload = {
                 "model": settings.MINIMAX_MODEL,
                 "messages": [
@@ -706,34 +747,34 @@ class LLMRouter:
                 "temperature": temperature,
                 "max_tokens": max_tokens
             }
-            
+
             self.request_logger.info(f"[{request_id}] MiniMax M2 - Request: {json.dumps(payload, indent=2)}")
-            
+
             response = await self.client.post(url, headers=headers, json=payload)
-            
+
             if response.status_code != 200:
                 self.error_logger.error(f"[{request_id}] MiniMax M2 HTTP {response.status_code}: {response.text}")
                 response.raise_for_status()
-            
+
             data = response.json()
             content = data["choices"][0]["message"]["content"]
-            
+
             # Log de respuesta exitosa
             self.request_logger.info(
                 f"[{request_id}] MiniMax M2 - Respuesta exitosa: {len(content)} chars, "
                 f"Tokens: {data.get('usage', {}).get('total_tokens', 'N/A')}"
             )
-            
+
             # Actualizar estadísticas
             self.stats[provider]["total_tokens"] += data.get('usage', {}).get('total_tokens', 0)
             self.stats[provider]["last_success"] = datetime.utcnow().isoformat()
-            
+
             return content
-            
+
         except Exception as e:
             self.error_logger.error(f"[{request_id}] Error MiniMax M2: {e}")
             raise
-    
+
     async def _call_openrouter_model(
         self,
         model_key: str,
@@ -743,27 +784,27 @@ class LLMRouter:
         request_id: str
     ) -> str:
         """Llama a OpenRouter con el modelo especificado"""
-        
+
         if not self.openrouter_api_key:
             raise ValueError("OPENROUTER_API_KEY no configurada")
-        
+
         model_id = self.OPENROUTER_MODELS.get(model_key)
         if not model_id:
             raise ValueError(f"Modelo no soportado: {model_key}")
-        
+
         provider = LLMProvider(f"openrouter_{model_key}")
         self.stats[provider]["calls"] += 1
-        
+
         try:
             url = f"{settings.OPENROUTER_API_BASE}/chat/completions"
-            
+
             headers = {
                 "Authorization": f"Bearer {self.openrouter_api_key}",
                 "Content-Type": "application/json",
                 "HTTP-Referer": "https://sistema-multiagente.app",
                 "X-Title": "Sistema Multi-Agente Superior"
             }
-            
+
             payload = {
                 "model": model_id,
                 "messages": [
@@ -772,59 +813,62 @@ class LLMRouter:
                 "temperature": temperature,
                 "max_tokens": max_tokens
             }
-            
+
             self.request_logger.info(f"[{request_id}] OpenRouter {model_key} - Request: {json.dumps(payload, indent=2)}")
-            
+
             response = await self.client.post(url, headers=headers, json=payload)
-            
+
             if response.status_code != 200:
                 self.error_logger.error(f"[{request_id}] OpenRouter HTTP {response.status_code}: {response.text}")
                 response.raise_for_status()
-            
+
             data = response.json()
             content = data["choices"][0]["message"]["content"]
-            
+
             # Log de respuesta exitosa
             self.request_logger.info(
                 f"[{request_id}] OpenRouter {model_key} - Respuesta exitosa: {len(content)} chars, "
                 f"Tokens: {data.get('usage', {}).get('total_tokens', 'N/A')}"
             )
-            
+
             # Actualizar estadísticas
             self.stats[provider]["total_tokens"] += data.get('usage', {}).get('total_tokens', 0)
             self.stats[provider]["last_success"] = datetime.utcnow().isoformat()
-            
+
             return content
-            
+
         except Exception as e:
             self.error_logger.error(f"[{request_id}] Error OpenRouter {model_key}: {e}")
             raise
-    
+
     def _is_response_valid(self, response: str) -> bool:
         """Valida que la respuesta del LLM sea válida"""
         if not response or len(response.strip()) < 10:
             return False
-        
-        # Verificar que no sea una respuesta de error
-        error_indicators = [
-            "error",
-            "fallback",
-            "mock",
-            "placeholder",
-            "unavailable"
-        ]
-        
-        response_lower = response.lower()
-        return not any(indicator in response_lower for indicator in error_indicators)
-    
+
+        # Antes bastaba con que la respuesta contuviera la palabra "error" en
+        # cualquier posición para descartarla: una explicación legítima sobre
+        # manejo de errores, o cualquier fragmento de código con `except`, se
+        # rechazaba. Ahora sólo se descartan los marcadores que este sistema
+        # emite al degradarse, y sólo si abren la respuesta.
+        marcadores_de_degradacion = (
+            "[modo fallback",
+            "[silhouette timeout fallback]",
+            "[silhouette engine]",
+            "[silhouette local ai]",
+            "[respuesta del agente local",
+        )
+        principio = response.lstrip().lower()[:80]
+        return not any(principio.startswith(m) for m in marcadores_de_degradacion)
+
     async def _call_fallback(self, prompt: str, model: str, request_id: str) -> str:
         """Fallback local mejorado cuando fallan todos los proveedores"""
-        
+
         provider = LLMProvider.FALLBACK_LOCAL
         self.stats[provider]["calls"] += 1
-        
+
         logger.warning(f"[{request_id}] Usando fallback local - Modelo: {model}")
-        
+
         # Generar respuesta estructurada más útil
         return f"""# [Modo Fallback - Respuesta Local]
 
@@ -868,39 +912,39 @@ OPENROUTER_API_KEY=tu_clave_openrouter
 ---
 *Esta es una respuesta generada localmente. Configure API keys para respuestas reales.*
 """
-    
-    def get_stats(self) -> Dict[str, Any]:
+
+    def get_stats(self) -> dict[str, Any]:
         """Obtiene estadísticas detalladas del router"""
-        
+
         total_calls = sum(stats["calls"] for stats in self.stats.values())
         total_errors = sum(stats["errors"] for stats in self.stats.values())
-        
+
         # Calcular tasas de éxito
         provider_stats = {}
         for provider, stats in self.stats.items():
             success_rate = 0.0
             if stats["calls"] > 0:
                 success_rate = (stats["calls"] - stats["errors"]) / stats["calls"]
-            
+
             provider_stats[provider.value] = {
                 "calls": stats["calls"],
                 "errors": stats["errors"],
                 "success_rate": success_rate,
                 "total_tokens": stats["total_tokens"],
                 "avg_tokens_per_call": (
-                    stats["total_tokens"] / stats["calls"] 
+                    stats["total_tokens"] / stats["calls"]
                     if stats["calls"] > 0 else 0
                 ),
                 "last_success": stats["last_success"],
                 "last_error": stats["last_error"],
                 "circuit_breaker_open": self._is_circuit_breaker_open(provider)
             }
-        
+
         return {
             "total_calls": total_calls,
             "total_errors": total_errors,
             "overall_success_rate": (
-                (total_calls - total_errors) / total_calls 
+                (total_calls - total_errors) / total_calls
                 if total_calls > 0 else 0.0
             ),
             "by_provider": provider_stats,
@@ -911,28 +955,28 @@ OPENROUTER_API_KEY=tu_clave_openrouter
                 for provider in LLMProvider
             }
         }
-    
+
     def _days_until_minimax_expires(self) -> int:
         """Calcula días restantes de MiniMax M2 gratis"""
-        
+
         current_date = datetime.utcnow()
         expiry_date = datetime(2025, 11, 7, 23, 59, 59)
-        
+
         if current_date > expiry_date:
             return 0
-        
+
         delta = expiry_date - current_date
         return delta.days
-    
+
     async def close(self):
         """Cierra el cliente HTTP y limpia recursos"""
         await self.client.aclose()
         logger.info("LLMRouter cerrado correctamente")
-    
+
     async def __aenter__(self):
         """Context manager entry"""
         return self
-    
+
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         """Context manager exit"""
         await self.close()

@@ -2,18 +2,19 @@
 Agente Memory Manager con VectorStore Real para RAG
 Integra con PostgreSQL + pgvector para almacenamiento vectorial
 """
-from typing import List, Dict, Any, Optional
-import json
 import hashlib
-from datetime import datetime
+import json
 import logging
+from datetime import datetime
+from typing import Any
+
 import numpy as np
 from sqlalchemy import text
 
-from .base import BaseAgent
 from ..models import AgentMessage, AgentResponse, MessageStatus
-from ..services.vector_store import VectorStore
 from ..services.embedding_service import EmbeddingService
+from ..services.vector_store import VectorStore
+from .base import BaseAgent
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +29,7 @@ class MemoryManagerAgent(BaseAgent):
     - Gestión de contexto para agentes
     - Cache de embeddings frecuentes
     """
-    
+
     def __init__(self, llm_client: Any = None, vector_store: VectorStore = None, embedding_service: EmbeddingService = None):
         super().__init__(
             agent_id="memory_manager",
@@ -39,17 +40,17 @@ class MemoryManagerAgent(BaseAgent):
         self.memory_cache = {}  # Cache temporal de conversaciones
         self.conversation_cache = {}  # Cache de mensajes por conversación
         self.max_cache_size = 1000
-        
-    def get_capabilities(self) -> List[str]:
+
+    def get_capabilities(self) -> list[str]:
         return [
             "knowledge_storage",
-            "context_retrieval", 
+            "context_retrieval",
             "semantic_search",
             "memory_synthesis",
             "conversation_management",
             "document_indexing"
         ]
-    
+
     async def store_knowledge(
         self,
         title: str,
@@ -57,7 +58,7 @@ class MemoryManagerAgent(BaseAgent):
         content_type: str = "text",
         user_id: str = None,
         conversation_id: str = None,
-        metadata: Dict[str, Any] = None
+        metadata: dict[str, Any] = None
     ) -> str:
         """
         Almacena conocimiento en el VectorStore
@@ -76,7 +77,7 @@ class MemoryManagerAgent(BaseAgent):
         try:
             if not self.vector_store:
                 raise ValueError("VectorStore no inicializado")
-            
+
             document_id = await self.vector_store.store_document(
                 title=title,
                 content=content,
@@ -85,14 +86,14 @@ class MemoryManagerAgent(BaseAgent):
                 conversation_id=conversation_id,
                 metadata=metadata
             )
-            
+
             logger.info(f"Conocimiento almacenado: {document_id}")
             return document_id
-            
+
         except Exception as e:
             logger.error(f"Error almacenando conocimiento: {e}")
             raise
-    
+
     async def store_conversation_message(
         self,
         conversation_id: str,
@@ -100,7 +101,7 @@ class MemoryManagerAgent(BaseAgent):
         content: str,
         agent_id: str = None,
         user_id: str = None,
-        metadata: Dict[str, Any] = None
+        metadata: dict[str, Any] = None
     ) -> str:
         """
         Almacena mensaje de conversación con embedding
@@ -119,7 +120,7 @@ class MemoryManagerAgent(BaseAgent):
         try:
             if not self.vector_store:
                 raise ValueError("VectorStore no inicializado")
-            
+
             message_id = await self.vector_store.store_conversation_message(
                 conversation_id=conversation_id,
                 role=role,
@@ -128,7 +129,7 @@ class MemoryManagerAgent(BaseAgent):
                 user_id=user_id,
                 metadata=metadata
             )
-            
+
             # Actualizar cache de conversación
             if conversation_id not in self.conversation_cache:
                 self.conversation_cache[conversation_id] = []
@@ -138,14 +139,14 @@ class MemoryManagerAgent(BaseAgent):
                 "content": content,
                 "timestamp": datetime.now().isoformat()
             })
-            
+
             logger.info(f"Mensaje almacenado: {message_id}")
             return message_id
-            
+
         except Exception as e:
             logger.error(f"Error almacenando mensaje: {e}")
             raise
-    
+
     async def search_knowledge(
         self,
         query: str,
@@ -154,7 +155,7 @@ class MemoryManagerAgent(BaseAgent):
         conversation_id: str = None,
         content_type: str = None,
         time_range: str = None
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """
         Busca conocimiento relevante usando búsqueda semántica
         
@@ -172,7 +173,7 @@ class MemoryManagerAgent(BaseAgent):
         try:
             if not self.vector_store:
                 raise ValueError("VectorStore no inicializado")
-            
+
             results = await self.vector_store.semantic_search(
                 query=query,
                 limit=limit,
@@ -181,19 +182,19 @@ class MemoryManagerAgent(BaseAgent):
                 content_type=content_type,
                 time_range=time_range
             )
-            
+
             logger.info(f"Búsqueda completada: {len(results)} resultados para '{query}'")
             return results
-            
+
         except Exception as e:
             logger.error(f"Error en búsqueda: {e}")
             raise
-    
+
     async def get_conversation_context(
         self,
         conversation_id: str,
         limit: int = 20
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """
         Obtiene contexto de conversación reciente
         
@@ -210,7 +211,7 @@ class MemoryManagerAgent(BaseAgent):
                 cached_messages = self.conversation_cache[conversation_id]
                 if len(cached_messages) >= limit:
                     return cached_messages[-limit:]
-            
+
             # Si no está en cache o necesita más, consultar VectorStore
             if self.vector_store:
                 with self.vector_store.engine.connect() as conn:
@@ -224,7 +225,7 @@ class MemoryManagerAgent(BaseAgent):
                         "conversation_id": conversation_id,
                         "limit": limit
                     })
-                    
+
                     messages = []
                     for row in result.fetchall():
                         messages.append({
@@ -234,19 +235,19 @@ class MemoryManagerAgent(BaseAgent):
                             "timestamp": row[3].isoformat() if row[3] else None,
                             "metadata": json.loads(row[4]) if row[4] else {}
                         })
-                    
+
                     # Actualizar cache
                     self.conversation_cache[conversation_id] = list(reversed(messages))
-                    
+
                     return messages
             else:
                 # Fallback al cache local
                 return self.conversation_cache.get(conversation_id, [])
-                
+
         except Exception as e:
             logger.error(f"Error obteniendo contexto de conversación: {e}")
             return []
-    
+
     async def get_relevant_context(
         self,
         query: str,
@@ -274,16 +275,16 @@ class MemoryManagerAgent(BaseAgent):
                 user_id=user_id,
                 conversation_id=conversation_id
             )
-            
+
             # Obtener contexto de conversación reciente
             context_messages = []
             if conversation_id:
                 recent_messages = await self.get_conversation_context(conversation_id, limit=10)
                 context_messages = recent_messages
-            
+
             # Construir contexto
             context_parts = []
-            
+
             # Agregar resultados de búsqueda
             if knowledge_results:
                 context_parts.append("=== CONOCIMIENTO RELEVANTE ===")
@@ -292,7 +293,7 @@ class MemoryManagerAgent(BaseAgent):
                         context_parts.append(f"Documento: {result['title']}")
                     context_parts.append(result["content"][:500] + "..." if len(result["content"]) > 500 else result["content"])
                     context_parts.append("")
-            
+
             # Agregar mensajes de contexto
             if context_messages:
                 context_parts.append("=== CONTEXTO DE CONVERSACIÓN ===")
@@ -301,18 +302,18 @@ class MemoryManagerAgent(BaseAgent):
                     content = msg.get("content", "")[:300]  # Limitar longitud
                     context_parts.append(f"{role}: {content}")
                 context_parts.append("")
-            
+
             # Unir y truncar si es necesario
             context = "\n".join(context_parts)
             if len(context) > max_context_length:
                 context = context[:max_context_length] + "\n...(contexto truncado)"
-            
+
             return context
-            
+
         except Exception as e:
             logger.error(f"Error obteniendo contexto relevante: {e}")
             return ""
-    
+
     async def summarize_memory(self, conversation_id: str) -> str:
         """
         Genera resumen de la memoria de una conversación
@@ -325,35 +326,35 @@ class MemoryManagerAgent(BaseAgent):
         """
         try:
             context_messages = await self.get_conversation_context(conversation_id, limit=50)
-            
+
             if not context_messages:
                 return "No hay mensajes en esta conversación."
-            
+
             # Crear resumen básico
             user_messages = [msg for msg in context_messages if msg.get("role") == "user"]
             assistant_messages = [msg for msg in context_messages if msg.get("role") == "assistant"]
-            
+
             summary_parts = [
                 f"Conversación con {len(context_messages)} mensajes:",
                 f"- {len(user_messages)} mensajes del usuario",
                 f"- {len(assistant_messages)} respuestas del asistente",
                 ""
             ]
-            
+
             # Agregar temas principales (primeros mensajes)
             if user_messages:
                 summary_parts.append("Temas principales:")
                 for i, msg in enumerate(user_messages[:3]):
                     content = msg.get("content", "")[:100]
                     summary_parts.append(f"{i+1}. {content}...")
-            
+
             return "\n".join(summary_parts)
-            
+
         except Exception as e:
             logger.error(f"Error generando resumen: {e}")
             return "Error generando resumen de memoria."
-    
-    async def get_memory_stats(self) -> Dict[str, Any]:
+
+    async def get_memory_stats(self) -> dict[str, Any]:
         """Obtiene estadísticas de la memoria"""
         try:
             stats = {
@@ -364,21 +365,21 @@ class MemoryManagerAgent(BaseAgent):
                     "memory_cache_size": len(self.memory_cache)
                 }
             }
-            
+
             if self.vector_store:
                 vector_stats = await self.vector_store.get_stats()
                 stats["vector_store"] = vector_stats
-            
+
             return stats
-            
+
         except Exception as e:
             logger.error(f"Error obteniendo estadísticas: {e}")
             return {"error": str(e)}
-    
-    async def _generate_embedding(self, content: Any) -> List[float]:
+
+    async def _generate_embedding(self, content: Any) -> list[float]:
         """Genera embedding usando el embedding service"""
         text = json.dumps(content) if isinstance(content, dict) else str(content)
-        
+
         if self.embedding_service:
             try:
                 embeddings = await self.embedding_service.generate_embeddings([text])
@@ -386,27 +387,27 @@ class MemoryManagerAgent(BaseAgent):
                     return embeddings[0]
             except Exception as e:
                 logger.warning(f"Error con embedding service: {e}")
-        
+
         # Fallback a embedding determinístico
         seed = int(hashlib.md5(text.encode()).hexdigest(), 16) % (2**32)
         np.random.seed(seed)
         embedding = np.random.normal(0, 1, 1536).tolist()
-        
+
         # Normalizar
         norm = np.linalg.norm(embedding)
         if norm > 0:
             embedding = (embedding / norm).tolist()
-        
+
         return embedding
-    
-    async def store_insight(self, insight: str, metadata: Optional[Dict[str, Any]] = None, conversation_id: str = "global") -> Dict[str, Any]:
+
+    async def store_insight(self, insight: str, metadata: dict[str, Any] | None = None, conversation_id: str = "global") -> dict[str, Any]:
         """Almacena un insight en memoria a largo plazo"""
         try:
             memory_id = f"mem_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
-            
+
             # Generar embedding
             embedding = await self._generate_embedding(insight)
-            
+
             # Almacenar en cache
             self.memory_cache[memory_id] = {
                 "content": insight,
@@ -414,7 +415,7 @@ class MemoryManagerAgent(BaseAgent):
                 "metadata": metadata or {},
                 "created_at": datetime.now().isoformat()
             }
-            
+
             # Almacenar en base de datos si está disponible (pgvector)
             if self.vector_store and hasattr(self.vector_store, 'engine'):
                 with self.vector_store.engine.connect() as conn:
@@ -430,29 +431,29 @@ class MemoryManagerAgent(BaseAgent):
                         "metadata": json.dumps(metadata or {})
                     })
                     conn.commit()
-            
+
             logger.info(f"Insight almacenado: {memory_id}")
             return {
                 "success": True,
                 "memory_id": memory_id,
                 "operation": "store_insight"
             }
-            
+
         except Exception as e:
             logger.error(f"Error almacenando insight: {e}")
             return {"success": False, "error": str(e)}
-    
-    async def search_in_memory(self, query: str, limit: int = 5, filters: Optional[Dict[str, Any]] = None, conversation_id: str = None) -> Dict[str, Any]:
+
+    async def search_in_memory(self, query: str, limit: int = 5, filters: dict[str, Any] | None = None, conversation_id: str = None) -> dict[str, Any]:
         """Búsqueda semántica en memoria a largo plazo"""
         try:
             query_embedding = await self._generate_embedding(query)
-            
+
             results = []
             # Búsqueda usando pgvector si la DB está disponible
             if self.vector_store and hasattr(self.vector_store, 'engine'):
                 with self.vector_store.engine.connect() as conn:
                     emb_str = f"[{','.join(map(str, query_embedding))}]"
-                    
+
                     sql_query = """
                         SELECT id, content, metadata, created_at,
                                1 - (embedding <=> :emb::vector) as similarity
@@ -460,13 +461,13 @@ class MemoryManagerAgent(BaseAgent):
                         WHERE 1=1
                     """
                     params = {"emb": emb_str, "limit": limit}
-                    
+
                     if conversation_id:
                         sql_query += " AND conversation_id = :conv_id"
                         params["conv_id"] = conversation_id
-                        
+
                     sql_query += " ORDER BY embedding <=> :emb::vector LIMIT :limit"
-                    
+
                     result = conn.execute(text(sql_query), params)
                     for row in result.fetchall():
                         results.append({
@@ -476,7 +477,7 @@ class MemoryManagerAgent(BaseAgent):
                             "score": float(row[4]),
                             "created_at": row[3].isoformat() if row[3] else None
                         })
-                        
+
             # Si no hay resultados de PG, usar el fallback (cache local)
             if not results:
                 for memory_id, memory_data in self.memory_cache.items():
@@ -484,9 +485,9 @@ class MemoryManagerAgent(BaseAgent):
                     dot_product = np.dot(query_embedding, memory_embedding)
                     norm_query = np.linalg.norm(query_embedding)
                     norm_memory = np.linalg.norm(memory_embedding)
-                    
+
                     similarity = dot_product / (norm_query * norm_memory) if norm_query > 0 and norm_memory > 0 else 0.0
-                    
+
                     results.append({
                         "memory_id": memory_id,
                         "content": memory_data["content"],
@@ -494,11 +495,11 @@ class MemoryManagerAgent(BaseAgent):
                         "score": float(similarity),
                         "created_at": memory_data["created_at"]
                     })
-                
+
                 # Ordenar por similitud
                 results.sort(key=lambda x: x["score"], reverse=True)
                 results = results[:limit]
-            
+
             return {
                 "success": True,
                 "query": query,
@@ -506,16 +507,16 @@ class MemoryManagerAgent(BaseAgent):
                 "results": results,
                 "search_type": "semantic_pgvector" if self.vector_store else "semantic_cache"
             }
-            
+
         except Exception as e:
             logger.error(f"Error en búsqueda: {e}")
             return {"success": False, "error": str(e)}
-    
+
     async def process_message(self, message: AgentMessage) -> AgentResponse:
         """Procesa mensaje"""
         try:
             operation = message.payload.get("operation", "store")
-            
+
             if operation == "store":
                 result = await self.store_insight(
                     message.payload.get("insight", ""),
@@ -528,7 +529,7 @@ class MemoryManagerAgent(BaseAgent):
                 )
             else:
                 result = {"success": False, "error": f"Operación no soportada: {operation}"}
-            
+
             return AgentResponse(
                 message_id=f"resp_{message.message_id}",
                 original_message_id=message.message_id,
@@ -536,7 +537,7 @@ class MemoryManagerAgent(BaseAgent):
                 status=MessageStatus.DONE,
                 result=result
             )
-            
-        except Exception as e:
+
+        except Exception:
             logger.exception("Error en Memory Manager")
             raise

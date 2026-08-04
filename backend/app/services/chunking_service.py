@@ -2,11 +2,12 @@
 Servicio de Chunking para Documentos
 Implementa estrategias de división de texto para RAG
 """
-from typing import List, Dict, Any, Optional, Tuple
-import re
 import logging
+import re
 from dataclasses import dataclass
 from enum import Enum
+from typing import Any
+
 import tiktoken
 
 logger = logging.getLogger(__name__)
@@ -29,8 +30,8 @@ class Chunk:
     start_position: int
     end_position: int
     token_count: int
-    metadata: Dict[str, Any]
-    embedding: Optional[List[float]] = None
+    metadata: dict[str, Any]
+    embedding: list[float] | None = None
 
 
 class DocumentChunker:
@@ -40,12 +41,12 @@ class DocumentChunker:
     Implementa múltiples estrategias de chunking para optimizar
     la recuperación de información relevante.
     """
-    
+
     def __init__(self):
         """Inicializa el chunker"""
         self.tokenizer = None
         self._init_tokenizer()
-    
+
     def _init_tokenizer(self):
         """Inicializa el tokenizer para conteo de tokens"""
         try:
@@ -54,7 +55,7 @@ class DocumentChunker:
         except Exception as e:
             logger.warning(f"No se pudo cargar tokenizer: {str(e)} - usando estimación por caracteres")
             self.tokenizer = None
-    
+
     def chunk_document(
         self,
         text: str,
@@ -62,7 +63,7 @@ class DocumentChunker:
         max_tokens: int = 500,
         overlap_tokens: int = 50,
         **kwargs
-    ) -> List[Chunk]:
+    ) -> list[Chunk]:
         """
         Divide un documento en chunks según la estrategia especificada
         
@@ -78,7 +79,7 @@ class DocumentChunker:
         """
         if not text or not text.strip():
             return []
-        
+
         try:
             if strategy == ChunkingStrategy.FIXED_SIZE:
                 return self._chunk_by_fixed_size(text, max_tokens, overlap_tokens)
@@ -92,22 +93,22 @@ class DocumentChunker:
                 return self._chunk_recursively(text, max_tokens, overlap_tokens)
             else:
                 raise ValueError(f"Estrategia de chunking no soportada: {strategy}")
-                
+
         except Exception as e:
             logger.error(f"Error en chunking: {str(e)}")
             # Fallback a chunking por tamaño fijo
             return self._chunk_by_fixed_size(text, max_tokens, overlap_tokens)
-    
+
     def _chunk_by_fixed_size(
         self,
         text: str,
         max_tokens: int,
         overlap_tokens: int
-    ) -> List[Chunk]:
+    ) -> list[Chunk]:
         """Chunking por tamaño fijo de tokens"""
         chunks = []
         chunks_info = self._split_text_by_tokens(text, max_tokens, overlap_tokens)
-        
+
         for i, chunk_info in enumerate(chunks_info):
             chunk = Chunk(
                 id=f"chunk_{i:04d}",
@@ -123,30 +124,30 @@ class DocumentChunker:
                 }
             )
             chunks.append(chunk)
-        
+
         return chunks
-    
+
     def _chunk_semantically(
         self,
         text: str,
         max_tokens: int,
         overlap_tokens: int
-    ) -> List[Chunk]:
+    ) -> list[Chunk]:
         """Chunking semántico basado en puntuación y estructura"""
         # Dividir por párrafos primero
         paragraphs = self._split_into_paragraphs(text)
         chunks = []
         current_chunk = ""
         current_start = 0
-        
+
         for para_idx, paragraph in enumerate(paragraphs):
             para_start = text.find(paragraph, current_start)
             para_end = para_start + len(paragraph)
-            
+
             # Verificar si agregar este párrafo excede el límite
             test_chunk = current_chunk + ("\n\n" if current_chunk else "") + paragraph
             test_token_count = self._count_tokens(test_chunk)
-            
+
             if test_token_count <= max_tokens:
                 current_chunk = test_chunk
                 current_start = para_end
@@ -167,11 +168,11 @@ class DocumentChunker:
                         }
                     )
                     chunks.append(chunk)
-                
+
                 # Iniciar nuevo chunk
                 current_chunk = paragraph
                 current_start = para_end
-        
+
         # Agregar último chunk
         if current_chunk.strip():
             chunk = Chunk(
@@ -188,29 +189,29 @@ class DocumentChunker:
                 }
             )
             chunks.append(chunk)
-        
+
         return chunks
-    
+
     def _chunk_by_sentences(
         self,
         text: str,
         max_tokens: int,
         overlap_tokens: int
-    ) -> List[Chunk]:
+    ) -> list[Chunk]:
         """Chunking basado en oraciones completas"""
         sentences = self._split_into_sentences(text)
         chunks = []
         current_chunk = ""
         current_start = 0
-        
+
         for sent_idx, sentence in enumerate(sentences):
             sent_start = text.find(sentence, current_start)
             sent_end = sent_start + len(sentence)
-            
+
             # Verificar si agregar esta oración excede el límite
             test_chunk = current_chunk + (" " if current_chunk else "") + sentence
             test_token_count = self._count_tokens(test_chunk)
-            
+
             if test_token_count <= max_tokens:
                 current_chunk = test_chunk
                 current_start = sent_end
@@ -231,11 +232,11 @@ class DocumentChunker:
                         }
                     )
                     chunks.append(chunk)
-                
+
                 # Iniciar nuevo chunk
                 current_chunk = sentence
                 current_start = sent_end
-        
+
         # Agregar último chunk
         if current_chunk.strip():
             chunk = Chunk(
@@ -252,28 +253,28 @@ class DocumentChunker:
                 }
             )
             chunks.append(chunk)
-        
+
         return chunks
-    
+
     def _chunk_by_paragraphs(
         self,
         text: str,
         max_tokens: int,
         overlap_tokens: int
-    ) -> List[Chunk]:
+    ) -> list[Chunk]:
         """Chunking basado en párrafos"""
         paragraphs = self._split_into_paragraphs(text)
         chunks = []
         current_chunk = ""
         current_start = 0
-        
+
         for para_idx, paragraph in enumerate(paragraphs):
             para_start = text.find(paragraph, current_start)
             para_end = para_start + len(paragraph)
-            
+
             test_chunk = current_chunk + ("\n\n" if current_chunk else "") + paragraph
             test_token_count = self._count_tokens(test_chunk)
-            
+
             if test_token_count <= max_tokens:
                 current_chunk = test_chunk
                 current_start = para_end
@@ -293,10 +294,10 @@ class DocumentChunker:
                         }
                     )
                     chunks.append(chunk)
-                
+
                 current_chunk = paragraph
                 current_start = para_end
-        
+
         if current_chunk.strip():
             chunk = Chunk(
                 id=f"chunk_{len(chunks):04d}",
@@ -312,24 +313,24 @@ class DocumentChunker:
                 }
             )
             chunks.append(chunk)
-        
+
         return chunks
-    
+
     def _chunk_recursively(
         self,
         text: str,
         max_tokens: int,
         overlap_tokens: int
-    ) -> List[Chunk]:
+    ) -> list[Chunk]:
         """Chunking recursivo que intenta preservar estructura semántica"""
         # Primero intentar dividir por párrafos
         chunks_info = self._split_text_by_tokens(text, max_tokens, overlap_tokens)
-        
+
         # Refinar chunks para preservar oraciones completas
         refined_chunks = []
         for chunk_info in chunks_info:
             chunk_text = chunk_info["text"]
-            
+
             # Si el chunk es muy grande, intentar dividirlo por oraciones
             if self._count_tokens(chunk_text) > max_tokens * 0.8:
                 sentences = self._split_into_sentences(chunk_text)
@@ -342,12 +343,12 @@ class DocumentChunker:
                         if refined_chunk.strip():
                             refined_chunks.append(refined_chunk.strip())
                         refined_chunk = sentence
-                
+
                 if refined_chunk.strip():
                     refined_chunks.append(refined_chunk.strip())
             else:
                 refined_chunks.append(chunk_text.strip())
-        
+
         # Crear objetos Chunk
         chunks = []
         for i, content in enumerate(refined_chunks):
@@ -366,26 +367,26 @@ class DocumentChunker:
                 }
             )
             chunks.append(chunk)
-        
+
         return chunks
-    
+
     def _split_text_by_tokens(
         self,
         text: str,
         max_tokens: int,
         overlap_tokens: int
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Divide texto por tokens manteniendo superposición"""
         chunks_info = []
         words = text.split()
         current_chunk = []
         current_token_count = 0
         start_pos = 0
-        
+
         for i, word in enumerate(words):
             word_tokens = self._count_tokens(word + " ")
             new_token_count = current_token_count + word_tokens
-            
+
             if new_token_count <= max_tokens:
                 current_chunk.append(word)
                 current_token_count = new_token_count
@@ -399,16 +400,16 @@ class DocumentChunker:
                         "token_count": current_token_count
                     }
                     chunks_info.append(chunk_info)
-                    
+
                     # Calcular nueva posición de inicio con overlap
                     overlap_words = self._get_overlap_words(current_chunk, overlap_tokens)
                     overlap_text = " ".join(overlap_words)
                     start_pos = start_pos + len(chunk_text) - len(overlap_text)
-                    
+
                     # Iniciar nuevo chunk con overlap
                     current_chunk = overlap_words + [word]
                     current_token_count = self._count_tokens(" ".join(current_chunk))
-        
+
         # Agregar último chunk
         if current_chunk:
             chunk_text = " ".join(current_chunk)
@@ -419,36 +420,36 @@ class DocumentChunker:
                 "token_count": current_token_count
             }
             chunks_info.append(chunk_info)
-        
+
         return chunks_info
-    
-    def _split_into_paragraphs(self, text: str) -> List[str]:
+
+    def _split_into_paragraphs(self, text: str) -> list[str]:
         """Divide texto en párrafos"""
         # Buscar doble salto de línea o patrones de párrafo
         paragraphs = re.split(r'\n\s*\n', text)
         return [p.strip() for p in paragraphs if p.strip()]
-    
-    def _split_into_sentences(self, text: str) -> List[str]:
+
+    def _split_into_sentences(self, text: str) -> list[str]:
         """Divide texto en oraciones preservando puntuación"""
         # Pattern que preserva puntuación y maneja abreviaciones
         sentence_pattern = r'(?<=\.)\s+(?=[A-Z])|(?<=\!)\s+(?=[A-Z])|(?<=\?)\s+(?=[A-Z])|(?<=:)\s+(?=[A-Z])'
-        
+
         # Dividir por puntuación seguida de espacio y mayúscula
         sentences = re.split(sentence_pattern, text)
-        
+
         # Limpiar y filtrar oraciones vacías
         sentences = [s.strip() for s in sentences if s.strip()]
-        
+
         return sentences
-    
-    def _get_overlap_words(self, words: List[str], overlap_tokens: int) -> List[str]:
+
+    def _get_overlap_words(self, words: list[str], overlap_tokens: int) -> list[str]:
         """Obtiene palabras para el overlap desde el final del chunk anterior"""
         if overlap_tokens <= 0 or not words:
             return []
-        
+
         overlap_words = []
         current_tokens = 0
-        
+
         # Tomar palabras del final hacia el principio
         for word in reversed(words):
             word_tokens = self._count_tokens(word + " ")
@@ -457,9 +458,9 @@ class DocumentChunker:
                 current_tokens += word_tokens
             else:
                 break
-        
+
         return overlap_words
-    
+
     def _count_tokens(self, text: str) -> int:
         """Cuenta tokens en el texto"""
         if self.tokenizer:
@@ -467,21 +468,21 @@ class DocumentChunker:
                 return len(self.tokenizer.encode(text))
             except Exception:
                 pass
-        
+
         # Fallback: estimación por caracteres (aproximadamente 4 caracteres por token)
         return len(text) // 4
-    
+
     def get_chunking_stats(
         self,
-        chunks: List[Chunk],
+        chunks: list[Chunk],
         original_text: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Obtiene estadísticas del chunking realizado"""
         if not chunks:
             return {"error": "No hay chunks para analizar"}
-        
+
         token_counts = [chunk.token_count for chunk in chunks]
-        
+
         return {
             "total_chunks": len(chunks),
             "original_text_length": len(original_text),

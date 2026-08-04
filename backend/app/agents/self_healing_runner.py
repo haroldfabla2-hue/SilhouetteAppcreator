@@ -1,11 +1,10 @@
-import asyncio
+import ast
 import logging
+import os
 import subprocess
 import sys
 import tempfile
-import ast
-import os
-from typing import Dict, Any, List, Tuple
+from typing import Any
 
 logger = logging.getLogger("SelfHealingRunner")
 
@@ -42,7 +41,7 @@ class SelfHealingRunner:
         self.max_retries = max_retries
         self.timeout_seconds = timeout_seconds
 
-    async def run_autonomously_until_perfect(self, prompt: str, initial_code: str) -> Dict[str, Any]:
+    async def run_autonomously_until_perfect(self, prompt: str, initial_code: str) -> dict[str, Any]:
         """Ejecuta el bucle de auto-reparación hasta que el código ejecute sin errores."""
         current_code = initial_code
         history = []
@@ -95,7 +94,7 @@ class SelfHealingRunner:
             "history": history
         }
 
-    def _check_syntax_ast(self, code: str) -> Tuple[bool, str]:
+    def _check_syntax_ast(self, code: str) -> tuple[bool, str]:
         """Comprueba sintaxis usando ast.parse."""
         try:
             ast.parse(code)
@@ -105,25 +104,25 @@ class SelfHealingRunner:
         except Exception as e:
             return False, str(e)
 
-    def _detect_missing_imports(self, code: str) -> List[str]:
+    def _detect_missing_imports(self, code: str) -> list[str]:
         """Utiliza un NodeVisitor de AST para encontrar módulos estándar usados sin importar."""
         common_stdlib = {"json", "os", "sys", "asyncio", "math", "re", "time", "subprocess", "logging", "typing", "pathlib"}
         try:
             parsed = ast.parse(code)
             visitor = MissingImportVisitor()
             visitor.visit(parsed)
-            
+
             missing = (visitor.used_names & common_stdlib) - visitor.imported_names
             return list(missing)
         except Exception:
             return []
 
-    def _inject_imports(self, code: str, imports: List[str]) -> str:
+    def _inject_imports(self, code: str, imports: list[str]) -> str:
         """Inyecta las sentencias import requeridas al principio del script."""
         import_lines = [f"import {mod}" for mod in imports]
         return "\n".join(import_lines) + "\n\n" + code
 
-    def _execute_in_sandbox(self, code: str) -> Tuple[bool, int, str, str]:
+    def _execute_in_sandbox(self, code: str) -> tuple[bool, int, str, str]:
         """Ejecuta el código en un subproceso Python efímero con timeout."""
         with tempfile.NamedTemporaryFile(suffix=".py", mode="w", delete=False, encoding="utf-8") as temp_file:
             temp_file.write(code)

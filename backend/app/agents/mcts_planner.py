@@ -1,7 +1,7 @@
+import hashlib
 import logging
 import math
-import random
-from typing import Dict, Any, List, Optional
+from typing import Any, Optional
 
 logger = logging.getLogger("MCTSCodePlanner")
 
@@ -9,16 +9,16 @@ class MCTSNode:
     """
     Nodo de decisión en el Árbol de Búsqueda Monte Carlo (MCTS).
     """
-    def __init__(self, state: Dict[str, Any], parent: Optional['MCTSNode'] = None, action: Optional[str] = None):
+    def __init__(self, state: dict[str, Any], parent: Optional['MCTSNode'] = None, action: str | None = None):
         self.state = state
         self.parent = parent
         self.action = action
-        self.children: List['MCTSNode'] = []
+        self.children: list[MCTSNode] = []
         self.visits = 0
         self.total_reward = 0.0
         self.untried_actions = self._generate_possible_actions(state)
 
-    def _generate_possible_actions(self, state: Dict[str, Any]) -> List[str]:
+    def _generate_possible_actions(self, state: dict[str, Any]) -> list[str]:
         """Genera estrategias/pasos de descomposición de código basados en la meta actual."""
         prompt = state.get("prompt", "").lower()
         actions = []
@@ -28,7 +28,7 @@ class MCTSNode:
             actions.extend(["create_sqlalchemy_model", "add_async_db_session", "write_migration_script"])
         if "agent" in prompt or "mcp" in prompt:
             actions.extend(["instantiate_subagent", "register_mcp_tool", "setup_redis_pubsub"])
-        
+
         # Acciones universales de desarrollo seguro
         actions.extend(["write_unit_tests", "add_error_handling", "refactor_clean_code", "ast_security_scan"])
         return list(set(actions))
@@ -57,9 +57,9 @@ class MCTSCodePlanner:
         self.iterations = iterations
         self.c_param = exploration_constant
 
-    async def search_best_plan(self, prompt: str, context: Dict[str, Any]) -> Dict[str, Any]:
+    async def search_best_plan(self, prompt: str, context: dict[str, Any]) -> dict[str, Any]:
         logger.info(f"[MCTS Planner Real] Iniciando búsqueda MCTS con {self.iterations} iteraciones...")
-        
+
         root_state = {"prompt": prompt, "context": context, "depth": 0}
         root_node = MCTSNode(state=root_state)
 
@@ -83,8 +83,8 @@ class MCTSCodePlanner:
                 node.children.append(child_node)
                 node = child_node
 
-            # 3. SIMULACIÓN (ROLLOUT)
-            reward = self._simulate_rollout(node.state)
+            # 3. EVALUACIÓN del nodo alcanzado (determinista)
+            reward = self._evaluate_state(node.state)
 
             # 4. RETROPROPAGACIÓN (BACKPROPAGATION)
             while node is not None:
@@ -94,7 +94,7 @@ class MCTSCodePlanner:
 
         # Seleccionar la mejor trayectoria
         best_child = root_node.best_child(c_param=0.0) # c_param=0 para seleccionar pura explotación
-        
+
         explored_branches = []
         for child in root_node.children:
             avg_reward = child.total_reward / child.visits if child.visits > 0 else 0.0
@@ -120,11 +120,21 @@ class MCTSCodePlanner:
             }
         }
 
-    def _simulate_rollout(self, state: Dict[str, Any]) -> float:
-        """Calcula una función de recompensa realista basada en complejidad y riesgos."""
+    def _evaluate_state(self, state: dict[str, Any]) -> float:
+        """Función de evaluación heurística de un plan candidato.
+
+        Es una evaluación determinista, no una simulación: el mismo plan
+        siempre obtiene la misma puntuación. Antes se sumaba `random.uniform()`,
+        lo que hacía que dos ejecuciones sobre la misma entrada dieran planes
+        distintos y que ninguna decisión fuera reproducible ni depurable.
+
+        El desempate entre planes de igual mérito se deriva del propio plan
+        (hash estable), de modo que sigue habiendo diversidad de exploración
+        sin sacrificar la reproducibilidad.
+        """
         history = state.get("history", [])
         score = 0.5
-        
+
         # Premiar planes que incluyen validación y manejo de errores
         if "add_error_handling" in history or "add_pydantic_validation" in history:
             score += 0.25
@@ -133,6 +143,7 @@ class MCTSCodePlanner:
         if len(history) > 4:
             score -= 0.15  # Penalizar sobre-ingeniería excesiva
 
-        # Introducir variabilidad aleatoria de evaluación simulada
-        score += random.uniform(-0.05, 0.05)
-        return min(max(score, 0.0), 1.0)
+        # Desempate determinista en ±0.05, derivado del contenido del plan.
+        firma = hashlib.sha256("|".join(map(str, history)).encode("utf-8")).digest()
+        desempate = (firma[0] / 255.0 - 0.5) * 0.1
+        return min(max(score + desempate, 0.0), 1.0)

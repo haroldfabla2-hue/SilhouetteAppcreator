@@ -36,10 +36,27 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(level
 logger = logging.getLogger("SilhouetteMCPServer")
 
 # ==================== CONFIGURACIÓN DE AUTENTICACIÓN ====================
-ADMIN_CREDENTIALS = {
-    "email": "alberto.farahb@hotmail.com",
-    "password_hash": hashlib.sha256("Fbalberto1910".encode()).hexdigest()
-}
+# Las credenciales viven en el entorno, nunca en el código. Genere el hash con:
+#   python -m backend.app.security.auth "<contraseña>"
+# y expórtelo como SILHOUETTE_ADMIN_PASSWORD_HASH junto a SILHOUETTE_ADMIN_EMAIL.
+from backend.app.security.auth import AuthNotConfigured, auth_service
+from backend.app.security.process_policy import (
+    AppNotAllowed,
+    ArgumentRejected,
+    plan_launch,
+)
+from backend.app.security.workspace import (
+    PathNotAllowed,
+    resolve_within_workspace,
+    safe_relative,
+    workspace_root,
+)
+
+if not auth_service.is_configured:
+    logger.warning(
+        "No hay administrador configurado: los endpoints protegidos responderán 503. "
+        "Defina SILHOUETTE_ADMIN_EMAIL y SILHOUETTE_ADMIN_PASSWORD_HASH."
+    )
 
 # Configuración del servidor
 app = FastAPI(
@@ -50,10 +67,19 @@ app = FastAPI(
     redoc_url="/redoc"
 )
 
-# CORS configurado para producción
+# CORS: lista blanca explícita. Un comodín junto a allow_credentials=True es
+# inválido según la especificación y permite que cualquier web llame a la API
+# con las credenciales del usuario. Ajuste los orígenes con SILHOUETTE_CORS_ORIGINS.
+_DEFAULT_CORS_ORIGINS = "http://localhost:5173,http://127.0.0.1:5173"
+CORS_ORIGINS = [
+    origin.strip()
+    for origin in os.getenv("SILHOUETTE_CORS_ORIGINS", _DEFAULT_CORS_ORIGINS).split(",")
+    if origin.strip() and origin.strip() != "*"
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # En producción, especificar dominios exactos
+    allow_origins=CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["Content-Type", "Authorization", "X-API-Key", "Cache-Control"],
@@ -312,31 +338,29 @@ store = SilhouetteMCPStore()
 # ==================== FUNCIONES DE AUTENTICACIÓN ====================
 
 def verify_admin(credentials: HTTPAuthorizationCredentials = Depends(security)) -> Dict[str, Any]:
-    """Verificar credenciales de administrador"""
+    """Valida el token de sesión emitido por /admin/login.
+
+    El token es opaco y caducable. A diferencia del esquema anterior, no contiene
+    la contraseña ni permite derivarla.
+    """
+    if not auth_service.is_configured:
+        raise HTTPException(
+            status_code=503,
+            detail=(
+                "Autenticación no configurada. Defina SILHOUETTE_ADMIN_EMAIL y "
+                "SILHOUETTE_ADMIN_PASSWORD_HASH en el entorno."
+            ),
+        )
+    if credentials.scheme.lower() != "bearer":
+        raise HTTPException(
+            status_code=401,
+            detail="Use el esquema Bearer con el token emitido por /admin/login.",
+        )
     try:
-        # Aceptar tanto Basic Auth como Bearer Token
-        if credentials.scheme.lower() == "basic":
-            import base64
-            decoded = base64.b64decode(credentials.credentials).decode('utf-8')
-            email, password = decoded.split(':', 1)
-        else:  # Bearer token
-            # Formato: email:password en base64
-            import base64
-            try:
-                decoded = base64.b64decode(credentials.credentials).decode('utf-8')
-                email, password = decoded.split(':', 1)
-            except:
-                raise HTTPException(status_code=401, detail="Formato de token inválido")
-        
-        # Verificar credenciales
-        if (email == ADMIN_CREDENTIALS["email"] and 
-            hashlib.sha256(password.encode()).hexdigest() == ADMIN_CREDENTIALS["password_hash"]):
-            return {"email": email, "role": "admin"}
-        else:
-            raise HTTPException(status_code=401, detail="Credenciales inválidas")
-            
-    except Exception as e:
-        raise HTTPException(status_code=401, detail=f"Error de autenticación: {str(e)}")
+        identity = auth_service.resolve(credentials.credentials)
+    except PermissionError:
+        raise HTTPException(status_code=401, detail="Token inválido o expirado") from None
+    return {"email": identity.email, "role": identity.role}
 
 def verify_api_key(api_key: str) -> Optional[Application]:
     """Verificar API key de aplicación"""
@@ -398,26 +422,37 @@ async def public_metrics():
 
 @app.post("/admin/login")
 async def admin_login(request: Request):
-    """Login de administrador vía POST"""
+    """Emite un token de sesión de administrador."""
     try:
         data = await request.json()
-        email = data.get("email", "")
-        password = data.get("password", "")
-        
-        if (email == ADMIN_CREDENTIALS["email"] and 
-            hashlib.sha256(password.encode()).hexdigest() == ADMIN_CREDENTIALS["password_hash"]):
-            
-            return {
-                "success": True,
-                "message": "Login exitoso",
-                "user": {"email": email, "role": "admin"},
-                "token": base64.b64encode(f"{email}:{password}".encode('utf-8')).decode('utf-8')  # Token temporal
-            }
-        else:
-            raise HTTPException(status_code=401, detail="Credenciales inválidas")
-            
-    except Exception as e:
-        raise HTTPException(status_code=401, detail=f"Error de login: {str(e)}")
+    except Exception:
+        raise HTTPException(status_code=400, detail="Se esperaba un cuerpo JSON") from None
+
+    email = str(data.get("email", ""))
+    password = str(data.get("password", ""))
+
+    try:
+        token = auth_service.login(email, password)
+    except AuthNotConfigured as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from None
+    except PermissionError:
+        logger.warning("Intento de login fallido para '%s'", email[:64])
+        raise HTTPException(status_code=401, detail="Credenciales inválidas") from None
+
+    return {
+        "success": True,
+        "message": "Login exitoso",
+        "user": {"email": email, "role": "admin"},
+        "token": token,
+        "expires_in": 8 * 3600,
+    }
+
+
+@app.post("/admin/logout")
+async def admin_logout(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    """Revoca el token de sesión actual."""
+    revoked = auth_service.revoke(credentials.credentials)
+    return {"success": True, "revoked": revoked}
 
 # ==================== ENDPOINTS DE ADMINISTRACIÓN ====================
 
@@ -705,115 +740,463 @@ async def battle_arena(req: ArenaRequest):
         logger.error(f"Error en /api/agents/arena: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+# Límite de tamaño para lectura/escritura de archivos vía API (2 MiB).
+MAX_FILE_BYTES = 2 * 1024 * 1024
+
+
 @app.get("/api/system/file-content")
-async def get_file_content(path: str):
-    """Lee el contenido de un archivo del proyecto"""
+async def get_file_content(path: str, admin=Depends(verify_admin)):
+    """Lee un archivo del workspace.
+
+    La ruta se confina a la raíz del proyecto y se rechazan secretos, `.git` y
+    dependencias. Requiere sesión de administrador.
+    """
     try:
-        if os.path.exists(path):
-            with open(path, "r", encoding="utf-8") as f:
-                content = f.read()
-            return {"success": True, "path": path, "content": content}
-        return {"success": False, "error": "Archivo no encontrado"}
-    except Exception as e:
-        return {"success": False, "error": str(e)}
+        resolved = resolve_within_workspace(path)
+    except PathNotAllowed as exc:
+        raise HTTPException(status_code=403, detail=str(exc)) from None
+
+    if not resolved.is_file():
+        raise HTTPException(status_code=404, detail="Archivo no encontrado")
+    if resolved.stat().st_size > MAX_FILE_BYTES:
+        raise HTTPException(
+            status_code=413,
+            detail=f"El archivo supera el límite de {MAX_FILE_BYTES // 1024} KiB.",
+        )
+
+    try:
+        content = resolved.read_text(encoding="utf-8")
+    except UnicodeDecodeError:
+        raise HTTPException(status_code=415, detail="El archivo no es texto UTF-8.") from None
+
+    return {"success": True, "path": safe_relative(resolved), "content": content}
+
 
 class SaveFileRequest(BaseModel):
     path: str
     content: str
 
+
 @app.post("/api/system/save-file")
-async def save_file_content(req: SaveFileRequest):
-    """Guarda el contenido de un archivo del proyecto"""
+async def save_file_content(req: SaveFileRequest, admin=Depends(verify_admin)):
+    """Escribe un archivo dentro del workspace. Requiere sesión de administrador."""
+    if len(req.content.encode("utf-8")) > MAX_FILE_BYTES:
+        raise HTTPException(
+            status_code=413,
+            detail=f"El contenido supera el límite de {MAX_FILE_BYTES // 1024} KiB.",
+        )
     try:
-        with open(req.path, "w", encoding="utf-8") as f:
-            f.write(req.content)
-        return {"success": True, "message": "Archivo guardado exitosamente"}
-    except Exception as e:
-        return {"success": False, "error": str(e)}
+        resolved = resolve_within_workspace(req.path)
+    except PathNotAllowed as exc:
+        raise HTTPException(status_code=403, detail=str(exc)) from None
+
+    resolved.parent.mkdir(parents=True, exist_ok=True)
+    resolved.write_text(req.content, encoding="utf-8")
+    logger.info("Archivo escrito por %s: %s", admin["email"], safe_relative(resolved))
+    return {
+        "success": True,
+        "path": safe_relative(resolved),
+        "message": "Archivo guardado exitosamente",
+    }
+
 
 class OSLaunchRequest(BaseModel):
     app_name: str
     args: Optional[str] = None
 
+
 @app.post("/api/system/os-launch")
-async def launch_os_app(req: OSLaunchRequest):
-    """Lanza una aplicación de escritorio local (ej. Blender, VSCode)"""
+async def launch_os_app(req: OSLaunchRequest, admin=Depends(verify_admin)):
+    """Lanza una aplicación de la lista blanca.
+
+    Desactivado salvo que `SILHOUETTE_ALLOWED_APPS` declare aplicaciones
+    permitidas. El ejecutable se resuelve por PATH, nunca desde la petición.
+    """
+    try:
+        plan = plan_launch(req.app_name, req.args)
+    except AppNotAllowed as exc:
+        raise HTTPException(status_code=403, detail=str(exc)) from None
+    except ArgumentRejected as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from None
+
     from backend.app.agents.os_control_agent import OSControlAgent
+
+    logger.info("Lanzamiento solicitado por %s: %s", admin["email"], plan.app_name)
     agent = OSControlAgent()
-    return await agent.launch_application(req.app_name, req.args)
+    return await agent.launch_plan(plan)
 
 class CreateMCPServerRequest(BaseModel):
     name: str
     description: Optional[str] = ""
 
 @app.post("/api/mcp/create-server")
-async def create_dynamic_mcp_server(req: CreateMCPServerRequest):
+async def create_dynamic_mcp_server(req: CreateMCPServerRequest, admin=Depends(verify_admin)):
     """Genera dinámicamente un nuevo servidor MCP usando FastMCP"""
     from backend.app.core.dynamic_mcp_factory import DynamicMCPFactory
     factory = DynamicMCPFactory()
     return factory.create_server(req.name, req.description or "")
 
 # ==================== ENDPOINTS COGNITIVOS AVANZADOS ====================
+# Los subsistemas cognitivos son costosos de construir (abren SQLite, cargan el
+# embedder) y guardan estado entre llamadas. Se crean una vez y se reutilizan,
+# en lugar de instanciarse por petición como antes.
+
+from backend.app.evolution.agent_improver import AgentImprover
+from backend.app.logic_engine.z3_verifier import Z3LogicVerifier
+from backend.app.orchestrator.executive_supervisor import supervisor as team_supervisor
+from backend.app.security.prompt_injection_guard import PromptInjectionGuard
+from backend.app.services.silhouette_brain_service import (
+    BrainUnavailable,
+    SilhouetteBrainService,
+)
+from backend.app.swarm.debate_matrix import DebateSwarmMatrix, DebateUnavailable
+
+brain_service = SilhouetteBrainService()
+z3_verifier = Z3LogicVerifier()
+injection_guard = PromptInjectionGuard()
+agent_improver = AgentImprover(supervisor=team_supervisor)
+# El debate necesita el router del orquestador: sin él no puede haber debate.
+debate_matrix = DebateSwarmMatrix(llm_router=system_orchestrator.llm_router)
+
 
 class Z3VerifyRequest(BaseModel):
     type: str
     target_path: Optional[str] = None
     memory_mb: Optional[int] = 256
+    files_touched: Optional[int] = 1
+
 
 @app.post("/api/system/z3-verify")
 async def verify_z3_invariants(req: Z3VerifyRequest):
-    """Evalúa formalmente reglas de seguridad con Microsoft Z3 Solver"""
-    from backend.app.logic_engine.z3_verifier import Z3LogicVerifier
-    verifier = Z3LogicVerifier()
-    return verifier.verify_action_invariants(req.dict())
+    """Verifica los invariantes de seguridad de una acción propuesta."""
+    return z3_verifier.verify_action_invariants(req.dict())
+
 
 class DebateSwarmRequest(BaseModel):
     prompt: str
 
+
 @app.post("/api/swarm/debate")
 async def run_debate_swarm(req: DebateSwarmRequest):
-    """Ejecuta una ronda de debate tripartito (Creator vs Critic + Judge)"""
-    from backend.app.swarm.debate_matrix import DebateSwarmMatrix
-    matrix = DebateSwarmMatrix()
-    return await matrix.execute_debate_round(req.prompt)
+    """Ejecuta una ronda real de debate: Creador → Crítico → Juez."""
+    try:
+        return await debate_matrix.execute_debate_round(req.prompt)
+    except DebateUnavailable as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from None
+
 
 @app.get("/api/brain/stats")
 async def get_brain_stats():
-    """Obtiene el estado del sistema de memoria en 4 niveles y motores daemons"""
-    from backend.app.services.silhouette_brain_service import SilhouetteBrainService
-    brain = SilhouetteBrainService()
-    return brain.get_stats()
+    """Estado real de los cuatro niveles de memoria."""
+    return brain_service.get_stats()
+
+
+class RememberRequest(BaseModel):
+    content: str
+    importance: float = 0.8
+    tags: Optional[List[str]] = None
+
+
+@app.post("/api/brain/remember")
+async def brain_remember(req: RememberRequest, admin=Depends(verify_admin)):
+    """Indexa un evento en la memoria cognitiva."""
+    try:
+        return await brain_service.remember_event(
+            req.content, req.importance, tags=req.tags, source="api"
+        )
+    except BrainUnavailable as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from None
+
+
+@app.get("/api/brain/recall")
+async def brain_recall(query: str, limit: int = 5):
+    """Búsqueda semántica sobre la memoria."""
+    try:
+        return await brain_service.recall(query, limit=limit)
+    except BrainUnavailable as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from None
+
+
+@app.get("/api/brain/context")
+async def brain_context(query: str, token_budget: int = 4000, graph: bool = True):
+    """Ensambla contexto respetando un presupuesto real de tokens."""
+    try:
+        return await brain_service.assemble_context(
+            query, token_budget=token_budget, include_graph=graph
+        )
+    except BrainUnavailable as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from None
+
 
 class SecurityGuardRequest(BaseModel):
     text: str
 
+
 @app.post("/api/security/guard")
 async def check_security_guard(req: SecurityGuardRequest):
-    """Filtra y sanitiza prompts detectando ataques de inyección (Jailbreaks)"""
-    from backend.app.security.prompt_injection_guard import PromptInjectionGuard
-    guard = PromptInjectionGuard()
-    return guard.sanitize_and_validate(req.text)
+    """Clasifica el nivel de amenaza de un prompt y decide si puede continuar."""
+    return injection_guard.sanitize_and_validate(req.text)
+
 
 @app.get("/api/supervisor/audit")
 async def audit_supervisor_teams():
-    """Audita el rendimiento del sistema multi-equipo y el flujo de consciencia"""
-    from backend.app.orchestrator.executive_supervisor import ExecutiveSupervisor
-    supervisor = ExecutiveSupervisor()
-    return await supervisor.audit_team_performance()
+    """Estado real de la jerarquía multi-equipo, medido desde la telemetría."""
+    return await team_supervisor.audit_team_performance()
+
+
+@app.post("/api/supervisor/resolve/{team_id}")
+async def resolve_team_deadlock(team_id: str, admin=Depends(verify_admin)):
+    """Libera las tareas estancadas de un equipo."""
+    return await team_supervisor.resolve_team_deadlock(team_id)
+
 
 class ImproveAgentRequest(BaseModel):
     agent_name: str
-    error_rate: float = 0.20
+    # Si se omite, se usa la tasa de error medida por el supervisor.
+    error_rate: Optional[float] = None
+
 
 @app.post("/api/evolution/improve-agent")
-async def improve_agent_performance(req: ImproveAgentRequest):
-    """Ejecuta el refinamiento metacognitivo (Meta-Prompt Tuning) sobre un agente"""
-    from backend.app.evolution.agent_improver import AgentImprover
-    improver = AgentImprover()
-    return await improver.evaluate_and_improve_agent(req.agent_name, req.error_rate)
+async def improve_agent_performance(req: ImproveAgentRequest, admin=Depends(verify_admin)):
+    """Ajusta el perfil persistido de un agente según su rendimiento medido."""
+    return await agent_improver.evaluate_and_improve_agent(req.agent_name, req.error_rate)
+
+
+@app.get("/api/evolution/profiles")
+async def list_agent_profiles():
+    """Perfiles vigentes y su historial de ajustes."""
+    return {
+        "profiles": agent_improver.store.all_profiles(),
+        "history": agent_improver.history(),
+    }
+
+
+# ==================== JERARQUÍA DINÁMICA Y BUCLE AUTÓNOMO ====================
+# Portado de Silhouette Agency OS: el organigrama del equipo lo diseña un modelo
+# a partir del objetivo, y un bucle en segundo plano deriva objetivos de la
+# telemetría real, recalibra agentes y forma equipos para resolverlos.
+
+from backend.app.evolution.evolution_scheduler import EvolutionScheduler
+from backend.app.evolution.introspection import IntrospectionEngine
+from backend.app.orchestrator.squad_factory import (
+    SquadDesignError,
+    SquadFactory,
+    SquadFactoryUnavailable,
+)
+
+introspection_engine = IntrospectionEngine(supervisor=team_supervisor)
+squad_factory = SquadFactory(
+    llm_router=system_orchestrator.llm_router,
+    supervisor=team_supervisor,
+    brain=brain_service,
+)
+evolution_scheduler = EvolutionScheduler(
+    introspection=introspection_engine,
+    improver=agent_improver,
+    squad_factory=squad_factory,
+    supervisor=team_supervisor,
+)
+
+
+class SpawnSquadRequest(BaseModel):
+    goal: str
+    budget: str = "BALANCED"
+    context: str = ""
+
+
+@app.post("/api/squads/spawn")
+async def spawn_squad(req: SpawnSquadRequest, admin=Depends(verify_admin)):
+    """Diseña y forma un equipo a medida para un objetivo."""
+    try:
+        squad = await squad_factory.spawn_squad(
+            req.goal, budget=req.budget, context=req.context
+        )
+    except SquadFactoryUnavailable as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from None
+    except SquadDesignError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from None
+    return squad.to_dict()
+
+
+@app.get("/api/squads")
+async def list_squads():
+    """Equipos activos con su composición y liderazgo."""
+    return {"squads": squad_factory.all_squads()}
+
+
+@app.delete("/api/squads/{squad_id}")
+async def disband_squad(squad_id: str, admin=Depends(verify_admin)):
+    """Disuelve un equipo."""
+    if not squad_factory.disband(squad_id):
+        raise HTTPException(status_code=404, detail="Equipo no encontrado")
+    return {"success": True, "squad_id": squad_id}
+
+
+@app.get("/api/evolution/status")
+async def evolution_status():
+    """Estado del bucle autónomo y sus ciclos recientes."""
+    return evolution_scheduler.status()
+
+
+@app.post("/api/evolution/start")
+async def start_evolution(admin=Depends(verify_admin)):
+    """Arranca el bucle autónomo."""
+    evolution_scheduler.start()
+    return {"running": evolution_scheduler.is_running}
+
+
+@app.post("/api/evolution/stop")
+async def stop_evolution(admin=Depends(verify_admin)):
+    """Detiene el bucle autónomo."""
+    await evolution_scheduler.stop()
+    return {"running": evolution_scheduler.is_running}
+
+
+@app.post("/api/evolution/trigger")
+async def trigger_evolution(admin=Depends(verify_admin)):
+    """Ejecuta un ciclo completo de inmediato."""
+    return await evolution_scheduler.trigger_now()
+
+
+@app.get("/api/evolution/goals")
+async def list_goals():
+    """Objetivos que el sistema se ha fijado a sí mismo."""
+    return {
+        "stats": introspection_engine.stats(),
+        "active": [g.to_dict() for g in introspection_engine.active_goals()],
+        "all": introspection_engine.all_goals(),
+    }
+
+
+class AddGoalRequest(BaseModel):
+    description: str
+    priority: str = "MEDIUM"
+
+
+@app.post("/api/evolution/goals")
+async def add_goal(req: AddGoalRequest, admin=Depends(verify_admin)):
+    """Añade un objetivo manualmente al ciclo de evolución."""
+    return introspection_engine.add_goal(req.description, req.priority).to_dict()
+
+
+# ==================== EL ORGANISMO ====================
+# La capa que mantiene vivo el sistema sin que nadie interactúe. Los ciclos
+# cognitivos se registran como órganos: el daemon decide cuáles ejecutar según
+# la fase circadiana y espacia su cadencia según los recursos del anfitrión.
+#
+# El efecto práctico: mientras trabajas, el organismo se aparta y sólo late.
+# Cuando te vas, consolida memoria, deriva objetivos y recalibra agentes.
+
+from backend.app.organism import VitalDaemon
+from backend.app.organism.vital_daemon import OrganismAlreadyRunning
+
+organism = VitalDaemon()
+
+
+async def _organ_consolidation() -> str:
+    """Consolida la memoria: es el trabajo de la fase de sueño."""
+    if not brain_service.available:
+        return "memoria no disponible"
+    stats = brain_service.get_stats()
+    niveles = stats["tiers"]
+    return (
+        f"episódica={niveles['episodic']} semántica={niveles['semantic']} "
+        f"entidades={niveles['deep_graph']['entities']}"
+    )
+
+
+async def _organ_introspection() -> str:
+    registro = await evolution_scheduler.run_introspection_cycle()
+    return f"{registro.goals_derived} objetivo(s) derivado(s)"
+
+
+async def _organ_calibration() -> str:
+    registro = await evolution_scheduler.run_calibration_cycle()
+    return f"{len(registro.agents_calibrated)} agente(s) recalibrado(s)"
+
+
+async def _organ_goals() -> str:
+    registro = await evolution_scheduler.run_goal_cycle()
+    return f"{len(registro.squads_spawned)} equipo(s) formado(s)"
+
+
+async def _organ_vitals() -> str:
+    auditoria = await team_supervisor.audit_team_performance()
+    return (
+        f"equipos={auditoria['active_teams']} "
+        f"en_vuelo={auditoria['tasks_in_flight']} "
+        f"estancadas={len(auditoria['stalled_tasks'])}"
+    )
+
+
+# Los intervalos son los base; la homeostasis y la fase los escalan.
+organism.register("vitals", _organ_vitals, 120.0)
+organism.register("consolidation", _organ_consolidation, 600.0)
+organism.register("introspection", _organ_introspection, 900.0)
+organism.register("calibration", _organ_calibration, 1800.0)
+organism.register("goals", _organ_goals, 1200.0)
+
+
+@app.middleware("http")
+async def _touch_organism(request: Request, call_next):
+    """Cada petición devuelve el organismo a la vigilia."""
+    organism.touch()
+    return await call_next(request)
+
+
+@app.get("/api/organism/vitals")
+async def organism_vitals():
+    """Signos vitales: fase, recursos, salud de cada órgano y actividad."""
+    return organism.vitals()
+
+
+@app.post("/api/organism/awaken")
+async def awaken_organism(admin=Depends(verify_admin)):
+    """Da vida al organismo: empieza a latir y a trabajar solo."""
+    try:
+        organism.start()
+    except OrganismAlreadyRunning as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from None
+    return {"alive": organism.is_alive}
+
+
+@app.post("/api/organism/rest")
+async def rest_organism(admin=Depends(verify_admin)):
+    """Detiene el organismo con orden, guardando su estado."""
+    await organism.stop()
+    return {"alive": organism.is_alive}
+
+
+@app.post("/api/organism/tick")
+async def organism_tick(admin=Depends(verify_admin)):
+    """Fuerza un latido inmediato, sin esperar al planificador."""
+    resultados = await organism.tick()
+    return {"executed": [r.to_dict() for r in resultados]}
+
+
+class HomeostasisRequest(BaseModel):
+    # None devuelve el control a la medición automática.
+    profile: Optional[str] = None
+
+
+@app.post("/api/organism/homeostasis")
+async def set_homeostasis(req: HomeostasisRequest, admin=Depends(verify_admin)):
+    """Fija o libera el perfil de recursos."""
+    try:
+        organism.homeostasis.force_profile(req.profile)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from None
+    return organism.homeostasis.synthesize().to_dict()
+
+
+@app.on_event("shutdown")
+async def _stop_organism():
+    """El organismo se detiene con orden al cerrar el servidor."""
+    await organism.stop()
+    await evolution_scheduler.stop()
 
 @app.post("/api/agents/deploy")
-async def deploy_agent(request: Request):
+async def deploy_agent(request: Request, admin=Depends(verify_admin)):
     """Desplegar nuevo agente"""
     store.record_request()
     
@@ -849,7 +1232,7 @@ async def deploy_agent(request: Request):
         raise HTTPException(status_code=400, detail=f"Error desplegando agente: {str(e)}")
 
 @app.post("/api/agents/stop")
-async def stop_agent(request: Request):
+async def stop_agent(request: Request, admin=Depends(verify_admin)):
     """Detener agente"""
     store.record_request()
     
@@ -1111,7 +1494,7 @@ async def get_system_metrics():
         }
 
 @app.get("/api/system/logs")
-async def get_system_logs(lines: int = 50):
+async def get_system_logs(lines: int = 50, admin=Depends(verify_admin)):
     """Obtener logs reales del sistema"""
     try:
         # Leer logs de archivo si existe
@@ -1331,7 +1714,7 @@ async def get_all_models():
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/system/models")
-async def register_custom_model(req: RegisterModelRequest):
+async def register_custom_model(req: RegisterModelRequest, admin=Depends(verify_admin)):
     """Registra un nuevo modelo dinámicamente (Zhipu, Moonshot, OpenRouter, Custom API)."""
     try:
         from backend.app.core.dynamic_model_registry import model_registry
@@ -1342,7 +1725,7 @@ async def register_custom_model(req: RegisterModelRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.delete("/api/system/models/{model_id}")
-async def delete_custom_model(model_id: str):
+async def delete_custom_model(model_id: str, admin=Depends(verify_admin)):
     """Elimina un modelo personalizado registrado."""
     try:
         from backend.app.core.dynamic_model_registry import model_registry
@@ -1364,7 +1747,7 @@ async def check_local_ai():
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/system/local-ai/pull")
-async def pull_local_model(req: PullModelRequest):
+async def pull_local_model(req: PullModelRequest, admin=Depends(verify_admin)):
     """Descarga e instala un modelo local usando Ollama."""
     try:
         from backend.app.core.local_ai_service import local_ai_service
@@ -1384,7 +1767,7 @@ class UpdateCredentialsRequest(BaseModel):
     google_maps_api_key: Optional[str] = None
 
 @app.get("/api/system/credentials")
-async def get_credentials():
+async def get_credentials(admin=Depends(verify_admin)):
     """Lee las credenciales del archivo .env y las devuelve enmascaradas."""
     env_path = Path(".env")
     if not env_path.exists():
@@ -1407,7 +1790,7 @@ async def get_credentials():
     return {"credentials": credentials}
 
 @app.post("/api/system/credentials")
-async def update_credentials(req: UpdateCredentialsRequest):
+async def update_credentials(req: UpdateCredentialsRequest, admin=Depends(verify_admin)):
     """Actualiza o crea el archivo .env con las nuevas claves proporcionadas desde la UI."""
     try:
         env_path = Path(".env")

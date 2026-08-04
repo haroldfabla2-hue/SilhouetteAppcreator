@@ -3,30 +3,17 @@ Orquestador Multi-Agente con LangGraph
 Coordina los 5 agentes especializados con paralelización
 """
 import asyncio
-from typing import Dict, Any, List, Optional
-from datetime import datetime
-import uuid
-import logging
-import time
 import json
+import logging
 import os
+import time
+import uuid
+from datetime import datetime
+from typing import Any
 
-from ..models import (
-    AgentMessage,
-    AgentResponse,
-    MessageIntent,
-    MessageStatus,
-    Budget
-)
-from ..agents import (
-    ReasonerAgent,
-    PlannerAgent,
-    ExecutorAgent,
-    VerifierAgent,
-    MemoryManagerAgent
-)
+from ..agents import ExecutorAgent, MemoryManagerAgent, PlannerAgent, ReasonerAgent, VerifierAgent
 from ..core import settings
-
+from ..models import AgentMessage, Budget, MessageIntent, MessageStatus
 
 logger = logging.getLogger(__name__)
 
@@ -34,7 +21,7 @@ logger = logging.getLogger(__name__)
 class MultiAgentOrchestrator:
     """
     Orquestador Multi-Agente Superior
-    
+
     Responsabilidades:
     - Coordinar 5 agentes especializados
     - Paralelización de 3-5 agentes simultáneos
@@ -43,21 +30,31 @@ class MultiAgentOrchestrator:
     - Checkpoints y recuperación
     - Observabilidad completa
     """
-    
+
     def __init__(
         self,
-        llm_router: Optional[Any] = None,
-        redis_client: Optional[Any] = None,
-        vector_store: Optional[Any] = None,
-        db_pool: Optional[Any] = None
+        llm_router: Any | None = None,
+        redis_client: Any | None = None,
+        vector_store: Any | None = None,
+        db_pool: Any | None = None
     ):
+        # Un único router compartido por toda la jerarquía. Antes cada agente
+        # construía el suyo (8 en total), de modo que los rate limiters y los
+        # circuit breakers no se compartían: ocho agentes podían saturar un
+        # proveedor que uno solo habría frenado. Además el arranque tardaba ~12 s.
+        if llm_router is None:
+            from ..core.llm_router import LLMRouter
+
+            llm_router = LLMRouter()
+            logger.info("Router LLM compartido creado por el orquestador")
+
         self.llm_router = llm_router
         self.redis_client = redis_client
         self.vector_store = vector_store
         self.db_pool = db_pool
         self.fallback_db_path = "agent_tasks_fallback.json"
-        
-        # Inicializar agentes
+
+        # Inicializar agentes — todos sobre el mismo router
         self.reasoner = ReasonerAgent(llm_client=llm_router)
         self.planner = PlannerAgent(llm_client=llm_router)
         self.verifier = VerifierAgent(llm_client=llm_router)
@@ -65,7 +62,7 @@ class MultiAgentOrchestrator:
             llm_client=llm_router,
             vector_store=vector_store
         )
-        
+
         # Pool de executors especializados
         self.executors = {
             "general": ExecutorAgent("general", llm_client=llm_router),
@@ -73,16 +70,16 @@ class MultiAgentOrchestrator:
             "web": ExecutorAgent("web", llm_client=llm_router),
             "docs": ExecutorAgent("docs", llm_client=llm_router)
         }
-        
+
         # Estado de sesiones activas
         self.active_sessions = {}
-        
+
         logger.info("MultiAgentOrchestrator inicializado")
-    
+
     async def recover_orphaned_tasks(self):
         """Auto-healing: Recupera tareas RUNNING desde PostgreSQL o JSON Fallback al reiniciar"""
         orphans = []
-        
+
         if self.db_pool:
             logger.info("Verificando tareas huérfanas en PostgreSQL (Auto-Healing)...")
             try:
@@ -96,7 +93,7 @@ class MultiAgentOrchestrator:
             logger.info("Verificando tareas huérfanas en Fallback JSON...")
             if os.path.exists(self.fallback_db_path):
                 try:
-                    with open(self.fallback_db_path, "r") as f:
+                    with open(self.fallback_db_path) as f:
                         data = json.load(f)
                     orphans = [
                         {"conversation_id": k, "status": v["status"]}
@@ -104,12 +101,12 @@ class MultiAgentOrchestrator:
                     ]
                 except Exception as e:
                     logger.error(f"Error reading JSON fallback: {e}")
-                    
+
         for task in orphans:
             logger.info(f"Recuperando tarea huérfana: {task['conversation_id']}")
             self.active_sessions[task['conversation_id']] = {"status": "recovered"}
 
-    async def _update_task_state(self, conversation_id: str, status: str, payload: Dict = None):
+    async def _update_task_state(self, conversation_id: str, status: str, payload: dict = None):
         """Actualiza el estado de la tarea transaccionalmente en PostgreSQL o JSON Fallback"""
         if self.db_pool:
             try:
@@ -118,7 +115,7 @@ class MultiAgentOrchestrator:
                         """
                         INSERT INTO agent_tasks (conversation_id, status, payload, updated_at)
                         VALUES ($1, $2, $3, $4)
-                        ON CONFLICT (conversation_id) DO UPDATE 
+                        ON CONFLICT (conversation_id) DO UPDATE
                         SET status = EXCLUDED.status, payload = EXCLUDED.payload, updated_at = EXCLUDED.updated_at
                         """,
                         conversation_id, status, str(payload or {}), datetime.utcnow()
@@ -130,7 +127,7 @@ class MultiAgentOrchestrator:
             try:
                 data = {}
                 if os.path.exists(self.fallback_db_path):
-                    with open(self.fallback_db_path, "r") as f:
+                    with open(self.fallback_db_path) as f:
                         data = json.load(f)
                 data[conversation_id] = {
                     "status": status,
@@ -145,27 +142,27 @@ class MultiAgentOrchestrator:
     async def process_request(
         self,
         objetivo: str,
-        contexto: Optional[Dict[str, Any]] = None,
-        user_id: Optional[str] = None
-    ) -> Dict[str, Any]:
+        contexto: dict[str, Any] | None = None,
+        user_id: str | None = None
+    ) -> dict[str, Any]:
         """
         Procesa una solicitud completa con orquestación multi-agente
-        
+
         Args:
             objetivo: Objetivo a cumplir
             contexto: Contexto adicional opcional
             user_id: ID del usuario
-            
+
         Returns:
             Dict con resultado final y metadatos
         """
         conversation_id = f"conv_{uuid.uuid4().hex[:12]}"
         start_time = time.time()
-        
+
         logger.info(f"Iniciando proceso: {conversation_id} - {objetivo[:100]}")
-        
+
         await self._update_task_state(conversation_id, "RUNNING", {"objetivo": objetivo})
-        
+
         try:
             # Fase 1: Razonamiento (Reasoner)
             reasoning_result = await self._phase_reasoning(
@@ -173,13 +170,13 @@ class MultiAgentOrchestrator:
                 contexto or {},
                 conversation_id
             )
-            
+
             # Fase 2: Planificación (Planner)
             planning_result = await self._phase_planning(
                 reasoning_result,
                 conversation_id
             )
-            
+
             # HITL Check (Human In The Loop)
             # Evaluar si el plan requiere intervención humana (ej. comandos peligrosos o revisión requerida)
             if planning_result.get("requires_human_approval", False) or "DROP TABLE" in str(planning_result).upper():
@@ -193,20 +190,20 @@ class MultiAgentOrchestrator:
                 await self._update_task_state(conversation_id, "PAUSED_AWAITING_INPUT", hitl_payload)
                 self.active_sessions[conversation_id] = hitl_payload
                 return hitl_payload
-                
+
             # Fase 3: Ejecución Paralela (Executors fan-out)
             execution_results = await self._phase_execution(
                 planning_result,
                 conversation_id
             )
-            
+
             # Fase 4: Verificación (Verifier)
             verification_result = await self._phase_verification(
                 execution_results,
                 planning_result,
                 conversation_id
             )
-            
+
             # Fase 5: Síntesis y Memoria (Memory Manager)
             final_result = await self._phase_synthesis(
                 reasoning_result,
@@ -215,11 +212,11 @@ class MultiAgentOrchestrator:
                 verification_result,
                 conversation_id
             )
-            
+
             logger.info(f"Proceso completado: {conversation_id}")
-            
+
             total_time = (time.time() - start_time) * 1000
-            
+
             result_payload = {
                 "conversation_id": conversation_id,
                 "status": "completed",
@@ -238,13 +235,13 @@ class MultiAgentOrchestrator:
                     ).get("overall_score", 0.0)
                 }
             }
-            
+
             await self._update_task_state(conversation_id, "COMPLETED", result_payload)
             return result_payload
-            
+
         except Exception as e:
             logger.exception(f"Error en orquestación: {conversation_id}")
-            
+
             error_payload = {
                 "conversation_id": conversation_id,
                 "status": "error",
@@ -253,39 +250,39 @@ class MultiAgentOrchestrator:
             }
             await self._update_task_state(conversation_id, "ERROR", error_payload)
             return error_payload
-            
+
     async def resume_request(
         self,
         conversation_id: str,
         human_feedback: str,
         approved: bool
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """HITL: Reanuda un proceso pausado esperando input humano"""
         session = self.active_sessions.get(conversation_id)
         if not session or session.get("status") != "PAUSED_AWAITING_INPUT":
             return {"error": "No hay sesión pausada para este ID"}
-            
+
         logger.info(f"Reanudando {conversation_id}. Aprobado: {approved}")
-        
+
         if not approved:
             error_payload = {"status": "ABORTED_BY_USER", "feedback": human_feedback}
             await self._update_task_state(conversation_id, "ABORTED", error_payload)
             return error_payload
-            
+
         await self._update_task_state(conversation_id, "RUNNING", {"resumed": True})
-        
+
         # Recuperamos estados previos
         reasoning_result = session["reasoning_result"]
         planning_result = session["planning_result"]
-        
+
         # Inyectamos el feedback
         planning_result["human_feedback"] = human_feedback
-        
+
         try:
             execution_results = await self._phase_execution(planning_result, conversation_id)
             verification_result = await self._phase_verification(execution_results, planning_result, conversation_id)
             final_result = await self._phase_synthesis(reasoning_result, planning_result, execution_results, verification_result, conversation_id)
-            
+
             result_payload = {
                 "conversation_id": conversation_id,
                 "status": "completed",
@@ -299,23 +296,23 @@ class MultiAgentOrchestrator:
             }
             await self._update_task_state(conversation_id, "COMPLETED", result_payload)
             return result_payload
-            
+
         except Exception as e:
             logger.exception(f"Error reanudando orquestación: {conversation_id}")
             error_payload = {"conversation_id": conversation_id, "status": "error", "error": str(e)}
             await self._update_task_state(conversation_id, "ERROR", error_payload)
             return error_payload
-    
+
     async def _phase_reasoning(
         self,
         objetivo: str,
-        contexto: Dict[str, Any],
+        contexto: dict[str, Any],
         conversation_id: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Fase 1: Análisis de intención con Reasoner"""
-        
+
         logger.info(f"[{conversation_id}] Fase 1: Reasoning")
-        
+
         message = AgentMessage(
             conversation_id=conversation_id,
             sender="orchestrator",
@@ -327,23 +324,23 @@ class MultiAgentOrchestrator:
                 "historial": contexto.get("historial", [])
             }
         )
-        
+
         response = await self.reasoner.execute_with_timeout(message)
-        
+
         if response.status != MessageStatus.DONE:
             raise RuntimeError(f"Reasoner falló: {response.errors}")
-        
+
         return response.result
-    
+
     async def _phase_planning(
         self,
-        reasoning_result: Dict[str, Any],
+        reasoning_result: dict[str, Any],
         conversation_id: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Fase 2: Planificación con Planner"""
-        
+
         logger.info(f"[{conversation_id}] Fase 2: Planning")
-        
+
         message = AgentMessage(
             conversation_id=conversation_id,
             sender="orchestrator",
@@ -354,34 +351,34 @@ class MultiAgentOrchestrator:
                 "enriched_context": reasoning_result.get("enriched_context", {})
             }
         )
-        
+
         response = await self.planner.execute_with_timeout(message)
-        
+
         if response.status != MessageStatus.DONE:
             raise RuntimeError(f"Planner falló: {response.errors}")
-        
+
         return response.result
-    
+
     async def _phase_execution(
         self,
-        planning_result: Dict[str, Any],
+        planning_result: dict[str, Any],
         conversation_id: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Fase 3: Ejecución paralela con Executors (fan-out pattern)
-        
+
         Implementa paralelización de 3-5 agentes según el plan
         """
-        
+
         logger.info(f"[{conversation_id}] Fase 3: Execution (parallel)")
-        
+
         delegations = planning_result.get("delegations", [])
         parallelizable_tasks = planning_result.get("parallelizable_tasks", [])
-        
+
         if not delegations:
             logger.warning("No hay delegaciones para ejecutar")
             return {"executions": [], "note": "No hay tareas para ejecutar"}
-        
+
         # Agrupar tareas: paralelas vs secuenciales
         parallel_tasks = [
             d for d in delegations
@@ -391,58 +388,58 @@ class MultiAgentOrchestrator:
             d for d in delegations
             if not (d.get("parallelizable", False) or d["task_id"] in parallelizable_tasks)
         ]
-        
+
         all_results = []
-        
+
         # Ejecutar tareas paralelas (máximo 5 concurrentes)
         if parallel_tasks:
             logger.info(f"Ejecutando {len(parallel_tasks)} tareas en paralelo")
-            
+
             # Limitar concurrencia
             max_concurrent = min(
                 len(parallel_tasks),
                 settings.MAX_CONCURRENT_AGENTS
             )
             parallel_tasks = parallel_tasks[:max_concurrent]
-            
+
             # Fan-out: ejecutar en paralelo
             parallel_results = await self._execute_parallel_tasks(
                 parallel_tasks,
                 conversation_id
             )
             all_results.extend(parallel_results)
-        
+
         # Ejecutar tareas secuenciales
         if sequential_tasks:
             logger.info(f"Ejecutando {len(sequential_tasks)} tareas secuencialmente")
-            
+
             for task in sequential_tasks:
                 result = await self._execute_single_task(task, conversation_id)
                 all_results.append(result)
-        
+
         return {
             "executions": all_results,
             "num_parallel": len(parallel_tasks),
             "num_sequential": len(sequential_tasks),
             "total_executions": len(all_results)
         }
-    
+
     async def _execute_parallel_tasks(
         self,
-        tasks: List[Dict[str, Any]],
+        tasks: list[dict[str, Any]],
         conversation_id: str
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Ejecuta múltiples tareas en paralelo"""
-        
+
         # Crear tareas asíncronas
         async_tasks = [
             self._execute_single_task(task, conversation_id)
             for task in tasks
         ]
-        
+
         # Ejecutar concurrentemente y recoger resultados
         results = await asyncio.gather(*async_tasks, return_exceptions=True)
-        
+
         # Procesar excepciones
         processed_results = []
         for i, result in enumerate(results):
@@ -455,22 +452,22 @@ class MultiAgentOrchestrator:
                 })
             else:
                 processed_results.append(result)
-        
+
         return processed_results
-    
+
     async def _execute_single_task(
         self,
-        delegation: Dict[str, Any],
+        delegation: dict[str, Any],
         conversation_id: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Ejecuta una tarea individual con el executor apropiado"""
-        
+
         task_id = delegation.get("task_id", "unknown")
         logger.info(f"[{conversation_id}] Ejecutando tarea: {task_id}")
-        
+
         # Seleccionar executor según herramientas
         executor = self._select_executor(delegation.get("tool_map", []))
-        
+
         message = AgentMessage(
             conversation_id=conversation_id,
             sender="orchestrator",
@@ -479,9 +476,9 @@ class MultiAgentOrchestrator:
             payload={"delegation": delegation},
             budget=Budget(**delegation.get("limites", {}))
         )
-        
+
         response = await executor.execute_with_timeout(message)
-        
+
         return {
             "task_id": task_id,
             "executor": executor.agent_id,
@@ -490,10 +487,10 @@ class MultiAgentOrchestrator:
             "execution_time_ms": response.execution_time_ms,
             "errors": response.errors
         }
-    
-    def _select_executor(self, tool_map: List[str]) -> ExecutorAgent:
+
+    def _select_executor(self, tool_map: list[str]) -> ExecutorAgent:
         """Selecciona el executor más apropiado según herramientas"""
-        
+
         if "python_executor" in tool_map:
             return self.executors["code"]
         elif "web_scraper" in tool_map:
@@ -502,17 +499,17 @@ class MultiAgentOrchestrator:
             return self.executors["docs"]
         else:
             return self.executors["general"]
-    
+
     async def _phase_verification(
         self,
-        execution_results: Dict[str, Any],
-        planning_result: Dict[str, Any],
+        execution_results: dict[str, Any],
+        planning_result: dict[str, Any],
         conversation_id: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Fase 4: Verificación con Verifier"""
-        
+
         logger.info(f"[{conversation_id}] Fase 4: Verification")
-        
+
         # Construir trayectoria
         trajectory = []
         for exec_result in execution_results.get("executions", []):
@@ -521,7 +518,7 @@ class MultiAgentOrchestrator:
                 "status": exec_result.get("status"),
                 "executor": exec_result.get("executor")
             })
-        
+
         message = AgentMessage(
             conversation_id=conversation_id,
             sender="orchestrator",
@@ -537,26 +534,26 @@ class MultiAgentOrchestrator:
                 "trajectory": trajectory
             }
         )
-        
+
         response = await self.verifier.execute_with_timeout(message)
-        
+
         if response.status != MessageStatus.DONE:
             logger.warning(f"Verifier con errores: {response.errors}")
-        
+
         return response.result or {}
-    
+
     async def _phase_synthesis(
         self,
-        reasoning_result: Dict[str, Any],
-        planning_result: Dict[str, Any],
-        execution_results: Dict[str, Any],
-        verification_result: Dict[str, Any],
+        reasoning_result: dict[str, Any],
+        planning_result: dict[str, Any],
+        execution_results: dict[str, Any],
+        verification_result: dict[str, Any],
         conversation_id: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Fase 5: Síntesis final y almacenamiento en memoria"""
-        
+
         logger.info(f"[{conversation_id}] Fase 5: Synthesis")
-        
+
         # Recopilar todos los resultados
         all_results = [
             {"phase": "reasoning", "data": reasoning_result},
@@ -564,7 +561,7 @@ class MultiAgentOrchestrator:
             {"phase": "execution", "data": execution_results},
             {"phase": "verification", "data": verification_result}
         ]
-        
+
         # Solicitar síntesis al Memory Manager
         message = AgentMessage(
             conversation_id=conversation_id,
@@ -577,18 +574,18 @@ class MultiAgentOrchestrator:
                 "synthesis_type": "summary"
             }
         )
-        
+
         response = await self.memory_manager.execute_with_timeout(message)
-        
+
         synthesis = response.result or {}
-        
+
         # Almacenar en memoria para futuras consultas
         await self._store_session_memory(
             conversation_id,
             synthesis,
             verification_result
         )
-        
+
         return {
             "synthesis": synthesis.get("content", ""),
             "approved": verification_result.get("approved", False),
@@ -598,15 +595,15 @@ class MultiAgentOrchestrator:
             "recommendations": verification_result.get("recommendations", []),
             "conversation_id": conversation_id
         }
-    
+
     async def _store_session_memory(
         self,
         conversation_id: str,
-        synthesis: Dict[str, Any],
-        verification_result: Dict[str, Any]
+        synthesis: dict[str, Any],
+        verification_result: dict[str, Any]
     ):
         """Almacena la sesión en memoria para futuras referencias"""
-        
+
         memory_content = {
             "conversation_id": conversation_id,
             "synthesis": synthesis.get("content", ""),
@@ -615,7 +612,7 @@ class MultiAgentOrchestrator:
             ).get("overall_score", 0.0),
             "timestamp": datetime.utcnow().isoformat()
         }
-        
+
         message = AgentMessage(
             conversation_id=conversation_id,
             sender="orchestrator",
@@ -631,14 +628,14 @@ class MultiAgentOrchestrator:
                 "memory_type": "session"
             }
         )
-        
+
         await self.memory_manager.execute_with_timeout(message)
-    
-    def _count_agents_used(self, planning_result: Dict[str, Any]) -> int:
+
+    def _count_agents_used(self, planning_result: dict[str, Any]) -> int:
         """Cuenta cuántos agentes se usaron"""
         delegations = planning_result.get("delegations", [])
         return len(delegations) + 3  # +3 por Reasoner, Planner, Verifier
-    
+
     def _calculate_total_time(self) -> float:
         """Calcula tiempo total aproximado. Deprecated, use process_request measure."""
         return 0.0

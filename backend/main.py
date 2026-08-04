@@ -10,6 +10,7 @@ from typing import Optional, Dict, Any
 import asyncio
 import json
 import logging
+import os
 
 from app.core import settings
 from app.core.llm_router import LLMRouter
@@ -31,13 +32,21 @@ app = FastAPI(
 )
 
 
-# CORS
+# CORS: lista blanca explícita. El comodín junto a allow_credentials=True es
+# inválido según la especificación y expone la API a cualquier sitio web.
+_DEFAULT_CORS_ORIGINS = "http://localhost:5173,http://127.0.0.1:5173"
+CORS_ORIGINS = [
+    origin.strip()
+    for origin in os.getenv("SILHOUETTE_CORS_ORIGINS", _DEFAULT_CORS_ORIGINS).split(",")
+    if origin.strip() and origin.strip() != "*"
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # En producción: especificar dominios permitidos
+    allow_origins=CORS_ORIGINS,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization", "X-API-Key"],
 )
 
 

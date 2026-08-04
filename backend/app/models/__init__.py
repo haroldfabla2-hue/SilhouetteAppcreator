@@ -1,19 +1,19 @@
 """Models module exports"""
 from .messages import (
     AgentMessage,
-    MessageIntent,
-    MessageStatus,
-    TaskDelegation,
-    ValidationRequest,
-    SynthesisRequest,
     AgentResponse,
     Budget,
-    ErrorInfo
+    ErrorInfo,
+    MessageIntent,
+    MessageStatus,
+    SynthesisRequest,
+    TaskDelegation,
+    ValidationRequest,
 )
 
 __all__ = [
     "AgentMessage",
-    "MessageIntent", 
+    "MessageIntent",
     "MessageStatus",
     "TaskDelegation",
     "ValidationRequest",

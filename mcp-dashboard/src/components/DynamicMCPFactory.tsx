@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Cpu, Plus, Sparkles, Server, CheckCircle2, Play, RefreshCw, Zap, Shield, Terminal } from 'lucide-react';
+import { API_BASE } from "@/lib/api";
 
 interface MCPServerItem {
   id: string;
@@ -48,7 +49,7 @@ export const DynamicMCPFactory: React.FC = () => {
 
     setIsCreating(true);
     try {
-      const res = await fetch('http://localhost:8001/api/mcp/create-server', {
+      const res = await fetch(`${API_BASE}/api/mcp/create-server`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

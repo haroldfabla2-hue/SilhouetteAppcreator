@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Cpu, Server, Plus, Trash2, Download, RefreshCw, CheckCircle2, AlertCircle, Key, Globe, Shield } from 'lucide-react';
+import { API_BASE } from "@/lib/api";
 
 interface AIModel {
   id: string;
@@ -45,7 +46,7 @@ export const ModelManager: React.FC = () => {
 
   const fetchCredentials = async () => {
     try {
-      const res = await fetch('http://localhost:8001/api/system/credentials');
+      const res = await fetch(`${API_BASE}/api/system/credentials`);
       if (res.ok) {
         const data = await res.json();
         setCredentials(data.credentials || {});
@@ -59,7 +60,7 @@ export const ModelManager: React.FC = () => {
     e.preventDefault();
     setSavingCreds(true);
     try {
-      const res = await fetch('http://localhost:8001/api/system/credentials', {
+      const res = await fetch(`${API_BASE}/api/system/credentials`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(credForm)
@@ -89,7 +90,7 @@ export const ModelManager: React.FC = () => {
   const fetchModels = async () => {
     setLoading(true);
     try {
-      const res = await fetch('http://localhost:8001/api/system/models');
+      const res = await fetch(`${API_BASE}/api/system/models`);
       if (res.ok) {
         const data = await res.json();
         setCloudModels(data.cloud_and_custom_models || []);
@@ -110,7 +111,7 @@ export const ModelManager: React.FC = () => {
   const handleAddModel = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await fetch('http://localhost:8001/api/system/models', {
+      const res = await fetch(`${API_BASE}/api/system/models`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
@@ -130,7 +131,7 @@ export const ModelManager: React.FC = () => {
   const handleDeleteModel = async (modelId: string) => {
     if (!confirm(`¿Eliminar modelo ${modelId}?`)) return;
     try {
-      const res = await fetch(`http://localhost:8001/api/system/models/${modelId}`, {
+      const res = await fetch(`${API_BASE}/api/system/models/${modelId}`, {
         method: 'DELETE'
       });
       if (res.ok) {
@@ -145,7 +146,7 @@ export const ModelManager: React.FC = () => {
     if (!pullModelName) return;
     setPulling(true);
     try {
-      const res = await fetch('http://localhost:8001/api/system/local-ai/pull', {
+      const res = await fetch(`${API_BASE}/api/system/local-ai/pull`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ model_name: pullModelName })

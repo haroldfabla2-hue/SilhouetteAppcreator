@@ -2,19 +2,17 @@
 Agente Executor - Ejecuta herramientas y tareas
 Responsable de invocar herramientas MCP y ejecutar código
 """
-from typing import List, Dict, Any, Optional
 import asyncio
-import json
-import subprocess
-import tempfile
 import os
-import shutil
+import tempfile
+from datetime import datetime
+from typing import Any
+
 import aiofiles
 import httpx
-from datetime import datetime
 
-from .base import BaseAgent
 from ..models import AgentMessage, AgentResponse, MessageStatus
+from .base import BaseAgent
 
 
 class ExecutorAgent(BaseAgent):
@@ -27,7 +25,7 @@ class ExecutorAgent(BaseAgent):
     - Recoger resultados estructurados
     - Minimizar overhead de tokens con referencias
     """
-    
+
     def __init__(self, executor_type: str = "general", llm_client: Any = None):
         super().__init__(
             agent_id=f"executor_{executor_type}",
@@ -35,8 +33,8 @@ class ExecutorAgent(BaseAgent):
         )
         self.executor_type = executor_type
         self.tools_registry = self._init_tools_registry()
-    
-    def get_capabilities(self) -> List[str]:
+
+    def get_capabilities(self) -> list[str]:
         capabilities = ["task_execution", "tool_invocation", "result_collection"]
         if self.executor_type == "code":
             capabilities.extend(["python_execution", "code_testing"])
@@ -45,7 +43,7 @@ class ExecutorAgent(BaseAgent):
         elif self.executor_type == "docs":
             capabilities.extend(["document_processing", "pdf_extraction"])
         return capabilities
-    
+
     async def process_message(self, message: AgentMessage) -> AgentResponse:
         """
         Procesa mensaje ejecutando herramientas según delegación
@@ -54,27 +52,27 @@ class ExecutorAgent(BaseAgent):
             "message_id": message.message_id,
             "executor_type": self.executor_type
         })
-        
+
         try:
             # Extraer delegación
             delegation = message.payload.get("delegation", {})
             tool_map = delegation.get("tool_map", [])
             objetivo = delegation.get("objetivo", "")
             limites = delegation.get("limites", {})
-            
+
             # Ejecutar herramientas concurrentemente (si son ≥2)
             results = await self._execute_tools_concurrent(
                 tool_map,
                 objetivo,
                 limites
             )
-            
+
             # Consolidar resultados
             consolidated = self._consolidate_results(results)
-            
+
             # Guardar artefactos y devolver referencias
             artifacts_refs = self._save_artifacts(consolidated)
-            
+
             result = {
                 "execution_summary": {
                     "tools_executed": len(results),
@@ -86,13 +84,13 @@ class ExecutorAgent(BaseAgent):
                 "artifacts": artifacts_refs,
                 "evidence": self._collect_evidence(results)
             }
-            
+
             self.log_trace("executor_complete", {
                 "message_id": message.message_id,
                 "tools_executed": len(results),
                 "successful": result["execution_summary"]["successful"]
             })
-            
+
             return AgentResponse(
                 message_id=f"resp_{message.message_id}",
                 original_message_id=message.message_id,
@@ -100,12 +98,12 @@ class ExecutorAgent(BaseAgent):
                 status=MessageStatus.DONE,
                 result=result
             )
-            
-        except Exception as e:
+
+        except Exception:
             self.logger.exception("Error en Executor")
             raise
-    
-    def _init_tools_registry(self) -> Dict[str, callable]:
+
+    def _init_tools_registry(self) -> dict[str, callable]:
         """Inicializa registro de herramientas disponibles"""
         return {
             "python_executor": self._tool_python_executor,
@@ -115,22 +113,22 @@ class ExecutorAgent(BaseAgent):
             "git_ops": self._tool_git_ops,
             "api_caller": self._tool_api_caller
         }
-    
+
     async def _execute_tools_concurrent(
         self,
-        tool_map: List[str],
+        tool_map: list[str],
         objetivo: str,
-        limites: Dict[str, Any]
-    ) -> List[Dict[str, Any]]:
+        limites: dict[str, Any]
+    ) -> list[dict[str, Any]]:
         """Ejecuta herramientas en paralelo con límites"""
-        
+
         if not tool_map:
             self.logger.warning("No hay herramientas en tool_map")
             return []
-        
+
         # Limitar concurrencia
         max_concurrent = min(len(tool_map), limites.get("tools_max", 3))
-        
+
         tasks = []
         for tool_name in tool_map[:max_concurrent]:
             if tool_name in self.tools_registry:
@@ -142,13 +140,13 @@ class ExecutorAgent(BaseAgent):
                 tasks.append(task)
             else:
                 self.logger.warning(f"Herramienta {tool_name} no encontrada")
-        
+
         if not tasks:
             return []
-        
+
         # Ejecutar concurrentemente
         results = await asyncio.gather(*tasks, return_exceptions=True)
-        
+
         # Procesar excepciones
         processed = []
         for i, result in enumerate(results):
@@ -161,20 +159,20 @@ class ExecutorAgent(BaseAgent):
                 })
             else:
                 processed.append(result)
-        
+
         return processed
-    
+
     async def _execute_single_tool(
         self,
         tool_name: str,
         objetivo: str,
-        limites: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        limites: dict[str, Any]
+    ) -> dict[str, Any]:
         """Ejecuta una herramienta individual"""
-        
+
         from datetime import datetime
         start = datetime.utcnow()
-        
+
         try:
             # Usar herramientas reales si están disponibles
             if hasattr(self, 'tools') and tool_name in self.tools:
@@ -183,40 +181,48 @@ class ExecutorAgent(BaseAgent):
                 # Fallback a herramientas mock
                 tool_func = self.tools_registry[tool_name]
                 result = await tool_func(objetivo, limites)
-            
+
             end = datetime.utcnow()
             time_ms = (end - start).total_seconds() * 1000
-            
-            return {
+
+            # El éxito lo decide la herramienta, no el hecho de que la llamada
+            # no lanzara excepción. Antes se devolvía `success: True` fijo, así
+            # que una herramienta que devolvía `success: False` con un error se
+            # reportaba hacia arriba como ejecución correcta.
+            success = result.get("success", True) if isinstance(result, dict) else True
+            payload = {
                 "tool": tool_name,
-                "success": True,
+                "success": success,
                 "result": result,
                 "time_ms": time_ms
             }
-            
+            if not success and isinstance(result, dict) and result.get("error"):
+                payload["error"] = result["error"]
+            return payload
+
         except Exception as e:
             self.logger.exception(f"Error ejecutando {tool_name}")
             end = datetime.utcnow()
             time_ms = (end - start).total_seconds() * 1000
-            
+
             return {
                 "tool": tool_name,
                 "success": False,
                 "error": str(e),
                 "time_ms": time_ms
             }
-    
+
     # Implementación de herramientas
-    
+
     async def _tool_python_executor(
         self,
         objetivo: str,
-        limites: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        limites: dict[str, Any]
+    ) -> dict[str, Any]:
         """Ejecuta código Python en sandbox"""
-        
+
         self.logger.info(f"Ejecutando Python para: {objetivo[:100]}")
-        
+
         try:
             # Generar código Python usando LLM
             prompt = f"""Genera código Python para cumplir el siguiente objetivo:
@@ -231,17 +237,17 @@ Requisitos:
 
 Proporciona solo el código Python sin explicaciones adicionales.
 """
-            
+
             code = await self.call_llm(prompt, temperature=0.3, max_tokens=1500)
-            
+
             # Ejecutar código en directorio temporal
             with tempfile.TemporaryDirectory() as temp_dir:
                 script_path = os.path.join(temp_dir, "script.py")
-                
+
                 # Escribir código al archivo
                 async with aiofiles.open(script_path, 'w') as f:
                     await f.write(code)
-                
+
                 # Ejecutar con timeout
                 timeout = limites.get("time_seconds", 30)
                 try:
@@ -254,10 +260,10 @@ Proporciona solo el código Python sin explicaciones adicionales.
                         ),
                         timeout=timeout
                     )
-                    
+
                     stdout, stderr = await result.communicate()
                     exit_code = result.returncode
-                    
+
                     output = {
                         "code": code,
                         "executed": True,
@@ -266,7 +272,7 @@ Proporciona solo el código Python sin explicaciones adicionales.
                         "exit_code": exit_code,
                         "success": exit_code == 0
                     }
-                    
+
                 except asyncio.TimeoutError:
                     output = {
                         "code": code,
@@ -276,7 +282,7 @@ Proporciona solo el código Python sin explicaciones adicionales.
                         "exit_code": -1,
                         "success": False
                     }
-                    
+
         except Exception as e:
             self.logger.exception(f"Error ejecutando Python: {str(e)}")
             output = {
@@ -287,29 +293,29 @@ Proporciona solo el código Python sin explicaciones adicionales.
                 "exit_code": -1,
                 "success": False
             }
-        
+
         return output
-    
+
     async def _execute_real_tool(
         self,
         tool_name: str,
         objetivo: str,
-        limites: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        limites: dict[str, Any]
+    ) -> dict[str, Any]:
         """Ejecuta herramienta real del sistema"""
         try:
             start_time = datetime.utcnow()
             tool = self.tools[tool_name]
-            
+
             # Preparar parámetros según la herramienta
             tool_params = self._prepare_tool_params(tool_name, objetivo, limites)
-            
+
             # Ejecutar herramienta
             result = await tool.execute(**tool_params)
-            
+
             end_time = datetime.utcnow()
             time_ms = (end_time - start_time).total_seconds() * 1000
-            
+
             return {
                 "tool": tool_name,
                 "success": result.success if hasattr(result, 'success') else True,
@@ -320,12 +326,12 @@ Proporciona solo el código Python sin explicaciones adicionales.
                 "time_ms": time_ms,
                 "real_tool": True
             }
-            
+
         except Exception as e:
             self.logger.exception(f"Error ejecutando herramienta real {tool_name}")
             end_time = datetime.utcnow()
             time_ms = (end_time - start_time).total_seconds() * 1000
-            
+
             return {
                 "tool": tool_name,
                 "success": False,
@@ -333,29 +339,29 @@ Proporciona solo el código Python sin explicaciones adicionales.
                 "time_ms": time_ms,
                 "real_tool": True
             }
-    
+
     def _prepare_tool_params(
         self,
         tool_name: str,
         objetivo: str,
-        limites: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        limites: dict[str, Any]
+    ) -> dict[str, Any]:
         """Prepara parámetros específicos para cada herramienta"""
         params = {}
-        
+
         if tool_name == "python_executor":
             params.update({
                 "code": objetivo,
                 "operation": "execute",
                 "timeout": limites.get("time_seconds", 30)
             })
-        
+
         elif tool_name == "web_scraper":
             # Extraer URL del objetivo
             import re
             url_pattern = r'https?://[^\s]+'
             urls = re.findall(url_pattern, objetivo)
-            
+
             if urls:
                 params.update({
                     "url": urls[0],
@@ -366,20 +372,20 @@ Proporciona solo el código Python sin explicaciones adicionales.
                     "urls": [objetivo],
                     "operation": "scrape"
                 })
-        
+
         elif tool_name == "search_engine":
             params.update({
                 "query": objetivo,
                 "operation": "web_search",
                 "sources": ["duckduckgo", "wikipedia"]
             })
-        
+
         elif tool_name == "file_processor":
             # Buscar rutas de archivos en el objetivo
             import re
             file_pattern = r'[a-zA-Z0-9_-]+\.(txt|pdf|docx|json|csv)'
             files = re.findall(file_pattern, objetivo, re.IGNORECASE)
-            
+
             if files:
                 params.update({
                     "file_path": files[0],
@@ -390,39 +396,39 @@ Proporciona solo el código Python sin explicaciones adicionales.
                     "file_path": objetivo,
                     "operation": "validate"
                 })
-        
+
         elif tool_name == "git_ops":
             params.update({
                 "command": objetivo,
                 "timeout": limites.get("time_seconds", 30)
             })
-        
+
         return params
-    
+
     async def _tool_web_scraper(
         self,
         objetivo: str,
-        limites: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        limites: dict[str, Any]
+    ) -> dict[str, Any]:
         """Realiza web scraping y análisis de contenido"""
-        
+
         self.logger.info(f"Web scraping para: {objetivo[:100]}")
-        
+
         try:
             # Extraer URL del objetivo si está presente
             import re
             url_pattern = r'https?://[^\s]+'
             urls = re.findall(url_pattern, objetivo)
-            
+
             if not urls:
                 # Si no hay URL, buscar información web relevante
                 return await self._search_web_information(objetivo, limites)
-            
+
             url = urls[0]  # Tomar la primera URL encontrada
             result = await self._scrape_url(url, objetivo, limites)
-            
+
             return result
-            
+
         except Exception as e:
             self.logger.exception(f"Error en web scraping: {str(e)}")
             return {
@@ -432,20 +438,20 @@ Proporciona solo el código Python sin explicaciones adicionales.
                 "error": str(e),
                 "success": False
             }
-    
-    async def _scrape_url(self, url: str, objetivo: str, limites: Dict[str, Any]) -> Dict[str, Any]:
+
+    async def _scrape_url(self, url: str, objetivo: str, limites: dict[str, Any]) -> dict[str, Any]:
         """Scraping básico de una URL usando httpx"""
-        
+
         try:
             timeout = httpx.Timeout(30.0, connect=10.0)
             headers = {
                 "User-Agent": "Mozilla/5.0 (compatible; Agents-Bot/1.0)"
             }
-            
+
             async with httpx.AsyncClient(timeout=timeout, headers=headers) as client:
                 response = await client.get(url)
                 response.raise_for_status()
-                
+
                 # Extraer información básica
                 content = response.text
                 title = ""
@@ -453,7 +459,7 @@ Proporciona solo el código Python sin explicaciones adicionales.
                     title_start = content.find("<title>") + 7
                     title_end = content.find("</title>", title_start)
                     title = content[title_start:title_end].strip()
-                
+
                 # Limpiar HTML básico y extraer texto
                 import re
                 # Remover scripts y estilos
@@ -462,12 +468,12 @@ Proporciona solo el código Python sin explicaciones adicionales.
                 # Extraer texto
                 text_content = re.sub(r'<[^>]+>', ' ', clean_content)
                 text_content = re.sub(r'\s+', ' ', text_content).strip()
-                
+
                 # Limitar tamaño del contenido
                 max_chars = limites.get("max_content_chars", 5000)
                 if len(text_content) > max_chars:
                     text_content = text_content[:max_chars] + "..."
-                
+
                 return {
                     "url": url,
                     "title": title,
@@ -480,7 +486,7 @@ Proporciona solo el código Python sin explicaciones adicionales.
                     },
                     "success": True
                 }
-                
+
         except httpx.TimeoutException:
             return {
                 "url": url,
@@ -497,31 +503,43 @@ Proporciona solo el código Python sin explicaciones adicionales.
                 "error": str(e),
                 "success": False
             }
-    
-    async def _search_web_information(self, query: str, limites: Dict[str, Any]) -> Dict[str, Any]:
-        """Busca información web usando el LLM como simulador de búsqueda"""
-        
+
+    async def _search_web_information(self, query: str, limites: dict[str, Any]) -> dict[str, Any]:
+        """Consulta el conocimiento del modelo. **No accede a la web.**
+
+        Antes se describía como «simulador de búsqueda» y devolvía
+        `scraped: True`, de modo que quien recibía el resultado no podía
+        distinguir esto de una búsqueda real. Es conocimiento del modelo, con su
+        fecha de corte y sin fuentes verificables; el resultado lo declara.
+        """
         try:
-            prompt = f"""Busca información web relevante para la siguiente consulta:
+            prompt = f"""Responde con lo que sepas sobre la siguiente consulta.
 
 Consulta: {query}
 
-Proporciona información útil y actualizada relacionada con la consulta. 
-Incluye fuentes o referencias cuando sea posible.
+Importante: no tienes acceso a internet. Responde sólo con tu conocimiento y
+señala explícitamente aquello de lo que no estés seguro o que pueda estar
+desactualizado.
 """
-            
+
             search_results = await self.call_llm(prompt, temperature=0.5, max_tokens=1000)
-            
+
             return {
                 "query": query,
-                "scraped": True,
+                # No se accedió a la red: quien consuma esto debe poder saberlo.
+                "scraped": False,
                 "data": {
                     "search_results": search_results,
-                    "search_type": "llm_simulation"
+                    "search_type": "model_knowledge",
+                    "web_access": False,
+                    "caveat": (
+                        "Procede del conocimiento del modelo, no de una búsqueda web. "
+                        "Puede estar desactualizado y no tiene fuentes verificables."
+                    ),
                 },
                 "success": True
             }
-            
+
         except Exception as e:
             return {
                 "query": query,
@@ -530,20 +548,20 @@ Incluye fuentes o referencias cuando sea posible.
                 "error": str(e),
                 "success": False
             }
-    
+
     async def _tool_git_ops(
         self,
         objetivo: str,
-        limites: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        limites: dict[str, Any]
+    ) -> dict[str, Any]:
         """Operaciones Git"""
-        
+
         self.logger.info(f"Git operations para: {objetivo[:100]}")
-        
+
         try:
             # Determinar qué operación Git realizar basada en el objetivo
             objetivo_lower = objetivo.lower()
-            
+
             if any(cmd in objetivo_lower for cmd in ["status", "git status"]):
                 return await self._git_status()
             elif any(cmd in objetivo_lower for cmd in ["commit", "git commit"]):
@@ -559,7 +577,7 @@ Incluye fuentes o referencias cuando sea posible.
             else:
                 # Operación general - mostrar ayuda o estado
                 return await self._git_status()
-                
+
         except Exception as e:
             self.logger.exception(f"Error en operaciones Git: {str(e)}")
             return {
@@ -568,8 +586,8 @@ Incluye fuentes o referencias cuando sea posible.
                 "error": str(e),
                 "output": ""
             }
-    
-    async def _git_status(self) -> Dict[str, Any]:
+
+    async def _git_status(self) -> dict[str, Any]:
         """Ejecuta git status"""
         try:
             result = await asyncio.create_subprocess_exec(
@@ -578,7 +596,7 @@ Incluye fuentes o referencias cuando sea posible.
                 stderr=asyncio.subprocess.PIPE
             )
             stdout, stderr = await result.communicate()
-            
+
             return {
                 "operation": "status",
                 "success": result.returncode == 0,
@@ -592,15 +610,15 @@ Incluye fuentes o referencias cuando sea posible.
                 "output": "",
                 "error": str(e)
             }
-    
-    async def _git_commit(self, objetivo: str) -> Dict[str, Any]:
+
+    async def _git_commit(self, objetivo: str) -> dict[str, Any]:
         """Ejecuta git commit"""
         try:
             # Extraer mensaje de commit del objetivo
             import re
             commit_match = re.search(r'-m\s+["\']([^"\']+)["\']', objetivo)
             commit_message = commit_match.group(1) if commit_match else "Actualización automática"
-            
+
             # Agregar cambios primero
             add_result = await asyncio.create_subprocess_exec(
                 "git", "add", ".",
@@ -608,7 +626,7 @@ Incluye fuentes o referencias cuando sea posible.
                 stderr=asyncio.subprocess.PIPE
             )
             await add_result.communicate()
-            
+
             # Hacer commit
             result = await asyncio.create_subprocess_exec(
                 "git", "commit", "-m", commit_message,
@@ -616,7 +634,7 @@ Incluye fuentes o referencias cuando sea posible.
                 stderr=asyncio.subprocess.PIPE
             )
             stdout, stderr = await result.communicate()
-            
+
             return {
                 "operation": "commit",
                 "success": result.returncode == 0,
@@ -631,8 +649,8 @@ Incluye fuentes o referencias cuando sea posible.
                 "output": "",
                 "error": str(e)
             }
-    
-    async def _git_log(self) -> Dict[str, Any]:
+
+    async def _git_log(self) -> dict[str, Any]:
         """Ejecuta git log"""
         try:
             result = await asyncio.create_subprocess_exec(
@@ -641,7 +659,7 @@ Incluye fuentes o referencias cuando sea posible.
                 stderr=asyncio.subprocess.PIPE
             )
             stdout, stderr = await result.communicate()
-            
+
             return {
                 "operation": "log",
                 "success": result.returncode == 0,
@@ -655,8 +673,8 @@ Incluye fuentes o referencias cuando sea posible.
                 "output": "",
                 "error": str(e)
             }
-    
-    async def _git_clone(self, objetivo: str) -> Dict[str, Any]:
+
+    async def _git_clone(self, objetivo: str) -> dict[str, Any]:
         """Ejecuta git clone"""
         try:
             # Extraer URL del objetivo
@@ -669,7 +687,7 @@ Incluye fuentes o referencias cuando sea posible.
                     "output": "",
                     "error": "No se encontró URL válida en el objetivo"
                 }
-            
+
             repo_url = url_match.group(0)
             result = await asyncio.create_subprocess_exec(
                 "git", "clone", repo_url,
@@ -677,7 +695,7 @@ Incluye fuentes o referencias cuando sea posible.
                 stderr=asyncio.subprocess.PIPE
             )
             stdout, stderr = await result.communicate()
-            
+
             return {
                 "operation": "clone",
                 "success": result.returncode == 0,
@@ -692,8 +710,8 @@ Incluye fuentes o referencias cuando sea posible.
                 "output": "",
                 "error": str(e)
             }
-    
-    async def _git_pull(self) -> Dict[str, Any]:
+
+    async def _git_pull(self) -> dict[str, Any]:
         """Ejecuta git pull"""
         try:
             result = await asyncio.create_subprocess_exec(
@@ -702,7 +720,7 @@ Incluye fuentes o referencias cuando sea posible.
                 stderr=asyncio.subprocess.PIPE
             )
             stdout, stderr = await result.communicate()
-            
+
             return {
                 "operation": "pull",
                 "success": result.returncode == 0,
@@ -716,8 +734,8 @@ Incluye fuentes o referencias cuando sea posible.
                 "output": "",
                 "error": str(e)
             }
-    
-    async def _git_push(self) -> Dict[str, Any]:
+
+    async def _git_push(self) -> dict[str, Any]:
         """Ejecuta git push"""
         try:
             result = await asyncio.create_subprocess_exec(
@@ -726,7 +744,7 @@ Incluye fuentes o referencias cuando sea posible.
                 stderr=asyncio.subprocess.PIPE
             )
             stdout, stderr = await result.communicate()
-            
+
             return {
                 "operation": "push",
                 "success": result.returncode == 0,
@@ -740,21 +758,21 @@ Incluye fuentes o referencias cuando sea posible.
                 "output": "",
                 "error": str(e)
             }
-    
+
     async def _tool_document_processor(
         self,
         objetivo: str,
-        limites: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        limites: dict[str, Any]
+    ) -> dict[str, Any]:
         """Procesa documentos (PDF, DOCX, etc)"""
-        
+
         self.logger.info(f"Document processing para: {objetivo[:100]}")
-        
+
         try:
             # Buscar archivos en el objetivo
-            import re
             import os
-            
+            import re
+
             # Extraer rutas de archivos del objetivo
             file_patterns = [
                 r'[a-zA-Z0-9_-]+\.pdf',
@@ -762,12 +780,12 @@ Incluye fuentes o referencias cuando sea posible.
                 r'[a-zA-Z0-9_-]+\.md',
                 r'[a-zA-Z0-9_-]+\.docx?'
             ]
-            
+
             found_files = []
             for pattern in file_patterns:
                 matches = re.findall(pattern, objetivo, re.IGNORECASE)
                 found_files.extend(matches)
-            
+
             if not found_files:
                 return {
                     "documents_processed": 0,
@@ -776,10 +794,10 @@ Incluye fuentes o referencias cuando sea posible.
                     "error": "No se encontraron archivos de documento en el objetivo",
                     "success": False
                 }
-            
+
             processed_docs = []
             total_extracted = ""
-            
+
             for filename in found_files:
                 if os.path.exists(filename):
                     try:
@@ -789,7 +807,7 @@ Incluye fuentes o referencias cuando sea posible.
                             content = await self._process_pdf_file(filename)
                         else:
                             content = f"Formato no soportado para {filename}"
-                        
+
                         if content:
                             processed_docs.append({
                                 "filename": filename,
@@ -797,18 +815,18 @@ Incluye fuentes o referencias cuando sea posible.
                                 "size": len(content)
                             })
                             total_extracted += f"\n\n--- {filename} ---\n{content}"
-                            
+
                     except Exception as e:
                         self.logger.warning(f"Error procesando {filename}: {str(e)}")
                         continue
-            
+
             return {
                 "documents_processed": len(processed_docs),
                 "extracted_text": total_extracted[:5000] + "..." if len(total_extracted) > 5000 else total_extracted,
                 "files_processed": processed_docs,
                 "success": len(processed_docs) > 0
             }
-            
+
         except Exception as e:
             self.logger.exception(f"Error en procesamiento de documentos: {str(e)}")
             return {
@@ -817,40 +835,68 @@ Incluye fuentes o referencias cuando sea posible.
                 "error": str(e),
                 "success": False
             }
-    
+
     async def _process_text_file(self, filename: str) -> str:
         """Procesa archivo de texto"""
         try:
-            async with aiofiles.open(filename, 'r', encoding='utf-8') as f:
+            async with aiofiles.open(filename, encoding='utf-8') as f:
                 content = await f.read()
             return content
         except Exception as e:
             self.logger.error(f"Error leyendo {filename}: {str(e)}")
             return f"Error leyendo archivo: {str(e)}"
-    
+
     async def _process_pdf_file(self, filename: str) -> str:
-        """Procesa archivo PDF (simulado)"""
+        """Extrae el texto de un PDF.
+
+        Antes devolvía un marcador de posición. `pypdf`/`PyPDF2` ya estaban en
+        las dependencias del proyecto, así que la extracción se hace de verdad;
+        si la librería falta, se dice, en lugar de simular contenido.
+        """
         try:
-            # Por ahora simulamos el procesamiento de PDF
-            # En una implementación real usaríamos PyPDF2, pdfplumber, etc.
-            return f"[PDF content for {filename}] - PDF processing no implementado completamente"
+            try:
+                from pypdf import PdfReader
+            except ImportError:
+                try:
+                    from PyPDF2 import PdfReader
+                except ImportError:
+                    return (
+                        "Error: no hay ninguna librería de PDF instalada. "
+                        "Instale con: pip install pypdf"
+                    )
+
+            reader = PdfReader(filename)
+            paginas = [(pagina.extract_text() or "") for pagina in reader.pages]
+            texto = "\n\n".join(p.strip() for p in paginas if p.strip())
+
+            if not texto:
+                return (
+                    f"El PDF '{filename}' tiene {len(reader.pages)} página(s) pero no "
+                    "contiene texto extraíble (probablemente sea un escaneo; "
+                    "requeriría OCR)."
+                )
+            return texto
+
+        except FileNotFoundError:
+            return f"Error: no se encontró el archivo '{filename}'"
         except Exception as e:
+            self.logger.exception(f"Error procesando PDF {filename}")
             return f"Error procesando PDF: {str(e)}"
-    
+
     async def _tool_api_caller(
         self,
         objetivo: str,
-        limites: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        limites: dict[str, Any]
+    ) -> dict[str, Any]:
         """Llama APIs externas"""
-        
+
         self.logger.info(f"API caller para: {objetivo[:100]}")
-        
+
         try:
             # Extraer información de la API del objetivo
-            import re
             import json
-            
+            import re
+
             # Buscar URLs de API
             url_match = re.search(r'https?://[^\s]+', objetivo)
             if not url_match:
@@ -860,9 +906,9 @@ Incluye fuentes o referencias cuando sea posible.
                     "error": "No se encontró URL de API en el objetivo",
                     "success": False
                 }
-            
+
             api_url = url_match.group(0)
-            
+
             # Determinar método HTTP
             method = "GET"
             if any(verb in objetivo.lower() for verb in ["post", "crear", "enviar"]):
@@ -871,13 +917,13 @@ Incluye fuentes o referencias cuando sea posible.
                 method = "PUT"
             elif any(verb in objetivo.lower() for verb in ["delete", "eliminar"]):
                 method = "DELETE"
-            
+
             # Preparar headers básicos
             headers = {
                 "User-Agent": "Agents-Backend/1.0",
                 "Accept": "application/json"
             }
-            
+
             # Preparar datos si es necesario
             data = None
             if method in ["POST", "PUT"]:
@@ -889,7 +935,7 @@ Incluye fuentes o referencias cuando sea posible.
                         headers["Content-Type"] = "application/json"
                     except json.JSONDecodeError:
                         pass
-            
+
             # Realizar llamada a la API
             timeout = httpx.Timeout(30.0, connect=10.0)
             async with httpx.AsyncClient(timeout=timeout) as client:
@@ -903,13 +949,13 @@ Incluye fuentes o referencias cuando sea posible.
                     response = await client.delete(api_url, headers=headers)
                 else:
                     response = await client.get(api_url, headers=headers)
-            
+
             # Procesar respuesta
             try:
                 response_data = response.json()
             except:
                 response_data = {"text": response.text}
-            
+
             return {
                 "api_called": True,
                 "url": api_url,
@@ -921,7 +967,7 @@ Incluye fuentes o referencias cuando sea posible.
                 },
                 "success": 200 <= response.status_code < 300
             }
-            
+
         except httpx.TimeoutException:
             return {
                 "api_called": False,
@@ -937,16 +983,16 @@ Incluye fuentes o referencias cuando sea posible.
                 "error": str(e),
                 "success": False
             }
-    
+
     async def _tool_search_engine(
         self,
         objetivo: str,
-        limites: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        limites: dict[str, Any]
+    ) -> dict[str, Any]:
         """Búsqueda web usando motor de búsqueda real"""
-        
+
         self.logger.info(f"Búsqueda web para: {objetivo[:100]}")
-        
+
         try:
             # Usar la herramienta real de búsqueda
             if hasattr(self, 'tools') and 'search_engine' in self.tools:
@@ -956,7 +1002,7 @@ Incluye fuentes o referencias cuando sea posible.
                     operation="web_search",
                     sources=["duckduckgo", "wikipedia"]
                 )
-                
+
                 return {
                     "query": objetivo,
                     "searched": True,
@@ -965,14 +1011,20 @@ Incluye fuentes o referencias cuando sea posible.
                     "error": result.get("error")
                 }
             else:
-                # Fallback a búsqueda simulada
+                # Sin la herramienta real no hay búsqueda. Devolver resultados
+                # inventados con success=True hacía que el orquestador tratara
+                # una capacidad ausente como una búsqueda realizada.
                 return {
                     "query": objetivo,
-                    "searched": True,
-                    "data": {"mock_search": f"Resultados simulados para: {objetivo[:50]}"},
-                    "success": True
+                    "searched": False,
+                    "data": {},
+                    "success": False,
+                    "error": (
+                        "La herramienta 'search_engine' no está disponible. "
+                        "No se realizó ninguna búsqueda."
+                    ),
                 }
-                
+
         except Exception as e:
             self.logger.exception(f"Error en búsqueda: {str(e)}")
             return {
@@ -982,22 +1034,22 @@ Incluye fuentes o referencias cuando sea posible.
                 "error": str(e),
                 "success": False
             }
-    
+
     async def _tool_file_processor(
         self,
         objetivo: str,
-        limites: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        limites: dict[str, Any]
+    ) -> dict[str, Any]:
         """Procesamiento de archivos usando herramienta real"""
-        
+
         self.logger.info(f"Procesamiento de archivos para: {objetivo[:100]}")
-        
+
         try:
             # Buscar archivos en el objetivo
             import re
             file_pattern = r'[a-zA-Z0-9_-]+\.(txt|pdf|docx|json|csv)'
             files = re.findall(file_pattern, objetivo, re.IGNORECASE)
-            
+
             if not files:
                 return {
                     "files_processed": 0,
@@ -1006,7 +1058,7 @@ Incluye fuentes o referencias cuando sea posible.
                     "error": "No se encontraron archivos en el objetivo",
                     "success": False
                 }
-            
+
             # Usar la herramienta real si está disponible
             if hasattr(self, 'tools') and 'file_processor' in self.tools:
                 file_path = files[0]
@@ -1015,7 +1067,7 @@ Incluye fuentes o referencias cuando sea posible.
                     file_path=file_path,
                     operation="auto"
                 )
-                
+
                 return {
                     "files_processed": 1 if result.get("success") else 0,
                     "extracted_text": result.get("data", {}).get("content", ""),
@@ -1024,14 +1076,20 @@ Incluye fuentes o referencias cuando sea posible.
                     "error": result.get("error")
                 }
             else:
-                # Fallback simulado
+                # Sin la herramienta real no se lee ningún archivo; declararlo
+                # es preferible a devolver contenido inventado como si fuera
+                # el del archivo.
                 return {
-                    "files_processed": len(files),
-                    "extracted_text": f"Contenido simulado de {files[0]}",
+                    "files_processed": 0,
+                    "extracted_text": "",
                     "files_found": files,
-                    "success": True
+                    "success": False,
+                    "error": (
+                        "La herramienta 'file_processor' no está disponible. "
+                        "No se procesó ningún archivo."
+                    ),
                 }
-                
+
         except Exception as e:
             self.logger.exception(f"Error procesando archivos: {str(e)}")
             return {
@@ -1040,56 +1098,76 @@ Incluye fuentes o referencias cuando sea posible.
                 "error": str(e),
                 "success": False
             }
-    
+
     def _consolidate_results(
         self,
-        results: List[Dict[str, Any]]
-    ) -> Dict[str, Any]:
+        results: list[dict[str, Any]]
+    ) -> dict[str, Any]:
         """Consolida resultados de múltiples herramientas"""
-        
+
         consolidated = {
             "tools_results": {},
             "combined_output": "",
             "success_rate": 0.0
         }
-        
+
         successful = 0
         for result in results:
             tool_name = result.get("tool", "unknown")
             consolidated["tools_results"][tool_name] = result
-            
+
             if result.get("success", False):
                 successful += 1
-        
+
         if results:
             consolidated["success_rate"] = successful / len(results)
-        
+
         return consolidated
-    
+
     def _save_artifacts(
         self,
-        consolidated: Dict[str, Any]
-    ) -> List[str]:
-        """Guarda artefactos y devuelve referencias"""
-        
-        # Por ahora mock - implementar almacenamiento real
-        artifacts = []
-        
+        consolidated: dict[str, Any]
+    ) -> list[str]:
+        """Escribe los resultados en disco y devuelve sus rutas.
+
+        Antes devolvía referencias `artifact://` que no apuntaban a nada: el
+        artefacto se anunciaba pero nunca se escribía, así que cualquier intento
+        posterior de leerlo fallaba.
+        """
+        import json
+        from pathlib import Path
+
+        base = Path("artifacts") / self.agent_id
+        artifacts: list[str] = []
+
         for tool_name, result in consolidated.get("tools_results", {}).items():
-            if result.get("success", False):
-                ref = f"artifact://{self.agent_id}/{tool_name}/result.json"
-                artifacts.append(ref)
-        
+            if not result.get("success", False):
+                continue
+            destino = base / tool_name
+            try:
+                destino.mkdir(parents=True, exist_ok=True)
+                ruta = destino / "result.json"
+                ruta.write_text(
+                    json.dumps(result, indent=2, ensure_ascii=False, default=str),
+                    encoding="utf-8",
+                )
+                artifacts.append(str(ruta))
+            except (OSError, TypeError, ValueError) as exc:
+                # Un artefacto que no se pudo escribir no se anuncia.
+                self.logger.warning(
+                    "No se pudo guardar el artefacto de '%s': %s", tool_name, exc
+                )
+
         return artifacts
-    
+
     def _collect_evidence(
         self,
-        results: List[Dict[str, Any]]
-    ) -> List[Dict[str, Any]]:
+        results: list[dict[str, Any]]
+    ) -> list[dict[str, Any]]:
         """Recolecta evidencias de ejecución"""
-        
+
         evidence = []
-        
+
         for result in results:
             if result.get("success", False):
                 evidence.append({
@@ -1098,5 +1176,5 @@ Incluye fuentes o referencias cuando sea posible.
                     "summary": f"Ejecutado exitosamente en {result.get('time_ms', 0):.0f}ms",
                     "reference": f"evidence://{result.get('tool')}"
                 })
-        
+
         return evidence

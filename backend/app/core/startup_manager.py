@@ -1,8 +1,8 @@
-import os
+import asyncio
 import json
 import logging
-import asyncio
-from typing import Dict, Any
+import os
+from typing import Any
 
 logger = logging.getLogger("StartupManager")
 
@@ -22,13 +22,13 @@ class StartupManager:
 
         logger.info(f"Detected startup configuration at {self.config_path}")
         try:
-            with open(self.config_path, "r", encoding="utf-8") as f:
-                startup_config: Dict[str, Any] = json.load(f)
+            with open(self.config_path, encoding="utf-8") as f:
+                startup_config: dict[str, Any] = json.load(f)
 
             commands = startup_config.get("commands", [])
             for cmd in commands:
                 logger.info(f"Auto-starting workspace task: {cmd}")
-                
+
                 # Lanzar en background (fire and forget) para no bloquear el inicio de FastAPI
                 asyncio.create_task(
                     orchestrator.process_request(
@@ -37,9 +37,9 @@ class StartupManager:
                         user_id="system_startup"
                     )
                 )
-            
+
             logger.info("Startup scripts execution triggered successfully.")
-            
+
         except Exception as e:
             logger.error(f"Failed to execute startup scripts: {e}")
 

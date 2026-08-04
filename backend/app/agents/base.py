@@ -2,19 +2,18 @@
 Agente base abstracto
 Define la interfaz común para todos los agentes especializados
 """
-from abc import ABC, abstractmethod
-from typing import Dict, Any, Optional, List
 import asyncio
 import logging
-from datetime import datetime
 import os
-import json
+from abc import ABC, abstractmethod
+from datetime import datetime
+from typing import Any
+
 import httpx
 
-from ..models import AgentMessage, AgentResponse, MessageStatus, ErrorInfo
 from ..core import settings
 from ..core.llm_router import LLMRouter
-
+from ..models import AgentMessage, AgentResponse, ErrorInfo, MessageStatus
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +26,7 @@ class BaseAgent(ABC):
     - process_message: lógica de procesamiento principal
     - get_capabilities: capacidades que expone
     """
-    
+
     def __init__(
         self,
         agent_id: str,
@@ -39,7 +38,7 @@ class BaseAgent(ABC):
         self.timeout = timeout
         self.logger = logging.getLogger(f"agent.{agent_id}")
         self._init_tools()
-    
+
     def _init_llm_router(self):
         """Inicializa el router LLM con conectividad real"""
         try:
@@ -47,7 +46,7 @@ class BaseAgent(ABC):
         except Exception as e:
             self.logger.warning(f"No se pudo inicializar LLMRouter: {e}")
             return None
-    
+
     def _init_tools(self):
         """Inicializa herramientas del sistema"""
         try:
@@ -58,7 +57,7 @@ class BaseAgent(ABC):
         except Exception as e:
             self.logger.error(f"Error inicializando herramientas: {e}")
             self.tools = {}
-    
+
     @abstractmethod
     async def process_message(self, message: AgentMessage) -> AgentResponse:
         """
@@ -71,9 +70,9 @@ class BaseAgent(ABC):
             AgentResponse con el resultado o error
         """
         pass
-    
+
     @abstractmethod
-    def get_capabilities(self) -> List[str]:
+    def get_capabilities(self) -> list[str]:
         """
         Retorna la lista de capacidades del agente
         
@@ -81,7 +80,7 @@ class BaseAgent(ABC):
             Lista de strings describiendo capacidades
         """
         pass
-    
+
     async def execute_with_timeout(
         self,
         message: AgentMessage
@@ -96,22 +95,22 @@ class BaseAgent(ABC):
             AgentResponse con resultado o error de timeout
         """
         start_time = datetime.utcnow()
-        
+
         try:
             # Aplicar timeout
             result = await asyncio.wait_for(
                 self.process_message(message),
                 timeout=self.timeout
             )
-            
+
             execution_time = (datetime.utcnow() - start_time).total_seconds() * 1000
             result.execution_time_ms = execution_time
-            
+
             return result
-            
+
         except asyncio.TimeoutError:
             self.logger.error(f"Timeout procesando mensaje {message.message_id}")
-            
+
             return AgentResponse(
                 message_id=f"resp_{message.message_id}",
                 original_message_id=message.message_id,
@@ -124,10 +123,10 @@ class BaseAgent(ABC):
                     retry_after=5
                 )]
             )
-            
+
         except Exception as e:
             self.logger.exception(f"Error procesando mensaje {message.message_id}")
-            
+
             return AgentResponse(
                 message_id=f"resp_{message.message_id}",
                 original_message_id=message.message_id,
@@ -139,7 +138,7 @@ class BaseAgent(ABC):
                     retryable=False
                 )]
             )
-    
+
     async def call_llm(
         self,
         prompt: str,
@@ -174,11 +173,11 @@ class BaseAgent(ABC):
             else:
                 # Fallback directo a OpenRouter
                 return await self._call_openrouter_direct(prompt, temperature, max_tokens, model)
-                
+
         except Exception as e:
             self.logger.exception(f"Error en llamada LLM: {str(e)}")
             return f"[Error LLM - Fallback para: {prompt[:100]}...]\nError: {str(e)}"
-    
+
     async def _call_openrouter_direct(
         self,
         prompt: str,
@@ -190,7 +189,7 @@ class BaseAgent(ABC):
         api_key = os.getenv("OPENROUTER_API_KEY")
         if not api_key:
             return f"[Fallback - Sin API key para: {prompt[:100]}...]"
-        
+
         model_mapping = {
             "claude3_5": "anthropic/claude-3-5-sonnet",
             "claude3": "anthropic/claude-3-sonnet",
@@ -198,23 +197,23 @@ class BaseAgent(ABC):
             "gpt4": "openai/gpt-4",
             "gpt4_turbo": "openai/gpt-4-turbo"
         }
-        
+
         actual_model = model_mapping.get(model, "anthropic/claude-3-5-sonnet")
-        
+
         headers = {
             "Authorization": f"Bearer {api_key}",
             "Content-Type": "application/json",
             "HTTP-Referer": "https://agents-backend",
             "X-Title": "Agents Backend"
         }
-        
+
         payload = {
             "model": actual_model,
             "messages": [{"role": "user", "content": prompt}],
             "temperature": temperature,
             "max_tokens": max_tokens
         }
-        
+
         timeout = httpx.Timeout(60.0, connect=10.0)
         async with httpx.AsyncClient(timeout=timeout) as client:
             response = await client.post(
@@ -224,13 +223,13 @@ class BaseAgent(ABC):
             )
             response.raise_for_status()
             data = response.json()
-            
+
             if "choices" in data and len(data["choices"]) > 0:
                 return data["choices"][0]["message"]["content"]
             else:
                 raise ValueError(f"Respuesta inesperada: {data}")
-    
-    async def call_tool(self, tool_name: str, **kwargs) -> Dict[str, Any]:
+
+    async def call_tool(self, tool_name: str, **kwargs) -> dict[str, Any]:
         """
         Llama a una herramienta del sistema
         
@@ -247,11 +246,11 @@ class BaseAgent(ABC):
                 "error": f"Herramienta no encontrada: {tool_name}",
                 "available_tools": list(self.tools.keys())
             }
-        
+
         try:
             tool = self.tools[tool_name]
             self.logger.info(f"Ejecutando herramienta {tool_name}")
-            
+
             # Ejecutar herramienta según su interfaz
             if hasattr(tool, 'execute'):
                 result = tool.execute(**kwargs)
@@ -267,7 +266,7 @@ class BaseAgent(ABC):
                     "error": f"Herramienta {tool_name} no tiene método execute",
                     "tool": tool_name
                 }
-                
+
         except Exception as e:
             self.logger.exception(f"Error ejecutando herramienta {tool_name}")
             return {
@@ -275,8 +274,8 @@ class BaseAgent(ABC):
                 "error": str(e),
                 "tool": tool_name
             }
-    
-    def log_trace(self, event: str, data: Optional[Dict[str, Any]] = None):
+
+    def log_trace(self, event: str, data: dict[str, Any] | None = None):
         """
         Registra evento de traza para observabilidad
         
@@ -290,5 +289,5 @@ class BaseAgent(ABC):
             "timestamp": datetime.utcnow().isoformat(),
             **(data or {})
         }
-        
+
         self.logger.info(f"TRACE: {trace_data}")

@@ -2,18 +2,17 @@
 Endpoints para health checks detallados
 /api/v1/health/detailed
 """
-from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel, Field
-from typing import Dict, Any, List, Optional
 import asyncio
 import logging
-import psutil
 import time
 from datetime import datetime, timedelta
-import sys
+from typing import Any
+
+import psutil
+from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel
 
 from ..core import settings
-from ..core.llm_router import LLMRouter
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/health", tags=["health"])
@@ -33,8 +32,8 @@ class ServiceHealth(BaseModel):
     status: str  # healthy, degraded, unhealthy
     response_time_ms: float
     last_check: str
-    error_message: Optional[str] = None
-    metadata: Optional[Dict[str, Any]] = None
+    error_message: str | None = None
+    metadata: dict[str, Any] | None = None
 
 
 class HealthMetrics(BaseModel):
@@ -45,7 +44,7 @@ class HealthMetrics(BaseModel):
     memory_total_mb: float
     disk_percent: float
     disk_free_gb: float
-    network_io: Dict[str, int]
+    network_io: dict[str, int]
     process_count: int
     thread_count: int
 
@@ -54,20 +53,20 @@ class DatabaseHealth(BaseModel):
     """Estado de la base de datos"""
     status: str
     response_time_ms: float
-    connection_pool: Dict[str, Any]
-    query_stats: Dict[str, Any]
-    last_vacuum: Optional[str] = None
+    connection_pool: dict[str, Any]
+    query_stats: dict[str, Any]
+    last_vacuum: str | None = None
 
 
 class LLMHealth(BaseModel):
     """Estado del sistema LLM"""
     status: str
-    available_models: List[str]
+    available_models: list[str]
     active_requests: int
     total_requests: int
     avg_response_time_ms: float
     error_rate_percent: float
-    provider_stats: Dict[str, Any]
+    provider_stats: dict[str, Any]
 
 
 class RedisHealth(BaseModel):
@@ -77,26 +76,26 @@ class RedisHealth(BaseModel):
     memory_usage_mb: float
     connected_clients: int
     ops_per_second: float
-    key_stats: Dict[str, int]
+    key_stats: dict[str, int]
 
 
 class HealthResponse(BaseModel):
     """Response completo de health check"""
     system: SystemHealth
-    services: Dict[str, ServiceHealth]
+    services: dict[str, ServiceHealth]
     metrics: HealthMetrics
     database: DatabaseHealth
     llm: LLMHealth
     redis: RedisHealth
-    endpoints: Dict[str, ServiceHealth]
-    summary: Dict[str, Any]
+    endpoints: dict[str, ServiceHealth]
+    summary: dict[str, Any]
 
 
 @router.get("/detailed", response_model=HealthResponse)
 async def detailed_health_check():
     """
     Health check completo del sistema con todos los componentes
-    
+
     Incluye:
     - Estado general del sistema
     - Estado de servicios (LLM, DB, Redis)
@@ -104,12 +103,12 @@ async def detailed_health_check():
     - Estadísticas de uso
     - Tiempo de respuesta de endpoints críticos
     """
-    
+
     start_time = time.time()
-    
+
     try:
         logger.info("Iniciando health check detallado")
-        
+
         # Recopilar información en paralelo
         tasks = [
             get_system_info(),
@@ -120,12 +119,12 @@ async def detailed_health_check():
             check_critical_endpoints(),
             get_service_status()
         ]
-        
+
         results = await asyncio.gather(*tasks, return_exceptions=True)
-        
-        (system_info, metrics, db_health, llm_health, 
+
+        (system_info, metrics, db_health, llm_health,
          redis_health, endpoints, services) = results
-        
+
         # Procesar excepciones
         system_info = system_info if not isinstance(system_info, Exception) else _error_service("system", system_info)
         metrics = metrics if not isinstance(metrics, Exception) else _error_metrics(metrics)
@@ -134,14 +133,14 @@ async def detailed_health_check():
         redis_health = redis_health if not isinstance(redis_health, Exception) else _error_redis_health(redis_health)
         endpoints = endpoints if not isinstance(endpoints, Exception) else _error_endpoints(endpoints)
         services = services if not isinstance(services, Exception) else _error_services(services)
-        
+
         # Determinar estado general
         overall_status = _determine_overall_status([
             system_info, db_health, llm_health, redis_health
         ])
-        
+
         execution_time = (time.time() - start_time) * 1000
-        
+
         return HealthResponse(
             system=system_info,
             services=services,
@@ -158,7 +157,7 @@ async def detailed_health_check():
                 "last_full_check": datetime.now().isoformat()
             }
         )
-        
+
     except Exception as e:
         logger.exception("Error en health check detallado")
         raise HTTPException(status_code=500, detail=f"Health check error: {str(e)}")
@@ -187,15 +186,15 @@ async def readiness_probe():
             check_database_health(),
             check_redis_health()
         ]
-        
+
         results = await asyncio.gather(*checks, return_exceptions=True)
-        
+
         all_healthy = all(
-            not isinstance(result, Exception) and 
-            getattr(result, 'status', '') == 'healthy' 
+            not isinstance(result, Exception) and
+            getattr(result, 'status', '') == 'healthy'
             for result in results
         )
-        
+
         return {
             "status": "ready" if all_healthy else "not_ready",
             "timestamp": datetime.now().isoformat(),
@@ -204,7 +203,7 @@ async def readiness_probe():
                 "redis": "healthy" if not isinstance(results[1], Exception) else "unhealthy"
             }
         }
-        
+
     except Exception as e:
         return {
             "status": "not_ready",
@@ -218,10 +217,10 @@ async def get_health_metrics():
     """
     Retorna métricas básicas del sistema para monitoring
     """
-    
+
     try:
         process = psutil.Process()
-        
+
         return {
             "cpu_percent": psutil.cpu_percent(interval=1),
             "memory_percent": psutil.virtual_memory().percent,
@@ -235,7 +234,7 @@ async def get_health_metrics():
             "connections": len(process.connections()),
             "timestamp": datetime.now().isoformat()
         }
-        
+
     except Exception as e:
         logger.exception("Error obteniendo métricas")
         raise HTTPException(status_code=500, detail=f"Metrics error: {str(e)}")
@@ -244,7 +243,7 @@ async def get_health_metrics():
 # Funciones auxiliares
 async def get_system_info() -> SystemHealth:
     """Obtiene información general del sistema"""
-    
+
     return SystemHealth(
         status="healthy",
         uptime_seconds=time.time() - psutil.Process().create_time(),
@@ -256,11 +255,11 @@ async def get_system_info() -> SystemHealth:
 
 async def get_system_metrics() -> HealthMetrics:
     """Obtiene métricas del sistema"""
-    
+
     net_io = psutil.net_io_counters()
     memory = psutil.virtual_memory()
     disk = psutil.disk_usage('/')
-    
+
     return HealthMetrics(
         cpu_percent=psutil.cpu_percent(interval=1),
         memory_percent=memory.percent,
@@ -281,15 +280,15 @@ async def get_system_metrics() -> HealthMetrics:
 
 async def check_database_health() -> DatabaseHealth:
     """Verifica el estado de la base de datos"""
-    
+
     start_time = time.time()
-    
+
     try:
         # Simular ping a base de datos
         await asyncio.sleep(0.05)  # Simular latencia
-        
+
         response_time = (time.time() - start_time) * 1000
-        
+
         return DatabaseHealth(
             status="healthy",
             response_time_ms=response_time,
@@ -307,19 +306,19 @@ async def check_database_health() -> DatabaseHealth:
             },
             last_vacuum=(datetime.now() - timedelta(hours=2)).isoformat()
         )
-        
-    except Exception as e:
+
+    except Exception:
         response_time = (time.time() - start_time) * 1000
         raise
 
 
 async def check_llm_health() -> LLMHealth:
     """Verifica el estado del sistema LLM"""
-    
+
     try:
         # TODO: Implementar verificación real del LLM router
         # Por ahora simular estado
-        
+
         return LLMHealth(
             status="healthy",
             available_models=["minimax-m2", "llama-3.3-70b"],
@@ -332,22 +331,22 @@ async def check_llm_health() -> LLMHealth:
                 "openrouter": {"requests": 569, "avg_time": 520, "errors": 15}
             }
         )
-        
-    except Exception as e:
+
+    except Exception:
         raise
 
 
 async def check_redis_health() -> RedisHealth:
     """Verifica el estado de Redis"""
-    
+
     start_time = time.time()
-    
+
     try:
         # Simular ping a Redis
         await asyncio.sleep(0.02)
-        
+
         response_time = (time.time() - start_time) * 1000
-        
+
         return RedisHealth(
             status="healthy",
             response_time_ms=response_time,
@@ -360,61 +359,61 @@ async def check_redis_health() -> RedisHealth:
                 "evicted_keys": 0
             }
         )
-        
-    except Exception as e:
+
+    except Exception:
         response_time = (time.time() - start_time) * 1000
         raise
 
 
-async def check_critical_endpoints() -> Dict[str, ServiceHealth]:
+async def check_critical_endpoints() -> dict[str, ServiceHealth]:
     """Verifica endpoints críticos del API"""
-    
+
     endpoints = {
         "root": "/",
         "health": "/health",
         "tasks": "/api/v1/tasks",
         "tools": "/api/v1/tools"
     }
-    
+
     endpoint_status = {}
-    
+
     for name, path in endpoints.items():
         start_time = time.time()
-        
+
         try:
             # Simular verificación de endpoint
             await asyncio.sleep(0.01)
-            
+
             response_time = (time.time() - start_time) * 1000
-            
+
             endpoint_status[name] = ServiceHealth(
                 status="healthy",
                 response_time_ms=response_time,
                 last_check=datetime.now().isoformat()
             )
-            
+
         except Exception as e:
             response_time = (time.time() - start_time) * 1000
-            
+
             endpoint_status[name] = ServiceHealth(
                 status="unhealthy",
                 response_time_ms=response_time,
                 last_check=datetime.now().isoformat(),
                 error_message=str(e)
             )
-    
+
     return endpoint_status
 
 
-async def get_service_status() -> Dict[str, ServiceHealth]:
+async def get_service_status() -> dict[str, ServiceHealth]:
     """Obtiene estado de servicios principales"""
-    
+
     services = {
         "orchestrator": {
             "active_sessions": 5,
             "agents_status": {
                 "reasoner": "healthy",
-                "planner": "healthy", 
+                "planner": "healthy",
                 "executor": "healthy",
                 "verifier": "healthy",
                 "memory_manager": "healthy"
@@ -429,7 +428,7 @@ async def get_service_status() -> Dict[str, ServiceHealth]:
             "queue_size": 0
         }
     }
-    
+
     return {
         name: ServiceHealth(
             status="healthy",
@@ -503,22 +502,22 @@ def _error_redis_health(error: Exception) -> RedisHealth:
     )
 
 
-def _error_endpoints(error: Exception) -> Dict[str, ServiceHealth]:
+def _error_endpoints(error: Exception) -> dict[str, ServiceHealth]:
     """Crea respuesta de error para endpoints"""
     return {}
 
 
-def _error_services(error: Exception) -> Dict[str, ServiceHealth]:
+def _error_services(error: Exception) -> dict[str, ServiceHealth]:
     """Crea respuesta de error para servicios"""
     return {}
 
 
-def _determine_overall_status(services: List[Any]) -> str:
+def _determine_overall_status(services: list[Any]) -> str:
     """Determina el estado general basado en servicios"""
-    
+
     unhealthy_count = sum(1 for s in services if getattr(s, 'status', '') == 'unhealthy')
     degraded_count = sum(1 for s in services if getattr(s, 'status', '') == 'degraded')
-    
+
     if unhealthy_count > 0:
         return "unhealthy"
     elif degraded_count > 0:
@@ -527,6 +526,6 @@ def _determine_overall_status(services: List[Any]) -> str:
         return "healthy"
 
 
-def _count_healthy_services(services: List[Any]) -> int:
+def _count_healthy_services(services: list[Any]) -> int:
     """Cuenta servicios saludables"""
     return sum(1 for s in services if getattr(s, 'status', '') == 'healthy')

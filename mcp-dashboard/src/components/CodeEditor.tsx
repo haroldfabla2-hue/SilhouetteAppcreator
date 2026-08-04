@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Code, FileText, Save, Folder, RefreshCw, CheckCircle, FileCode, Play, Terminal, Layers, FilePlus } from 'lucide-react';
+import { API_BASE } from "@/lib/api";
 
 interface FileNode {
   path: string;
@@ -28,7 +29,7 @@ export const CodeEditor: React.FC = () => {
   const loadFile = async (path: string) => {
     setIsLoading(true);
     try {
-      const res = await fetch(`http://localhost:8001/api/system/file-content?path=${encodeURIComponent(path)}`);
+      const res = await fetch(`${API_BASE}/api/system/file-content?path=${encodeURIComponent(path)}`);
       if (res.ok) {
         const data = await res.json();
         setFileContent(data.content || '');
@@ -46,7 +47,7 @@ export const CodeEditor: React.FC = () => {
     setIsSaving(true);
     setSaveStatus(null);
     try {
-      const res = await fetch('http://localhost:8001/api/system/save-file', {
+      const res = await fetch(`${API_BASE}/api/system/save-file`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ path: activeFilePath, content: fileContent })

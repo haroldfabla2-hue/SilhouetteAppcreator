@@ -2,11 +2,11 @@
 Agente Verifier - Valida resultados y calidad
 Responsable de revisar coherencia y ejecutar gates de calidad
 """
-from typing import List, Dict, Any
 import json
+from typing import Any
 
-from .base import BaseAgent
 from ..models import AgentMessage, AgentResponse, MessageStatus
+from .base import BaseAgent
 
 
 class VerifierAgent(BaseAgent):
@@ -19,7 +19,7 @@ class VerifierAgent(BaseAgent):
     - Activar gates de calidad
     - Evaluar trayectorias de agentes
     """
-    
+
     def __init__(self, llm_client: Any = None):
         super().__init__(
             agent_id="verifier",
@@ -31,15 +31,15 @@ class VerifierAgent(BaseAgent):
             "consistency": 0.85,
             "citation": 0.7
         }
-    
-    def get_capabilities(self) -> List[str]:
+
+    def get_capabilities(self) -> list[str]:
         return [
             "result_validation",
             "quality_assessment",
             "trajectory_evaluation",
             "consistency_checking"
         ]
-    
+
     async def process_message(self, message: AgentMessage) -> AgentResponse:
         """
         Procesa mensaje validando resultados
@@ -47,34 +47,34 @@ class VerifierAgent(BaseAgent):
         self.log_trace("verifier_start", {
             "message_id": message.message_id
         })
-        
+
         try:
             # Extraer datos a validar
             validation_request = message.payload.get("validation_request", {})
             results = message.payload.get("results", {})
             trajectory = message.payload.get("trajectory", [])
             criterios = validation_request.get("criterios", [])
-            
+
             # Validar resultados
             validation_report = await self._validate_results(
                 results,
                 criterios,
                 validation_request
             )
-            
+
             # Evaluar trayectoria de ejecución
             trajectory_score = await self._evaluate_trajectory(trajectory)
-            
+
             # Verificar consistencia
             consistency_check = self._check_consistency(results)
-            
+
             # Determinar aprobación
             approved = self._determine_approval(
                 validation_report,
                 trajectory_score,
                 consistency_check
             )
-            
+
             result = {
                 "validation_report": validation_report,
                 "trajectory_score": trajectory_score,
@@ -91,13 +91,13 @@ class VerifierAgent(BaseAgent):
                     consistency_check
                 )
             }
-            
+
             self.log_trace("verifier_complete", {
                 "message_id": message.message_id,
                 "approved": approved,
                 "quality_score": result["quality_metrics"]["overall_score"]
             })
-            
+
             return AgentResponse(
                 message_id=f"resp_{message.message_id}",
                 original_message_id=message.message_id,
@@ -105,22 +105,22 @@ class VerifierAgent(BaseAgent):
                 status=MessageStatus.DONE,
                 result=result
             )
-            
-        except Exception as e:
+
+        except Exception:
             self.logger.exception("Error en Verifier")
             raise
-    
+
     async def _validate_results(
         self,
-        results: Dict[str, Any],
-        criterios: List[str],
-        validation_request: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        results: dict[str, Any],
+        criterios: list[str],
+        validation_request: dict[str, Any]
+    ) -> dict[str, Any]:
         """Valida resultados según criterios"""
-        
+
         eval_type = validation_request.get("eval_type", "llm_judge")
         thresholds = validation_request.get("thresholds", [])
-        
+
         if eval_type == "llm_judge":
             return await self._llm_judge_evaluation(
                 results,
@@ -131,15 +131,15 @@ class VerifierAgent(BaseAgent):
             return await self._code_evaluation(results, criterios)
         else:
             return await self._heuristic_evaluation(results, criterios)
-    
+
     async def _llm_judge_evaluation(
         self,
-        results: Dict[str, Any],
-        criterios: List[str],
-        thresholds: List[float]
-    ) -> Dict[str, Any]:
+        results: dict[str, Any],
+        criterios: list[str],
+        thresholds: list[float]
+    ) -> dict[str, Any]:
         """Evaluación usando LLM como juez"""
-        
+
         prompt = f"""Actúa como un juez experto evaluando resultados de agentes. 
 
 Contexto del Sistema:
@@ -179,22 +179,22 @@ Responde ÚNICAMENTE en formato JSON válido:
   "critical_issues": ["Problemas que requieren atención inmediata"]
 }}
 """
-        
+
         try:
             llm_response = await self.call_llm(
-                prompt, 
-                temperature=0.2, 
+                prompt,
+                temperature=0.2,
                 max_tokens=2000,
                 model="claude3_5"
             )
-            
+
             # Procesar respuesta del LLM con mejor manejo de errores
             scores = await self._process_llm_evaluation_response(
                 llm_response, criterios, thresholds, results
             )
-            
+
             overall_score = sum(s["score"] for s in scores.values()) / len(scores) if scores else 0.0
-            
+
             return {
                 "eval_type": "llm_judge",
                 "criterios_evaluated": criterios,
@@ -214,10 +214,10 @@ Responde ÚNICAMENTE en formato JSON válido:
     async def _process_llm_evaluation_response(
         self,
         llm_response: str,
-        criterios: List[str],
-        thresholds: List[float],
-        results: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        criterios: list[str],
+        thresholds: list[float],
+        results: dict[str, Any]
+    ) -> dict[str, Any]:
         """Procesa y extrae puntuaciones de la respuesta estructurada del LLM Juez"""
         import json
         scores = {}
@@ -228,7 +228,7 @@ Responde ÚNICAMENTE en formato JSON válido:
                 json_str = llm_response.split("```json")[1].split("```")[0].strip()
             elif "```" in llm_response:
                 json_str = llm_response.split("```")[1].split("```")[0].strip()
-            
+
             data = json.loads(json_str)
             evals = data.get("evaluations", {})
             for idx, crit in enumerate(criterios):
@@ -256,20 +256,20 @@ Responde ÚNICAMENTE en formato JSON válido:
 
     async def _heuristic_fallback_evaluation(
         self,
-        criterios: List[str],
-        thresholds: List[float],
-        results: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        criterios: list[str],
+        thresholds: list[float],
+        results: dict[str, Any]
+    ) -> dict[str, Any]:
         """Evaluación heurística como fallback"""
-        
+
         scores = {}
-        
+
         for i, criterio in enumerate(criterios):
             threshold = thresholds[i] if i < len(thresholds) else 0.7
-            
+
             # Evaluación heurística básica basada en el tipo de criterio
             criterion_lower = criterio.lower()
-            
+
             if any(word in criterion_lower for word in ["completeness", "completitud", "completo"]):
                 score = 0.8 if results else 0.3
             elif any(word in criterion_lower for word in ["accuracy", "precisión", "exactitud"]):
@@ -280,62 +280,62 @@ Responde ÚNICAMENTE en formato JSON válido:
                 score = 0.7 if results else 0.4
             else:
                 score = 0.7  # Score neutral por defecto
-            
+
             scores[criterio] = {
                 "score": score,
                 "threshold": threshold,
                 "passed": score >= threshold,
                 "justification": f"Evaluación heurística automática para: {criterio}"
             }
-        
+
         return scores
-    
+
     async def _code_evaluation(
         self,
-        results: Dict[str, Any],
-        criterios: List[str]
-    ) -> Dict[str, Any]:
+        results: dict[str, Any],
+        criterios: list[str]
+    ) -> dict[str, Any]:
         """Evaluación programática real (Evaluator-Optimizer Loop)"""
-        
+
         scores = {}
         code_snippet = results.get("code") or results.get("script") or str(results)
-        
+
         # Evaluaciones programáticas básicas
         scores["has_code"] = {"score": 1.0 if "code" in str(results) else 0.5, "passed": True}
-        
+
         if "def " in code_snippet or "class " in code_snippet or "import " in code_snippet:
-            import tempfile
-            import subprocess
             import os
-            
+            import subprocess
+            import tempfile
+
             try:
                 # Escribir código a un archivo temporal
                 with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as tf:
                     tf.write(code_snippet)
                     temp_path = tf.name
-                
+
                 # Ejecutar verificador de sintaxis (AST) y/o pytest si es un test
                 cmd = ["python", "-m", "py_compile", temp_path]
                 if "import pytest" in code_snippet or "unittest" in code_snippet:
                     cmd = ["pytest", temp_path]
-                
+
                 process = subprocess.run(
-                    cmd, 
-                    capture_output=True, 
-                    text=True, 
+                    cmd,
+                    capture_output=True,
+                    text=True,
                     timeout=10
                 )
-                
+
                 os.unlink(temp_path)
-                
+
                 if process.returncode == 0:
                     scores["no_errors"] = {"score": 1.0, "passed": True}
                     scores["execution_test"] = {"score": 1.0, "passed": True, "justification": "Tests passed successfully"}
                 else:
                     scores["no_errors"] = {"score": 0.2, "passed": False}
                     scores["execution_test"] = {
-                        "score": 0.0, 
-                        "passed": False, 
+                        "score": 0.0,
+                        "passed": False,
                         "justification": "Execution failed",
                         "stderr": process.stderr,
                         "stdout": process.stdout
@@ -350,21 +350,21 @@ Responde ÚNICAMENTE en formato JSON válido:
             scores["no_errors"] = {"score": 1.0, "passed": True}
 
         overall_score = sum(s["score"] for s in scores.values()) / len(scores) if scores else 0.5
-        
+
         return {
             "eval_type": "code",
             "criterios_evaluated": criterios,
             "scores": scores,
             "overall_score": overall_score
         }
-    
+
     async def _heuristic_evaluation(
         self,
-        results: Dict[str, Any],
-        criterios: List[str]
-    ) -> Dict[str, Any]:
+        results: dict[str, Any],
+        criterios: list[str]
+    ) -> dict[str, Any]:
         """Evaluación heurística simple"""
-        
+
         scores = {
             "completeness": {
                 "score": 0.8 if results else 0.0,
@@ -375,21 +375,21 @@ Responde ÚNICAMENTE en formato JSON válido:
                 "passed": isinstance(results, dict)
             }
         }
-        
+
         overall_score = sum(s["score"] for s in scores.values()) / len(scores)
-        
+
         return {
             "eval_type": "heuristic",
             "scores": scores,
             "overall_score": overall_score
         }
-    
+
     async def _evaluate_trajectory(
         self,
-        trajectory: List[Dict[str, Any]]
-    ) -> Dict[str, Any]:
+        trajectory: list[dict[str, Any]]
+    ) -> dict[str, Any]:
         """Evalúa la trayectoria de ejecución de agentes"""
-        
+
         if not trajectory:
             return {
                 "score": 0.0,
@@ -397,21 +397,21 @@ Responde ÚNICAMENTE en formato JSON válido:
                 "convergence": 0.0,
                 "note": "No trajectory data"
             }
-        
+
         # Métricas de trayectoria
         num_steps = len(trajectory)
         successful_steps = sum(
-            1 for step in trajectory 
+            1 for step in trajectory
             if step.get("status") == "DONE"
         )
-        
+
         efficiency = successful_steps / num_steps if num_steps > 0 else 0.0
-        
+
         # Convergencia: ¿llegamos al objetivo sin muchos desvíos?
         convergence = 0.9 if efficiency > 0.8 else 0.6 if efficiency > 0.5 else 0.3
-        
+
         trajectory_score = (efficiency + convergence) / 2
-        
+
         return {
             "score": trajectory_score,
             "efficiency": efficiency,
@@ -419,100 +419,182 @@ Responde ÚNICAMENTE en formato JSON válido:
             "num_steps": num_steps,
             "successful_steps": successful_steps
         }
-    
+
     def _check_consistency(
         self,
-        results: Dict[str, Any]
-    ) -> Dict[str, Any]:
-        """Verifica consistencia interna de resultados"""
-        
+        results: dict[str, Any]
+    ) -> dict[str, Any]:
+        """Verifica consistencia interna de resultados.
+
+        Antes, `no_contradictions` y `references_valid` estaban fijados a `True`,
+        de modo que el verificador aprobaba cualquier cosa: dos de sus tres
+        comprobaciones no miraban los datos. Ahora las tres se evalúan.
+        """
+        contradictions = self._find_contradictions(results)
+        dangling = self._find_dangling_references(results)
+
         consistency_checks = {
             "structure_valid": isinstance(results, dict),
-            "no_contradictions": True,  # Mock - implementar lógica real
-            "references_valid": True    # Mock - verificar referencias
+            "no_contradictions": not contradictions,
+            "references_valid": not dangling,
         }
-        
+
         consistency_score = sum(
             1 for check in consistency_checks.values() if check
         ) / len(consistency_checks)
-        
+
         return {
             "score": consistency_score,
             "checks": consistency_checks,
+            "contradictions": contradictions,
+            "dangling_references": dangling,
             "passed": consistency_score >= self.quality_thresholds["consistency"]
         }
-    
+
+    @staticmethod
+    def _find_contradictions(results: dict[str, Any]) -> list[str]:
+        """Detecta pasos que se declaran exitosos y fallidos a la vez."""
+        if not isinstance(results, dict):
+            return ["El resultado no es un diccionario"]
+
+        contradicciones: list[str] = []
+        pasos = results.get("steps") or results.get("pasos") or []
+        if not isinstance(pasos, list):
+            pasos = []
+
+        for i, paso in enumerate(pasos):
+            if not isinstance(paso, dict):
+                continue
+            estado = str(paso.get("status", "")).upper()
+            exito = paso.get("success")
+            identificador = paso.get("id", f"paso[{i}]")
+
+            if estado == "DONE" and exito is False:
+                contradicciones.append(
+                    f"{identificador}: marcado DONE pero success=False"
+                )
+            elif estado in ("FAILED", "ERROR") and exito is True:
+                contradicciones.append(
+                    f"{identificador}: marcado {estado} pero success=True"
+                )
+            if paso.get("error") and exito is True:
+                contradicciones.append(
+                    f"{identificador}: declara éxito y a la vez reporta un error"
+                )
+
+        # El resultado global tampoco puede contradecir a sus pasos.
+        if results.get("success") is True and pasos:
+            fallidos = [
+                p for p in pasos
+                if isinstance(p, dict) and str(p.get("status", "")).upper() in ("FAILED", "ERROR")
+            ]
+            if fallidos:
+                contradicciones.append(
+                    f"El resultado global declara éxito con {len(fallidos)} paso(s) fallido(s)"
+                )
+
+        return contradicciones
+
+    @staticmethod
+    def _find_dangling_references(results: dict[str, Any]) -> list[str]:
+        """Detecta dependencias que apuntan a pasos inexistentes."""
+        if not isinstance(results, dict):
+            return []
+
+        pasos = results.get("steps") or results.get("pasos") or []
+        if not isinstance(pasos, list):
+            return []
+
+        conocidos = {
+            str(p.get("id")) for p in pasos
+            if isinstance(p, dict) and p.get("id") is not None
+        }
+        colgadas: list[str] = []
+
+        for i, paso in enumerate(pasos):
+            if not isinstance(paso, dict):
+                continue
+            identificador = paso.get("id", f"paso[{i}]")
+            dependencias = paso.get("depends_on") or paso.get("dependencias") or []
+            if isinstance(dependencias, str):
+                dependencias = [dependencias]
+            for dep in dependencias:
+                if str(dep) not in conocidos:
+                    colgadas.append(f"{identificador} depende de '{dep}', que no existe")
+
+        return colgadas
+
     def _determine_approval(
         self,
-        validation_report: Dict[str, Any],
-        trajectory_score: Dict[str, Any],
-        consistency_check: Dict[str, Any]
+        validation_report: dict[str, Any],
+        trajectory_score: dict[str, Any],
+        consistency_check: dict[str, Any]
     ) -> bool:
         """Determina si los resultados son aprobados"""
-        
+
         # Criterios de aprobación
         validation_passed = validation_report.get("overall_score", 0) >= 0.7
         trajectory_passed = trajectory_score.get("score", 0) >= 0.6
         consistency_passed = consistency_check.get("passed", False)
-        
+
         # Aprobar si la mayoría de criterios pasan
         passing_criteria = sum([
             validation_passed,
             trajectory_passed,
             consistency_passed
         ])
-        
+
         return passing_criteria >= 2
-    
+
     def _generate_recommendations(
         self,
-        validation_report: Dict[str, Any],
-        trajectory_score: Dict[str, Any],
-        consistency_check: Dict[str, Any]
-    ) -> List[str]:
+        validation_report: dict[str, Any],
+        trajectory_score: dict[str, Any],
+        consistency_check: dict[str, Any]
+    ) -> list[str]:
         """Genera recomendaciones de mejora"""
-        
+
         recommendations = []
-        
+
         if validation_report.get("overall_score", 1.0) < 0.8:
             recommendations.append(
                 "Mejorar calidad de resultados - score de validación bajo"
             )
-        
+
         if trajectory_score.get("efficiency", 1.0) < 0.7:
             recommendations.append(
                 "Optimizar trayectoria de ejecución - demasiados pasos fallidos"
             )
-        
+
         if not consistency_check.get("passed", True):
             recommendations.append(
                 "Resolver inconsistencias en resultados"
             )
-        
+
         if not recommendations:
             recommendations.append("Resultados de buena calidad - sin mejoras críticas")
-        
+
         return recommendations
-    
+
     def _compute_quality_metrics(
         self,
-        validation_report: Dict[str, Any],
-        trajectory_score: Dict[str, Any],
-        consistency_check: Dict[str, Any]
-    ) -> Dict[str, float]:
+        validation_report: dict[str, Any],
+        trajectory_score: dict[str, Any],
+        consistency_check: dict[str, Any]
+    ) -> dict[str, float]:
         """Computa métricas consolidadas de calidad"""
-        
+
         validation_score = validation_report.get("overall_score", 0.0)
         trajectory_quality = trajectory_score.get("score", 0.0)
         consistency_score = consistency_check.get("score", 0.0)
-        
+
         # Score general ponderado
         overall_score = (
             validation_score * 0.5 +
             trajectory_quality * 0.3 +
             consistency_score * 0.2
         )
-        
+
         return {
             "overall_score": overall_score,
             "validation_score": validation_score,

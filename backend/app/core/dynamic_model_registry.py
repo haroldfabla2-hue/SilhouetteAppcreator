@@ -2,11 +2,11 @@
 Registro Dinámico de Modelos de IA (Cloud + Locales + Custom APIs)
 Guarda la configuración de modelos en backend/app/config/custom_models.json
 """
-import os
 import json
 import logging
-from typing import Dict, Any, List, Optional
+import os
 from pathlib import Path
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -99,7 +99,7 @@ DEFAULT_MODELS = [
 class DynamicModelRegistry:
     def __init__(self):
         self.config_file = CONFIG_PATH
-        self.models: Dict[str, Dict[str, Any]] = {}
+        self.models: dict[str, dict[str, Any]] = {}
         self._load_models()
 
     def _load_models(self):
@@ -110,7 +110,7 @@ class DynamicModelRegistry:
 
         if self.config_file.exists():
             try:
-                with open(self.config_file, "r", encoding="utf-8") as f:
+                with open(self.config_file, encoding="utf-8") as f:
                     custom_models = json.load(f)
                     for m in custom_models:
                         self.models[m["id"]] = m
@@ -127,13 +127,13 @@ class DynamicModelRegistry:
         except Exception as e:
             logger.error(f"Error al guardar custom_models.json: {e}")
 
-    def get_all_models(self) -> List[Dict[str, Any]]:
+    def get_all_models(self) -> list[dict[str, Any]]:
         return list(self.models.values())
 
-    def get_model(self, model_id: str) -> Optional[Dict[str, Any]]:
+    def get_model(self, model_id: str) -> dict[str, Any] | None:
         return self.models.get(model_id)
 
-    def register_model(self, model_data: Dict[str, Any]) -> Dict[str, Any]:
+    def register_model(self, model_data: dict[str, Any]) -> dict[str, Any]:
         """Registra un nuevo modelo dinámicamente."""
         model_id = model_data.get("id") or model_data["name"].lower().replace(" ", "-")
         model_entry = {

@@ -1,0 +1,102 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "silhouette-appcreator"
+version = "3.0.0"
+description = "Sistema multi-agente cognitivo para desarrollo de software autónomo."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+
+dependencies = [
+    "fastapi>=0.110",
+    "uvicorn[standard]>=0.27",
+    "pydantic>=2.6",
+    "pydantic-settings>=2.2",
+    "httpx>=0.27",
+    "litellm>=1.40",
+    "psutil>=5.9",
+    "prometheus-client>=0.20",
+    # Memoria cognitiva de 4 niveles (repositorio propio, núcleo sin servicios externos).
+    "silhouette-brain @ git+https://github.com/haroldfabla2-hue/silhouette-brain.git",
+]
+
+[project.optional-dependencies]
+# Motores de razonamiento simbólico y planificación.
+reasoning = ["z3-solver>=4.12"]
+# Backends de producción para la memoria.
+memory = ["fastembed>=0.7,<0.9", "numpy>=1.26", "redis>=5.0", "neo4j>=5.14"]
+# Persistencia relacional y vectorial.
+db = ["sqlalchemy>=2.0", "psycopg2-binary>=2.9", "asyncpg>=0.29", "pgvector>=0.2"]
+# Automatización de navegador.
+web = ["playwright>=1.44"]
+dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.23",
+    "pytest-cov>=4.1",
+    "ruff>=0.4",
+    "mypy>=1.9",
+]
+
+[tool.setuptools]
+# El proyecto es una aplicación, no una librería instalable: los tests importan
+# desde la raíz del repositorio.
+packages = []
+
+# ---------------------------------------------------------------------------
+# pytest
+# ---------------------------------------------------------------------------
+[tool.pytest.ini_options]
+minversion = "8.0"
+testpaths = ["tests"]
+# Sin esto, los tests `async def` se saltan silenciosamente: era la causa de que
+# 8 de 13 tests fallaran y de que los del router nunca se hubieran ejecutado.
+asyncio_mode = "auto"
+addopts = [
+    "--strict-markers",
+    "--strict-config",
+    "-ra",
+]
+filterwarnings = [
+    "ignore::DeprecationWarning:pydantic.*",
+]
+markers = [
+    "integration: requiere servicios externos (red, base de datos, LLM)",
+    "slow: tarda más de un segundo",
+]
+
+# ---------------------------------------------------------------------------
+# ruff
+# ---------------------------------------------------------------------------
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+exclude = [
+    ".git", "__pycache__", "node_modules", "mcp-context-forge",
+    "frontend", "frontend_new", "frontend_fixed", "package",
+]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "S", "C4", "SIM"]
+ignore = [
+    "E501",    # la longitud la impone el formateador
+    "B008",    # Depends() en argumentos por defecto es el idioma de FastAPI
+    "S101",    # assert es correcto en tests
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S", "B"]
+
+# ---------------------------------------------------------------------------
+# mypy
+# ---------------------------------------------------------------------------
+[tool.mypy]
+python_version = "3.10"
+warn_unused_configs = true
+warn_redundant_casts = true
+ignore_missing_imports = true
+# El código heredado se incorpora por módulos, no de golpe.
+files = ["backend/app/security", "backend/app/services/silhouette_brain_service.py"]
+strict = true

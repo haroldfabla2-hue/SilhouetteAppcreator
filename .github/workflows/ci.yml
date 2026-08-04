@@ -1,0 +1,157 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PYTHONUTF8: "1"
+
+jobs:
+  backend:
+    name: Backend (Python ${{ matrix.python-version }} / ${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python-version: ["3.10", "3.12"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      - name: Instalar dependencias
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev,reasoning]"
+
+      - name: Lint (ruff)
+        run: |
+          ruff check backend/app/security backend/app/swarm backend/app/logic_engine \
+                     backend/app/evolution backend/app/orchestrator backend/app/organism \
+                     backend/app/services/silhouette_brain_service.py tests
+
+      - name: Type check (mypy)
+        run: mypy
+
+      - name: Tests
+        run: pytest --cov --cov-report=term-missing --cov-report=xml
+
+      - name: Subir cobertura
+        if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.12'
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: coverage.xml
+
+  # Barrera de seguridad: impide que vuelvan a entrar los problemas que la
+  # auditoría encontró. Falla el build si reaparecen.
+  guardrails:
+    name: Barreras de seguridad
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Ningún secreto versionado
+        run: |
+          if git ls-files | grep -E '(^|/)\.env$|\.env\.(production|staging|development|silhouettemcp)$|master\.key$|\.pem$|\.p12$'; then
+            echo "::error::Hay archivos de secretos en el control de versiones."
+            exit 1
+          fi
+          echo "OK: no hay secretos versionados."
+
+      - name: Ninguna clave de API en el árbol
+        run: |
+          # Se excluyen plantillas (.example/.template), que contienen marcadores.
+          if git grep -nE 'sk-(or-)?v?1?-[A-Za-z0-9_-]{20,}' \
+               -- ':!*.md' ':!tests/*' ':!*.example' ':!*.template'; then
+            echo "::error::Se detectó lo que parece una clave de API real."
+            exit 1
+          fi
+          echo "OK: no se detectaron claves."
+
+      - name: Ninguna credencial escrita en el código
+        run: |
+          if git grep -nE 'password_hash.*hashlib\.(sha256|md5)\(".+"\)' -- '*.py'; then
+            echo "::error::Hay una contraseña en claro dentro del código."
+            exit 1
+          fi
+          echo "OK: no hay credenciales embebidas."
+
+      # Alcance: las superficies que se ejecutan. `code/` y `package/` son
+      # volcados heredados de scripts sueltos, pendientes de retirada; no se
+      # sirven y por eso quedan fuera de la barrera.
+      - name: CORS sin comodín junto a credenciales
+        run: |
+          if git grep -nE 'allow_origins\s*=\s*\[\s*"\*"\s*\]' \
+               -- 'silhouettemcp_server.py' 'backend/app/**/*.py' 'backend/main.py'; then
+            echo "::error::CORS con comodín en una superficie activa. Use una lista blanca."
+            exit 1
+          fi
+          echo "OK: CORS restringido en las superficies activas."
+
+      - name: Ningún .pyc versionado
+        run: |
+          if git ls-files | grep -E '__pycache__|\.pyc$'; then
+            echo "::error::Hay archivos compilados en el control de versiones."
+            exit 1
+          fi
+          echo "OK: sin artefactos compilados."
+
+      # Impide que vuelva la clase de defecto más dañina del proyecto: declarar
+      # éxito cuando una capacidad no está disponible.
+      - name: Ninguna respuesta fabricada en la ruta activa
+        run: |
+          if git grep -nE '"(success|searched)":\s*True' \
+               -- 'backend/app/agents/executor.py' 'backend/app/core/llm_router.py' \
+             | grep -iE 'mock|simulad|fallback'; then
+            echo "::error::Se detectó una respuesta fabricada en un camino de fallo."
+            exit 1
+          fi
+          echo "OK: los fallos no se disfrazan de éxito."
+
+      - name: Ninguna simulación en backend/app
+        run: |
+          # Se excluyen comentarios que documentan lo que se retiró.
+          if git grep -nE '\b(mock_|_simulate_|MockFastMCP)' -- 'backend/app/**/*.py' \
+             | grep -vE '#|"""'; then
+            echo "::error::Reapareció una simulación en el backend."
+            exit 1
+          fi
+          echo "OK: sin simulaciones en backend/app."
+
+  frontend:
+    name: Dashboard
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mcp-dashboard
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: pnpm
+          cache-dependency-path: mcp-dashboard/pnpm-lock.yaml
+
+      - name: Instalar dependencias
+        run: pnpm install --frozen-lockfile
+
+      - name: Compilar
+        run: pnpm build

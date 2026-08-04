@@ -2,11 +2,12 @@
 Modelos de mensajes para comunicación entre agentes
 Basado en el contrato A2A definido en la arquitectura
 """
-from pydantic import BaseModel, Field
-from typing import Optional, List, Dict, Any
+import uuid
 from datetime import datetime
 from enum import Enum
-import uuid
+from typing import Any
+
+from pydantic import BaseModel, Field
 
 
 class MessageIntent(str, Enum):
@@ -32,15 +33,15 @@ class ErrorInfo(BaseModel):
     """Información de error"""
     code: str
     message: str
-    retry_after: Optional[int] = None
+    retry_after: int | None = None
     retryable: bool = True
 
 
 class Budget(BaseModel):
     """Presupuesto de recursos"""
-    tokens: Optional[int] = None
-    time_seconds: Optional[int] = None
-    tools_max: Optional[int] = 3
+    tokens: int | None = None
+    time_seconds: int | None = None
+    tools_max: int | None = 3
 
 
 class AgentMessage(BaseModel):
@@ -53,56 +54,56 @@ class AgentMessage(BaseModel):
     trace_id: str = Field(default_factory=lambda: f"trc_{uuid.uuid4().hex[:12]}")
     conversation_id: str
     timestamp: datetime = Field(default_factory=datetime.utcnow)
-    
+
     # Remitente/Destinatarios
     sender: str
-    recipients: List[str]
-    
+    recipients: list[str]
+
     # Propósito
     intent: MessageIntent
-    
+
     # Control de versión y causalidad
     context_version: str = "v1"
-    causal_marks: Optional[Dict[str, int]] = None
-    in_reply_to: Optional[str] = None
-    
+    causal_marks: dict[str, int] | None = None
+    in_reply_to: str | None = None
+
     # Contenido
-    payload: Dict[str, Any]
-    references: Optional[List[str]] = None
-    
+    payload: dict[str, Any]
+    references: list[str] | None = None
+
     # Presupuesto
-    budget: Optional[Budget] = None
-    
+    budget: Budget | None = None
+
     # Estado
     status: MessageStatus = MessageStatus.PENDING
-    errors: Optional[List[ErrorInfo]] = None
-    
+    errors: list[ErrorInfo] | None = None
+
     # Metadatos
-    metadata: Optional[Dict[str, Any]] = None
+    metadata: dict[str, Any] | None = None
 
 
 class TaskDelegation(BaseModel):
     """Payload específico para delegación de tareas"""
     task_id: str
     objetivo: str
-    tool_map: List[str]
+    tool_map: list[str]
     limites: Budget
     criterio_exito: str
-    context: Optional[Dict[str, Any]] = None
+    context: dict[str, Any] | None = None
 
 
 class ValidationRequest(BaseModel):
     """Payload específico para validación"""
     trajectory_id: str
-    criterios: List[str]
-    thresholds: List[float]
+    criterios: list[str]
+    thresholds: list[float]
     eval_type: str  # "llm_judge" o "code"
 
 
 class SynthesisRequest(BaseModel):
     """Payload específico para síntesis"""
-    inputs: List[Dict[str, Any]]
-    referencias: Optional[List[str]] = None
+    inputs: list[dict[str, Any]]
+    referencias: list[str] | None = None
     formato_salida: str
     citacion: bool = True
 
@@ -113,7 +114,7 @@ class AgentResponse(BaseModel):
     original_message_id: str
     agent_id: str
     status: MessageStatus
-    result: Optional[Dict[str, Any]] = None
-    errors: Optional[List[ErrorInfo]] = None
-    execution_time_ms: Optional[float] = None
-    tokens_used: Optional[int] = None
+    result: dict[str, Any] | None = None
+    errors: list[ErrorInfo] | None = None
+    execution_time_ms: float | None = None
+    tokens_used: int | None = None
