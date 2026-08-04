@@ -1,17 +1,20 @@
 # AGENTS.md - Master Architecture & Agent Operational Guidelines
 
-Welcome to **SilhouetteAppcreator (MCP Server Superior)**. This file serves as the definitive reference guide, index of documentation, architectural handbook, and operational protocol for any AI Agent or developer working on this codebase.
+Welcome to **SilhouetteAppcreator (MCP Server Superior)** — *El Mejor Agente y Sistema Autónomo de Desarrollo de Software del Mercado*.
+
+This file serves as the definitive reference guide, index of documentation, architectural handbook, and operational protocol for any AI Agent or developer working on this codebase.
 
 ---
 
 ## 🏛️ Project Overview & Technology Stack
 
-**SilhouetteMCP** is an enterprise-grade, multi-agent AI orchestrator and gateway server featuring:
+**SilhouetteMCP / SilhouetteAppcreator** is an enterprise-grade, multi-agent AI orchestrator and cognitive development system engineered to surpass Claude Code, Devin, Cursor, and Codex:
 - **Backend:** FastAPI, Python 3.12, Asyncio, LiteLLM, Redis Pub/Sub.
-- **Frontend:** React 18, TypeScript, TailwindCSS, Vite, Lucide React, Recharts, cmdk (Omni-Search).
-- **Universal LLM Routing:** LiteLLM SDK + Dynamic JSON/DB Registry (GLM-5.2, MiniMax M3, Kimi K3, Claude Fable 5, OpenRouter, Ollama & LM Studio).
-- **Observability:** Prometheus metrics endpoint (`/metrics`), real-time logging, and interactive AI Error Explainer.
-- **Multi-Workspace Productivity:** Startup auto-bootstrap scripts, global command modal (Cmd+K), and dynamic environment secret manager (`.env` GUI).
+- **Cognitive Engines (`silhouette-brain` v3.0):** 4-Tier Memory System (Working Redis, Episodic SQLite, Semantic FastEmbed, Deep Graph Neo4j) + 4 Background Daemons (Curiosity, Janitor, Dreamer, Evolution).
+- **Symbolic Logic & Reasoning:** Microsoft Z3 Solver (`z3-solver` OODA Loop), MCTS (Monte Carlo Tree Search Code Planner), Debate Swarm Matrix (Creator vs Critic + Judge).
+- **OS & Capability Layer:** Playwright Chromium Web Control, `psutil` OS Process Control, FastMCP Dynamic Server Factory, Self-Healing Subprocess Sandbox.
+- **Frontend Studio UI:** React 18, TypeScript, Vite, TailwindCSS, Alt+1..8 Keyboard Navigation, Omni-Search (Cmd+K), Real-time Recharts & AI Error Explainer.
+- **Omnichannel Security:** Anti-Prompt Injection Threat Classifier (`SecurityGuard`) over Telegram, WhatsApp, and Discord.
 
 ---
 
