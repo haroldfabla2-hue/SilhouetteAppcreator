@@ -794,6 +794,24 @@ async def check_security_guard(req: SecurityGuardRequest):
     guard = PromptInjectionGuard()
     return guard.sanitize_and_validate(req.text)
 
+@app.get("/api/supervisor/audit")
+async def audit_supervisor_teams():
+    """Audita el rendimiento del sistema multi-equipo y el flujo de consciencia"""
+    from backend.app.orchestrator.executive_supervisor import ExecutiveSupervisor
+    supervisor = ExecutiveSupervisor()
+    return await supervisor.audit_team_performance()
+
+class ImproveAgentRequest(BaseModel):
+    agent_name: str
+    error_rate: float = 0.20
+
+@app.post("/api/evolution/improve-agent")
+async def improve_agent_performance(req: ImproveAgentRequest):
+    """Ejecuta el refinamiento metacognitivo (Meta-Prompt Tuning) sobre un agente"""
+    from backend.app.evolution.agent_improver import AgentImprover
+    improver = AgentImprover()
+    return await improver.evaluate_and_improve_agent(req.agent_name, req.error_rate)
+
 @app.post("/api/agents/deploy")
 async def deploy_agent(request: Request):
     """Desplegar nuevo agente"""
