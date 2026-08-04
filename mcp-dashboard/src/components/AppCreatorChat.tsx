@@ -68,17 +68,35 @@ export const AppCreatorChat: React.FC = () => {
         const data = await res.json();
         const resultPayload = data.result || {};
         
-        let orchestratorSummary = `Aplicación procesada con éxito por el Orquestador Multi-Agente.\n`;
-        if (resultPayload.workflow) {
-          const wf = resultPayload.workflow;
-          if (wf.reasoning) {
-            orchestratorSummary += `\n🧠 Intent: ${wf.reasoning.intent}`;
+        // Extraer la respuesta real sintetizada por la IA o los agentes
+        let responseText = "";
+        if (typeof resultPayload.result === 'string') {
+          responseText = resultPayload.result;
+        } else if (resultPayload.result?.synthesis) {
+          responseText = typeof resultPayload.result.synthesis === 'string' 
+            ? resultPayload.result.synthesis 
+            : JSON.stringify(resultPayload.result.synthesis, null, 2);
+        } else if (resultPayload.result?.summary) {
+          responseText = resultPayload.result.summary;
+        } else if (resultPayload.phases?.reasoning?.reasoning) {
+          responseText = resultPayload.phases.reasoning.reasoning;
+        }
+
+        let orchestratorSummary = responseText 
+          ? responseText 
+          : `¡Hola! He procesado tu solicitud con el equipo de agentes autónomos.`;
+
+        if (resultPayload.phases) {
+          const phases = resultPayload.phases;
+          orchestratorSummary += `\n\n── Resumen de Ejecución Multi-Agente ──`;
+          if (phases.reasoning?.intent) {
+            orchestratorSummary += `\n🧠 Intención Detectada: ${phases.reasoning.intent}`;
           }
-          if (wf.planning && wf.planning.parallelizable_tasks) {
-            orchestratorSummary += `\n📐 Tareas en paralelo desglosadas: ${wf.planning.parallelizable_tasks.length}`;
+          if (phases.planning?.parallelizable_tasks) {
+            orchestratorSummary += `\n📐 Tareas Desglosadas: ${phases.planning.parallelizable_tasks.length}`;
           }
-          if (wf.verification) {
-            orchestratorSummary += `\n🔍 Score de Calidad Verificado: ${Math.round((wf.verification.quality_metrics?.overall_score || 0.8) * 100)}%`;
+          if (phases.verification?.quality_metrics?.overall_score) {
+            orchestratorSummary += `\n🔍 Score de Calidad: ${Math.round(phases.verification.quality_metrics.overall_score * 100)}%`;
           }
         }
 
