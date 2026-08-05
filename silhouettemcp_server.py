@@ -4,32 +4,28 @@ SilhouetteMCP Server - Servidor MCP superior con autenticación y gestión multi
 Desarrollado para: silhouettemcp.albertofarah.com
 """
 
-import json
-import hashlib
-import secrets
 import asyncio
-import random
+import json
 import logging
+import os
+import secrets
 import threading
 import time
-import base64
-import psutil
-import os
-import subprocess
-from datetime import datetime, timedelta
+from collections import deque
+from dataclasses import asdict, dataclass
+from datetime import datetime
 from pathlib import Path
-from typing import Dict, Any, List, Optional
-from collections import defaultdict, deque
-from dataclasses import dataclass, asdict
+from typing import Any
 
-from fastapi import FastAPI, HTTPException, Request, Depends, status, WebSocket, WebSocketDisconnect
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse, JSONResponse, FileResponse, Response
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel, EmailStr
+import psutil
 import uvicorn
-from prometheus_client import Counter, Gauge, generate_latest, CONTENT_TYPE_LATEST
+from fastapi import Depends, FastAPI, HTTPException, Request, WebSocket, WebSocketDisconnect
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse, JSONResponse, Response, StreamingResponse
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from fastapi.staticfiles import StaticFiles
+from prometheus_client import CONTENT_TYPE_LATEST, Gauge, generate_latest
+from pydantic import BaseModel
 
 # Configurar logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -64,7 +60,6 @@ from backend.app.security.workspace import (
     PathNotAllowed,
     resolve_within_workspace,
     safe_relative,
-    workspace_root,
 )
 
 if not auth_service.is_configured:
@@ -174,7 +169,6 @@ if dashboard_path.exists():
     logger.info(f"Dashboard static files mounted from {dashboard_path}")
 
 # ==================== STARTUP BOOTSTRAP (FASE 1) ====================
-from backend.app.core.startup_manager import StartupManager
 from backend.app.orchestrator.multi_agent import MultiAgentOrchestrator
 
 # Global orchestrator instance for startup tasks and system-wide operations
@@ -196,7 +190,7 @@ class AgentInstance:
     success_rate: float = 95.0
     agent_type: str = "general"  # sales, support, consulting, custom
     created_at: str = ""
-    
+
     def __post_init__(self):
         if not self.last_activity:
             self.last_activity = datetime.now().isoformat()
@@ -211,10 +205,10 @@ class Application:
     description: str
     api_key: str
     owner_email: str
-    agents: List[AgentInstance]
+    agents: list[AgentInstance]
     created_at: str = ""
     is_active: bool = True
-    
+
     def __post_init__(self):
         if not self.created_at:
             self.created_at = datetime.now().isoformat()
@@ -234,7 +228,7 @@ class ServerMetrics:
 
 class SilhouetteMCPStore:
     """Store persistente para SilhouetteMCP"""
-    
+
     def __init__(self, storage_file: str = "silhouettemcp_data.json"):
         self.storage_file = Path(storage_file)
         self._data = self._load_data()
@@ -242,25 +236,25 @@ class SilhouetteMCPStore:
         self._start_time = time.time()
         self._request_count = 0
         self._request_times = deque(maxlen=1000)  # Últimas 1000 requests para calcular RPM
-        
-    def _load_data(self) -> Dict[str, Any]:
+
+    def _load_data(self) -> dict[str, Any]:
         """Cargar datos persistentes"""
         try:
             if self.storage_file.exists():
-                with open(self.storage_file, 'r', encoding='utf-8') as f:
+                with open(self.storage_file, encoding='utf-8') as f:
                     data = json.load(f)
                 logger.info(f"Datos cargados desde {self.storage_file}")
                 return data
         except Exception as e:
             logger.error(f"Error cargando datos: {e}")
-        
+
         # Datos por defecto
         return self._create_default_data()
-    
-    def _create_default_data(self) -> Dict[str, Any]:
+
+    def _create_default_data(self) -> dict[str, Any]:
         """Crear datos por defecto del servidor"""
         now = datetime.now().isoformat()
-        
+
         # Aplicación por defecto. El propietario sale del entorno: dejarlo
         # escrito en el código lo publicaba en cada copia del repositorio.
         default_app = Application(
@@ -293,7 +287,7 @@ class SilhouetteMCPStore:
                 )
             ]
         )
-        
+
         return {
             "server_info": {
                 "name": "SilhouetteMCP Server",
@@ -309,11 +303,11 @@ class SilhouetteMCPStore:
                 "last_updated": now
             }
         }
-    
+
     def _generate_api_key(self) -> str:
         """Generar API key única"""
         return f"sk-{secrets.token_urlsafe(32)}"
-    
+
     def save_data(self):
         """Guardar datos de forma segura"""
         try:
@@ -323,8 +317,8 @@ class SilhouetteMCPStore:
                 logger.info("Datos guardados exitosamente")
         except Exception as e:
             logger.error(f"Error guardando datos: {e}")
-    
-    def get_applications(self) -> List[Application]:
+
+    def get_applications(self) -> list[Application]:
         """Obtener todas las aplicaciones"""
         apps = []
         for app_data in self._data.get("applications", []):
@@ -332,8 +326,8 @@ class SilhouetteMCPStore:
             app_obj.agents = [AgentInstance(**agent_data) for agent_data in app_data.get("agents", [])]
             apps.append(app_obj)
         return apps
-    
-    def get_application(self, app_id: str) -> Optional[Application]:
+
+    def get_application(self, app_id: str) -> Application | None:
         """Obtener aplicación específica"""
         for app_data in self._data.get("applications", []):
             if app_data["id"] == app_id:
@@ -341,13 +335,13 @@ class SilhouetteMCPStore:
                 app_obj.agents = [AgentInstance(**agent_data) for agent_data in app_data.get("agents", [])]
                 return app_obj
         return None
-    
+
     def add_application(self, app: Application):
         """Agregar nueva aplicación"""
         self._data["applications"].append(asdict(app))
         self.save_data()
         logger.info(f"Aplicación agregada: {app.name} ({app.id})")
-    
+
     def add_agent_to_app(self, app_id: str, agent: AgentInstance):
         """Agregar agente a aplicación"""
         for app_data in self._data["applications"]:
@@ -357,8 +351,8 @@ class SilhouetteMCPStore:
                 logger.info(f"Agente agregado: {agent.name} a {app_id}")
                 return
         raise ValueError(f"Aplicación no encontrada: {app_id}")
-    
-    def update_agent(self, app_id: str, agent_id: str, updates: Dict[str, Any]):
+
+    def update_agent(self, app_id: str, agent_id: str, updates: dict[str, Any]):
         """Actualizar agente"""
         for app_data in self._data["applications"]:
             if app_data["id"] == app_id:
@@ -369,33 +363,33 @@ class SilhouetteMCPStore:
                         logger.info(f"Agente actualizado: {agent_id}")
                         return
         raise ValueError(f"Agente no encontrado: {agent_id}")
-    
-    def get_all_agents(self) -> List[AgentInstance]:
+
+    def get_all_agents(self) -> list[AgentInstance]:
         """Obtener todos los agentes"""
         agents = []
         for app in self.get_applications():
             agents.extend(app.agents)
         return agents
-    
+
     def record_request(self):
         """Registrar request para métricas"""
         self._request_count += 1
         self._request_times.append(time.time())
-    
+
     def get_server_metrics(self) -> ServerMetrics:
         """Obtener métricas del servidor"""
         agents = self.get_all_agents()
         apps = self.get_applications()
-        
+
         total_tasks = sum(agent.tasks_completed for agent in agents)
         total_tokens = sum(agent.token_usage for agent in agents)
         uptime = time.time() - self._start_time
-        
+
         # Calcular RPM (requests per minute)
         now = time.time()
         recent_requests = [t for t in self._request_times if now - t < 60]
         rpm = len(recent_requests) if recent_requests else 0.0
-        
+
         return ServerMetrics(
             total_agents=len(agents),
             total_apps=len([app for app in apps if app.is_active]),
@@ -411,7 +405,7 @@ store = SilhouetteMCPStore()
 
 # ==================== FUNCIONES DE AUTENTICACIÓN ====================
 
-def verify_admin(credentials: HTTPAuthorizationCredentials = Depends(security)) -> Dict[str, Any]:
+def verify_admin(credentials: HTTPAuthorizationCredentials = Depends(security)) -> dict[str, Any]:
     """Valida el token de sesión emitido por /admin/login.
 
     El token es opaco y caducable. A diferencia del esquema anterior, no contiene
@@ -436,7 +430,7 @@ def verify_admin(credentials: HTTPAuthorizationCredentials = Depends(security)) 
         raise HTTPException(status_code=401, detail="Token inválido o expirado") from None
     return {"email": identity.email, "role": identity.role}
 
-def verify_api_key(api_key: str) -> Optional[Application]:
+def verify_api_key(api_key: str) -> Application | None:
     """Verificar API key de aplicación"""
     for app in store.get_applications():
         if app.api_key == api_key and app.is_active:
@@ -534,10 +528,10 @@ async def admin_logout(credentials: HTTPAuthorizationCredentials = Depends(secur
 async def admin_dashboard(admin=Depends(verify_admin)):
     """Dashboard administrativo completo"""
     store.record_request()
-    
+
     metrics = store.get_server_metrics()
     applications = store.get_applications()
-    
+
     return {
         "server_info": {
             "name": "SilhouetteMCP Server",
@@ -566,7 +560,7 @@ async def list_applications(admin=Depends(verify_admin)):
     """Listar todas las aplicaciones"""
     store.record_request()
     applications = store.get_applications()
-    
+
     return {
         "applications": [
             {
@@ -588,7 +582,7 @@ async def list_all_agents(admin=Depends(verify_admin)):
     """Listar todos los agentes"""
     store.record_request()
     agents = store.get_all_agents()
-    
+
     return {
         "agents": [asdict(agent) for agent in agents],
         "total_count": len(agents),
@@ -604,7 +598,7 @@ async def connection_guide(admin=Depends(verify_admin)):
     """Guía de conexión para desarrolladores"""
     store.record_request()
     applications = store.get_applications()
-    
+
     guide = {
         "server_info": {
             "name": "SilhouetteMCP Server",
@@ -686,7 +680,7 @@ class SilhouetteMCP:
             for app in applications
         ]
     }
-    
+
     return guide
 
 # ==================== ENDPOINTS PARA APLICACIONES ====================
@@ -695,16 +689,16 @@ class SilhouetteMCP:
 async def api_status(request: Request):
     """Status endpoint para aplicaciones"""
     store.record_request()
-    
+
     # Verificar API key
     api_key = request.headers.get("X-API-Key")
     if not api_key:
         raise HTTPException(status_code=401, detail="API Key requerida")
-    
+
     app = verify_api_key(api_key)
     if not app:
         raise HTTPException(status_code=401, detail="API Key inválida")
-    
+
     return {
         "app": {
             "id": app.id,
@@ -719,15 +713,15 @@ async def api_status(request: Request):
 async def get_app_agents(request: Request):
     """Obtener agentes de la aplicación"""
     store.record_request()
-    
+
     api_key = request.headers.get("X-API-Key")
     if not api_key:
         raise HTTPException(status_code=401, detail="API Key requerida")
-    
+
     app = verify_api_key(api_key)
     if not app:
         raise HTTPException(status_code=401, detail="API Key inválida")
-    
+
     return {
         "application": app.name,
         "agents": [asdict(agent) for agent in app.agents],
@@ -736,8 +730,8 @@ async def get_app_agents(request: Request):
 
 class ChatAgentRequest(BaseModel):
     prompt: str
-    model: Optional[str] = "glm-5.2-max"
-    enable_verification: Optional[bool] = True
+    model: str | None = "glm-5.2-max"
+    enable_verification: bool | None = True
 
 @app.post("/api/agents/chat")
 async def chat_with_orchestrator(req: ChatAgentRequest):
@@ -773,41 +767,80 @@ class ArenaRequest(BaseModel):
 
 @app.post("/api/agents/arena")
 async def battle_arena(req: ArenaRequest):
-    """Ejecuta un prompt en paralelo en 2 modelos para comparar resultados side-by-side"""
+    """Ejecuta un prompt en paralelo en 2 modelos para comparar resultados side-by-side con mediciones reales"""
     store.record_request()
     try:
+        import ast
         from backend.app.core.llm_router import LLMRouter
+        from backend.app.logic_engine.z3_verifier import Z3Verifier
+        
         router = LLMRouter()
-        
-        # Ejecución concurrente con asyncio.gather
-        task_a = router.chat_completion(prompt=req.prompt, model=req.model_a)
-        task_b = router.chat_completion(prompt=req.prompt, model=req.model_b)
-        
-        res_a, res_b = await asyncio.gather(task_a, task_b, return_exceptions=True)
-        
-        code_a = str(res_a) if not isinstance(res_a, Exception) else f"Error: {res_a}"
-        code_b = str(res_b) if not isinstance(res_b, Exception) else f"Error: {res_b}"
-        
+        z3_verifier = Z3Verifier()
+
+        # Medición de Modelo A
+        t0_a = time.time()
+        try:
+            res_a = await router.chat_completion(prompt=req.prompt, model=req.model_a)
+            err_a = None
+        except Exception as e:
+            res_a = f"Error: {e}"
+            err_a = e
+        time_a_ms = int((time.time() - t0_a) * 1000)
+
+        # Medición de Modelo B
+        t0_b = time.time()
+        try:
+            res_b = await router.chat_completion(prompt=req.prompt, model=req.model_b)
+            err_b = None
+        except Exception as e:
+            res_b = f"Error: {e}"
+            err_b = e
+        time_b_ms = int((time.time() - t0_b) * 1000)
+
+        # Validación real de sintaxis AST
+        def check_syntax(code_str: str) -> bool:
+            try:
+                ast.parse(code_str)
+                return True
+            except Exception:
+                return False
+
+        syntax_a = check_syntax(str(res_a)) if not err_a else False
+        syntax_b = check_syntax(str(res_b)) if not err_b else False
+
+        # Verificación Z3 real
+        z3_a = z3_verifier.verify_execution_safety(str(res_a))
+        z3_b = z3_verifier.verify_execution_safety(str(res_b))
+
+        sec_a = z3_a.get("safe", False)
+        sec_b = z3_b.get("safe", False)
+
+        # Score de calidad real
+        score_a = round((0.5 if syntax_a else 0.1) + (0.5 if sec_a else 0.1), 2) if not err_a else 0.0
+        score_b = round((0.5 if syntax_b else 0.1) + (0.5 if sec_b else 0.1), 2) if not err_b else 0.0
+
+        winner = req.model_a if score_a >= score_b else req.model_b
+
         return {
             "success": True,
-            "winner": req.model_a,
+            "winner": winner,
             "model_a_result": {
                 "modelId": req.model_a,
                 "modelName": req.model_a,
-                "codeOutput": code_a,
-                "executionTimeMs": 195,
-                "qualityScore": 0.95,
-                "syntaxValid": True,
-                "securityPassed": True
+                "codeOutput": str(res_a),
+                "executionTimeMs": time_a_ms,
+                "qualityScore": score_a,
+                "syntaxValid": syntax_a,
+                "securityPassed": sec_a
             },
             "model_b_result": {
                 "modelId": req.model_b,
                 "modelName": req.model_b,
-                "codeOutput": code_b,
-                "executionTimeMs": 240,
-                "qualityScore": 0.90,
-                "syntaxValid": True,
-                "securityPassed": True
+                "codeOutput": str(res_b),
+                "executionTimeMs": time_b_ms,
+                "qualityScore": score_b,
+                "syntaxValid": syntax_b,
+                "securityPassed": sec_b
             }
         }
     except Exception as e:
@@ -876,7 +909,7 @@ async def save_file_content(req: SaveFileRequest, admin=Depends(verify_admin)):
 
 class OSLaunchRequest(BaseModel):
     app_name: str
-    args: Optional[str] = None
+    args: str | None = None
 
 
 @app.post("/api/system/os-launch")
@@ -901,7 +934,7 @@ async def launch_os_app(req: OSLaunchRequest, admin=Depends(verify_admin)):
 
 class CreateMCPServerRequest(BaseModel):
     name: str
-    description: Optional[str] = ""
+    description: str | None = ""
 
 @app.post("/api/mcp/create-server")
 async def create_dynamic_mcp_server(req: CreateMCPServerRequest, admin=Depends(verify_admin)):
@@ -935,9 +968,9 @@ debate_matrix = DebateSwarmMatrix(llm_router=system_orchestrator.llm_router)
 
 class Z3VerifyRequest(BaseModel):
     type: str
-    target_path: Optional[str] = None
-    memory_mb: Optional[int] = 256
-    files_touched: Optional[int] = 1
+    target_path: str | None = None
+    memory_mb: int | None = 256
+    files_touched: int | None = 1
 
 
 @app.post("/api/system/z3-verify")
@@ -968,7 +1001,7 @@ async def get_brain_stats():
 class RememberRequest(BaseModel):
     content: str
     importance: float = 0.8
-    tags: Optional[List[str]] = None
+    tags: list[str] | None = None
 
 
 @app.post("/api/brain/remember")
@@ -1027,7 +1060,7 @@ async def resolve_team_deadlock(team_id: str, admin=Depends(verify_admin)):
 class ImproveAgentRequest(BaseModel):
     agent_name: str
     # Si se omite, se usa la tasa de error medida por el supervisor.
-    error_rate: Optional[float] = None
+    error_rate: float | None = None
 
 
 @app.post("/api/evolution/improve-agent")
@@ -1380,7 +1413,7 @@ async def organism_tick(admin=Depends(verify_admin)):
 
 class HomeostasisRequest(BaseModel):
     # None devuelve el control a la medición automática.
-    profile: Optional[str] = None
+    profile: str | None = None
 
 
 @app.post("/api/organism/homeostasis")
@@ -1480,7 +1513,7 @@ async def git_history(path: str = ".", limit: int = 20, admin=Depends(verify_adm
 class GitBranchRequest(BaseModel):
     path: str = "."
     name: str
-    from_ref: Optional[str] = None
+    from_ref: str | None = None
 
 
 @app.post("/api/git/branch")
@@ -1604,8 +1637,8 @@ async def code_revert(path: str, admin=Depends(verify_admin)):
 
 @app.post("/api/tests/run")
 async def tests_run(
-    target: Optional[str] = None,
-    keyword: Optional[str] = None,
+    target: str | None = None,
+    keyword: str | None = None,
     admin=Depends(verify_admin),
 ):
     """Ejecuta la suite de verdad y devuelve lo que ocurrió."""
@@ -1634,7 +1667,7 @@ async def repo_references(symbol: str):
 
 
 @app.get("/api/repo/search")
-async def repo_search(pattern: str, regex: bool = False, suffix: Optional[str] = None):
+async def repo_search(pattern: str, regex: bool = False, suffix: str | None = None):
     """Busca texto en el repositorio."""
     try:
         return {"pattern": pattern, "hits": repo_index.search_text(pattern, regex=regex, suffix=suffix)}
@@ -1655,18 +1688,18 @@ async def repo_outline(path: str):
 async def deploy_agent(request: Request, admin=Depends(verify_admin)):
     """Desplegar nuevo agente"""
     store.record_request()
-    
+
     api_key = request.headers.get("X-API-Key")
     if not api_key:
         raise HTTPException(status_code=401, detail="API Key requerida")
-    
+
     app = verify_api_key(api_key)
     if not app:
         raise HTTPException(status_code=401, detail="API Key inválida")
-    
+
     try:
         data = await request.json()
-        
+
         # Crear nuevo agente
         agent = AgentInstance(
             id=data.get("id", f"agent_{secrets.token_hex(8)}"),
@@ -1675,15 +1708,15 @@ async def deploy_agent(request: Request, admin=Depends(verify_admin)):
             agent_type=data.get("type", "custom"),
             status="active"
         )
-        
+
         store.add_agent_to_app(app.id, agent)
-        
+
         return {
             "success": True,
             "message": f"Agente '{agent.name}' desplegado exitosamente",
             "agent": asdict(agent)
         }
-        
+
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Error desplegando agente: {str(e)}")
 
@@ -1691,30 +1724,30 @@ async def deploy_agent(request: Request, admin=Depends(verify_admin)):
 async def stop_agent(request: Request, admin=Depends(verify_admin)):
     """Detener agente"""
     store.record_request()
-    
+
     api_key = request.headers.get("X-API-Key")
     if not api_key:
         raise HTTPException(status_code=401, detail="API Key requerida")
-    
+
     app = verify_api_key(api_key)
     if not app:
         raise HTTPException(status_code=401, detail="API Key inválida")
-    
+
     try:
         data = await request.json()
         agent_id = data.get("agent_id")
-        
+
         if not agent_id:
             raise HTTPException(status_code=400, detail="agent_id requerido")
-        
+
         # Actualizar estado del agente
         store.update_agent(app.id, agent_id, {"status": "stopped"})
-        
+
         return {
             "success": True,
             "message": f"Agente '{agent_id}' detenido"
         }
-        
+
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
@@ -1726,7 +1759,7 @@ async def stop_agent(request: Request, admin=Depends(verify_admin)):
 async def metrics_stream(request: Request):
     """Stream de métricas en tiempo real"""
     store.record_request()
-    
+
     async def generate_metrics():
         while True:
             try:
@@ -1741,14 +1774,14 @@ async def metrics_stream(request: Request):
                     "uptime_hours": round(metrics.uptime / 3600, 2),
                     "requests_per_minute": round(metrics.requests_per_minute, 1)
                 }
-                
+
                 yield f"data: {json.dumps(data, ensure_ascii=False)}\n\n"
                 await asyncio.sleep(2)  # Actualizar cada 2 segundos
-                
+
             except Exception as e:
                 logger.error(f"Error en stream de métricas: {e}")
                 await asyncio.sleep(5)
-    
+
     return StreamingResponse(
         generate_metrics(),
         media_type="text/event-stream",
@@ -1763,7 +1796,7 @@ async def metrics_stream(request: Request):
 
 class ConnectionManager:
     def __init__(self):
-        self.active_connections: List[WebSocket] = []
+        self.active_connections: list[WebSocket] = []
 
     async def connect(self, websocket: WebSocket):
         await websocket.accept()
@@ -1803,13 +1836,12 @@ class ResumeRequestModel(BaseModel):
 async def resume_hitl_task(req: ResumeRequestModel):
     """Endpoint para que el humano apruebe/rechace una tarea pausada"""
     try:
-        from backend.app.orchestrator.multi_agent import MultiAgentOrchestrator
         # Asumiendo que hay una instancia global del orquestador en algún lugar.
         # Aquí enviaríamos la señal de resume. Para el mockup de este endpoint:
-        
-        # Simulamos que la tarea fue reanudada para mantener compatibilidad 
+
+        # Simulamos que la tarea fue reanudada para mantener compatibilidad
         # (Idealmente inyectaríamos el orquestador como dependencia)
-        
+
         # Enviar broadcast por WebSocket para actualizar la UI en vivo
         await ws_manager.broadcast({
             "type": "HITL_UPDATE",
@@ -1817,7 +1849,7 @@ async def resume_hitl_task(req: ResumeRequestModel):
             "approved": req.approved,
             "status": "resumed" if req.approved else "aborted"
         })
-        
+
         return {"status": "success", "message": f"Resume instruction for {req.conversation_id} registered."}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -1826,14 +1858,14 @@ async def resume_hitl_task(req: ResumeRequestModel):
 
 class ErrorAnalysisRequest(BaseModel):
     error_logs: str
-    context_info: Optional[str] = ""
+    context_info: str | None = ""
 
 @app.post("/api/agents/analyze-error")
 async def analyze_error(req: ErrorAnalysisRequest):
     """Fase 2: AI Error Explainer"""
     try:
         prompt = f"The following task failed with this output:\n\n{req.error_logs}\n\nContext: {req.context_info}\n\nPlease explain what went wrong and propose a fix."
-        
+
         # Utilizamos el orquestador global (definido arriba) para procesar el análisis de error
         # Se envía con prioridad alta para saltar a la parte delantera de la cola
         result = await system_orchestrator.process_request(
@@ -1856,23 +1888,23 @@ async def global_omni_search(query: str):
             "active_tasks": [],
             "agents": []
         }
-        
+
         # Buscar en aplicaciones
         for app_obj in store.get_applications():
             if query_lower in app_obj.name.lower() or query_lower in app_obj.id.lower():
                 results["applications"].append({"id": app_obj.id, "name": app_obj.name, "type": "application"})
-                
+
             # Buscar en agentes dentro de apps
             for agent in app_obj.agents:
                 if query_lower in agent.name.lower() or query_lower in agent.id.lower():
                     results["agents"].append({"id": agent.id, "name": agent.name, "app_id": app_obj.id, "type": "agent"})
-        
+
         # Buscar en tareas del orquestador global
         for task_id, task_data in system_orchestrator.active_sessions.items():
             task_str = str(task_data).lower()
             if query_lower in task_id.lower() or query_lower in task_str:
                 results["active_tasks"].append({"id": task_id, "status": task_data.get("status"), "type": "task"})
-                
+
         return {"status": "success", "results": results}
     except Exception as e:
         logger.exception("Global search failed")
@@ -1902,7 +1934,7 @@ async def metrics_endpoint():
         active_agents_gauge.set(active_agents)
     except Exception as e:
         logger.error(f"Error actualizando métricas: {e}")
-        
+
     return Response(content=generate_latest(), media_type=CONTENT_TYPE_LATEST)
 
 # ==================== MÉTRICAS REALES DEL SISTEMA ====================
@@ -1914,7 +1946,7 @@ async def get_system_metrics():
         cpu_percent = psutil.cpu_percent(interval=1)
         memory = psutil.virtual_memory()
         disk = psutil.disk_usage('/')
-        
+
         return {
             "cpu": {
                 "percent": round(cpu_percent, 2),
@@ -1956,7 +1988,7 @@ async def get_system_logs(lines: int = 50, admin=Depends(verify_admin)):
         # Leer logs de archivo si existe
         log_file = Path("silhouettemcp.log")
         if log_file.exists():
-            with open(log_file, 'r') as f:
+            with open(log_file) as f:
                 all_logs = f.readlines()
                 recent_logs = all_logs[-lines:] if len(all_logs) > lines else all_logs
                 return {
@@ -1992,14 +2024,14 @@ async def create_dynamic_api(request: CreateAPIRequest, admin=Depends(verify_adm
     try:
         # Generar ID único
         app_id = f"app_{secrets.token_hex(8)}"
-        
+
         # Crear nueva aplicación
         new_app = Application(
             id=app_id,
             name=request.name,
             description=request.description,
             api_key=store._generate_api_key(),
-            owner_email=ADMIN_CREDENTIALS["email"],
+            owner_email=settings.SILHOUETTE_ADMIN_EMAIL,
             agents=[
                 AgentInstance(
                     id=f"agent_{secrets.token_hex(8)}",
@@ -2010,18 +2042,18 @@ async def create_dynamic_api(request: CreateAPIRequest, admin=Depends(verify_adm
                 )
             ]
         )
-        
+
         # Guardar en store
         store.add_application(new_app)
-        
+
         logger.info(f"API dinámica creada: {request.name} ({app_id})")
-        
+
         return {
             "success": True,
             "message": f"API '{request.name}' creada exitosamente",
             "application": asdict(new_app)
         }
-        
+
     except Exception as e:
         logger.error(f"Error creando API dinámica: {e}")
         raise HTTPException(status_code=500, detail=f"Error creando API: {str(e)}")
@@ -2033,24 +2065,24 @@ async def delete_dynamic_api(app_id: str, admin=Depends(verify_admin)):
         # Encontrar y eliminar aplicación
         apps = store._data.get("applications", [])
         app_found = False
-        
+
         for i, app in enumerate(apps):
             if app["id"] == app_id:
                 apps.pop(i)
                 app_found = True
                 store.save_data()
                 break
-        
+
         if not app_found:
             raise HTTPException(status_code=404, detail="Aplicación no encontrada")
-        
+
         logger.info(f"API dinámica eliminada: {app_id}")
-        
+
         return {
             "success": True,
-            "message": f"API eliminada exitosamente"
+            "message": "API eliminada exitosamente"
         }
-        
+
     except HTTPException:
         raise
     except Exception as e:
@@ -2065,10 +2097,10 @@ async def create_backup(admin=Depends(verify_admin)):
     try:
         backup_dir = Path("backups")
         backup_dir.mkdir(exist_ok=True)
-        
+
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         backup_file = backup_dir / f"silhouettemcp_backup_{timestamp}.json"
-        
+
         # Guardar datos actuales
         backup_data = {
             "timestamp": datetime.now().isoformat(),
@@ -2076,12 +2108,12 @@ async def create_backup(admin=Depends(verify_admin)):
             "applications": store._data.get("applications", []),
             "metrics": store._data.get("metrics", {})
         }
-        
+
         with open(backup_file, 'w') as f:
             json.dump(backup_data, f, indent=2)
-        
+
         logger.info(f"Backup creado: {backup_file}")
-        
+
         return {
             "success": True,
             "message": "Backup creado exitosamente",
@@ -2089,7 +2121,7 @@ async def create_backup(admin=Depends(verify_admin)):
             "timestamp": timestamp,
             "size_bytes": backup_file.stat().st_size
         }
-        
+
     except Exception as e:
         logger.error(f"Error creando backup: {e}")
         raise HTTPException(status_code=500, detail=f"Error creando backup: {str(e)}")
@@ -2101,7 +2133,7 @@ async def list_backups(admin=Depends(verify_admin)):
         backup_dir = Path("backups")
         if not backup_dir.exists():
             return {"backups": [], "count": 0}
-        
+
         backups = []
         for backup_file in backup_dir.glob("silhouettemcp_backup_*.json"):
             backups.append({
@@ -2110,14 +2142,14 @@ async def list_backups(admin=Depends(verify_admin)):
                 "size_bytes": backup_file.stat().st_size,
                 "created": datetime.fromtimestamp(backup_file.stat().st_ctime).isoformat()
             })
-        
+
         backups.sort(key=lambda x: x["created"], reverse=True)
-        
+
         return {
             "backups": backups,
             "count": len(backups)
         }
-        
+
     except Exception as e:
         logger.error(f"Error listando backups: {e}")
         raise HTTPException(status_code=500, detail=f"Error listando backups: {str(e)}")
@@ -2127,11 +2159,11 @@ async def list_backups(admin=Depends(verify_admin)):
 class RegisterModelRequest(BaseModel):
     name: str
     provider: str
-    model_name: Optional[str] = None
-    base_url: Optional[str] = None
-    api_key: Optional[str] = None
-    context_window: Optional[int] = 128000
-    is_local: Optional[bool] = False
+    model_name: str | None = None
+    base_url: str | None = None
+    api_key: str | None = None
+    context_window: int | None = 128000
+    is_local: bool | None = False
 
 class PullModelRequest(BaseModel):
     model_name: str
@@ -2142,10 +2174,10 @@ async def get_all_models():
     try:
         from backend.app.core.dynamic_model_registry import model_registry
         from backend.app.core.local_ai_service import local_ai_service
-        
+
         static_models = model_registry.get_all_models()
         local_discovered = await local_ai_service.discover_all()
-        
+
         # Inyectar modelos locales autodescubiertos a la lista
         discovered_models = []
         for loc in local_discovered:
@@ -2159,7 +2191,7 @@ async def get_all_models():
                     "is_local": True,
                     "status": "online"
                 })
-        
+
         return {
             "cloud_and_custom_models": static_models,
             "local_autodiscovered_models": discovered_models,
@@ -2215,12 +2247,12 @@ async def pull_local_model(req: PullModelRequest, admin=Depends(verify_admin)):
 # ==================== GESTOR DE CREDENCIALES GLOBAL Y SECRETOS (.ENV) ====================
 
 class UpdateCredentialsRequest(BaseModel):
-    openrouter_api_key: Optional[str] = None
-    openai_api_key: Optional[str] = None
-    zhipu_api_key: Optional[str] = None
-    moonshot_api_key: Optional[str] = None
-    minimax_api_key: Optional[str] = None
-    google_maps_api_key: Optional[str] = None
+    openrouter_api_key: str | None = None
+    openai_api_key: str | None = None
+    zhipu_api_key: str | None = None
+    moonshot_api_key: str | None = None
+    minimax_api_key: str | None = None
+    google_maps_api_key: str | None = None
 
 @app.get("/api/system/credentials")
 async def get_credentials(admin=Depends(verify_admin)):
@@ -2228,10 +2260,10 @@ async def get_credentials(admin=Depends(verify_admin)):
     env_path = Path(".env")
     if not env_path.exists():
         env_path = Path(".env.template")
-    
+
     credentials = {}
     if env_path.exists():
-        with open(env_path, "r", encoding="utf-8") as f:
+        with open(env_path, encoding="utf-8") as f:
             for line in f:
                 line = line.strip()
                 if "=" in line and not line.startswith("#"):
@@ -2252,7 +2284,7 @@ async def update_credentials(req: UpdateCredentialsRequest, admin=Depends(verify
         env_path = Path(".env")
         existing_env = {}
         if env_path.exists():
-            with open(env_path, "r", encoding="utf-8") as f:
+            with open(env_path, encoding="utf-8") as f:
                 for line in f:
                     line = line.strip()
                     if "=" in line and not line.startswith("#"):
@@ -2319,12 +2351,12 @@ if __name__ == "__main__":
             "Sin administrador configurado: defina SILHOUETTE_ADMIN_EMAIL y "
             "SILHOUETTE_ADMIN_PASSWORD_HASH, o ejecute `python conectar.py`."
         )
-    
+
     # Configurar logging a archivo
     file_handler = logging.FileHandler("silhouettemcp.log")
     file_handler.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
     logger.addHandler(file_handler)
-    
+
     uvicorn.run(
         "silhouettemcp_server:app",
         host="0.0.0.0",

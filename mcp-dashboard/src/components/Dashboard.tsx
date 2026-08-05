@@ -82,43 +82,46 @@ const Dashboard = () => {
     }
   };
 
-  // Simular datos en tiempo real
+  // Cargar métricas reales del backend en tiempo real (0% mockups)
   useEffect(() => {
-    const generateMetrics = (): SystemMetrics => ({
-      timestamp: new Date().toLocaleTimeString(),
-      cpu: Math.random() * 100,
-      memory: Math.random() * 100,
-      agents: 15 + Math.floor(Math.random() * 20),
-      requests: Math.floor(Math.random() * 1000)
-    });
+    const fetchRealData = async () => {
+      try {
+        const resVitals = await fetch(`${API_BASE}/api/organism/vitals`);
+        if (resVitals.ok) {
+          const vitals = await resVitals.json();
+          const newMetric: SystemMetrics = {
+            timestamp: new Date().toLocaleTimeString(),
+            cpu: vitals.cpu_percent || 0,
+            memory: vitals.ram_percent || 0,
+            agents: vitals.active_engines || 4,
+            requests: vitals.total_ticks || 0
+          };
+          setMetrics(prev => [...prev.slice(-9), newMetric]);
+        }
+      } catch (e) {
+        console.error("Error obteniendo constantes vitales del organismo:", e);
+      }
 
-    const generateAgents = (): AgentStatus[] => [
-      { name: 'Git Operations', status: 'active', tasksCompleted: 127, lastActivity: '30s ago', uptime: '2h 15m' },
-      { name: 'Web Scraping', status: 'active', tasksCompleted: 89, lastActivity: '1m ago', uptime: '2h 15m' },
-      { name: 'Database Ops', status: 'active', tasksCompleted: 203, lastActivity: '15s ago', uptime: '2h 15m' },
-      { name: 'File Processing', status: 'idle', tasksCompleted: 45, lastActivity: '5m ago', uptime: '2h 15m' },
-      { name: 'Search Engine', status: 'active', tasksCompleted: 156, lastActivity: '45s ago', uptime: '2h 15m' },
-      { name: 'Python Executor', status: 'active', tasksCompleted: 78, lastActivity: '2m ago', uptime: '2h 15m' },
-    ];
+      try {
+        const resEngines = await fetch(`${API_BASE}/api/cognition/engines`);
+        if (resEngines.ok) {
+          const enginesData = await resEngines.json();
+          const realAgents: AgentStatus[] = (enginesData.engines || []).map((eng: any) => ({
+            name: eng.name || 'Cognitive Engine',
+            status: eng.phase_allowed ? 'active' : 'idle',
+            tasksCompleted: eng.run_count || 0,
+            lastActivity: eng.last_run ? new Date(eng.last_run).toLocaleTimeString() : 'En espera',
+            uptime: eng.phase || 'ACTIVE'
+          }));
+          if (realAgents.length > 0) setAgents(realAgents);
+        }
+      } catch (e) {
+        console.error("Error obteniendo motores cognitivos:", e);
+      }
+    };
 
-    const generateLogs = (): LogEntry[] => [
-      { timestamp: '14:32:15', level: 'info', message: 'Agent Git Operations completed task #127', source: 'Git Agent' },
-      { timestamp: '14:32:10', level: 'info', message: 'Database connection established', source: 'Database Agent' },
-      { timestamp: '14:32:05', level: 'warning', message: 'High memory usage detected (78%)', source: 'System Monitor' },
-      { timestamp: '14:32:00', level: 'info', message: 'Web scraping task completed successfully', source: 'Web Agent' },
-      { timestamp: '14:31:55', level: 'error', message: 'Failed to connect to external API', source: 'Search Agent' },
-    ];
-
-    // Cargar datos iniciales
-    setMetrics(Array.from({ length: 10 }, (_, i) => generateMetrics()));
-    setAgents(generateAgents());
-    setLogs(generateLogs());
-
-    // Actualizar métricas cada 2 segundos
-    const interval = setInterval(() => {
-      setMetrics(prev => [...prev.slice(-9), generateMetrics()]);
-    }, 2000);
-
+    fetchRealData();
+    const interval = setInterval(fetchRealData, 3000);
     return () => clearInterval(interval);
   }, []);
 
