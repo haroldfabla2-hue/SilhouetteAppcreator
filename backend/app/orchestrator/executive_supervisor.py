@@ -270,6 +270,7 @@ class ExecutiveSupervisor:
                 "message": "El equipo no tiene tareas estancadas; no se hizo nada.",
             }
 
+        reasignaciones: list[dict[str, Any]] = []
         for task in stalled:
             self._in_flight.pop(task["task_id"], None)
             self._ensure_agent(task["agent"]).observations.append(
@@ -280,15 +281,71 @@ class ExecutiveSupervisor:
                     error="liberada por el supervisor tras superar el umbral de estancamiento",
                 )
             )
+            # Liberar la tarea sin más la dejaba huérfana: se proponía como
+            # «reasignada al siguiente modelo disponible» y no lo estaba. Ahora
+            # se calcula un relevo real entre los agentes sanos del equipo.
+            relevo = self.pick_replacement(task["agent"], team_id)
+            reasignaciones.append(
+                {
+                    "task_id": task["task_id"],
+                    "from_agent": task["agent"],
+                    "to_agent": relevo,
+                    "reassigned": relevo is not None,
+                }
+            )
 
         self._recalibrations[team_id] = self._recalibrations.get(team_id, 0) + 1
-        logger.info("[Supervisor] Equipo %s: %d tareas liberadas", team_id, len(stalled))
+        con_relevo = [r for r in reasignaciones if r["reassigned"]]
+        logger.info(
+            "[Supervisor] Equipo %s: %d liberada(s), %d con relevo",
+            team_id, len(stalled), len(con_relevo),
+        )
         return {
             "success": True,
             "team_id": team_id,
             "released_tasks": [t["task_id"] for t in stalled],
-            "message": f"{len(stalled)} tarea(s) estancada(s) liberada(s).",
+            "reassignments": reasignaciones,
+            "message": (
+                f"{len(stalled)} tarea(s) liberada(s); "
+                f"{len(con_relevo)} con agente de relevo asignado."
+            ),
         }
+
+    def pick_replacement(self, stalled_agent: str, team_id: str) -> str | None:
+        """Elige qué agente puede relevar a uno estancado.
+
+        Prefiere compañeros del mismo equipo con mejor historial. Devuelve
+        `None` si no hay nadie mejor — decirlo es más útil que reasignar a un
+        agente igual de degradado y volver a estancarse.
+        """
+        equipo = self.teams.get(team_id)
+        if equipo is None:
+            return None
+
+        candidatos = [
+            self._agents[nombre]
+            for nombre in equipo.agents
+            if nombre != stalled_agent and nombre in self._agents
+        ]
+        # Sin tareas en vuelo: un agente ya ocupado no es un relevo.
+        ocupados = {t.agent for t in self._in_flight.values()}
+        candidatos = [c for c in candidatos if c.name not in ocupados]
+        if not candidatos:
+            return None
+
+        # Los que no tienen historial son candidatos válidos: «sin datos» no es
+        # «malo». Se ordenan por tasa de éxito, poniéndolos en el medio.
+        def puntuacion(registro: AgentRecord) -> float:
+            tasa = registro.success_rate
+            return 0.5 if tasa is None else tasa
+
+        mejor = max(candidatos, key=puntuacion)
+        propio = self._agents.get(stalled_agent)
+        propia_tasa = propio.success_rate if propio else None
+
+        if propia_tasa is not None and puntuacion(mejor) <= propia_tasa:
+            return None
+        return mejor.name
 
     def agent_metrics(self, agent: str) -> dict[str, Any] | None:
         record = self._agents.get(agent)

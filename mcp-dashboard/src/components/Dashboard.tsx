@@ -11,11 +11,13 @@ import {
   Clock,
   TrendingUp,
   Bot,
-  HeartPulse
+  HeartPulse,
+  FolderGit2
 } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { OmniSearchModal } from './OmniSearchModal';
 import { OrganismPanel } from './OrganismPanel';
+import { ProjectsPanel } from './ProjectsPanel';
 
 // TypeScript fix for Recharts components
 const XAxisComponent = XAxis as any;
@@ -57,7 +59,7 @@ import { Settings, MessageSquare, Swords, Eye, BarChart3, Code, Terminal, Cpu } 
 import { API_BASE } from "@/lib/api";
 
 const Dashboard = () => {
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'chat' | 'arena' | 'editor' | 'terminals' | 'mcp' | 'design' | 'organism' | 'settings'>('chat');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'chat' | 'arena' | 'editor' | 'terminals' | 'mcp' | 'design' | 'organism' | 'projects' | 'settings'>('chat');
   const [metrics, setMetrics] = useState<SystemMetrics[]>([]);
   const [agents, setAgents] = useState<AgentStatus[]>([]);
   const [logs, setLogs] = useState<LogEntry[]>([]);
@@ -257,6 +259,15 @@ const Dashboard = () => {
             Design Inspector
           </button>
           <button
+            onClick={() => setActiveTab('projects')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition ${
+              activeTab === 'projects' ? 'bg-sky-600 text-white shadow-sm' : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            <FolderGit2 className="w-4 h-4" />
+            Proyectos
+          </button>
+          <button
             onClick={() => setActiveTab('organism')}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition ${
               activeTab === 'organism' ? 'bg-teal-600 text-white shadow-sm' : 'text-gray-600 hover:text-gray-900'
@@ -298,6 +309,8 @@ const Dashboard = () => {
         <DynamicMCPFactory />
       ) : activeTab === 'organism' ? (
         <OrganismPanel />
+      ) : activeTab === 'projects' ? (
+        <ProjectsPanel />
       ) : activeTab === 'design' ? (
         <DesignInspector />
       ) : activeTab === 'settings' ? (

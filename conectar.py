@@ -147,64 +147,73 @@ async def guardar_clave(proveedor: str, credencial: str) -> int:
     return 1
 
 
-INSTALL_COMMANDS: dict[str, str] = {
-    "claude": "npm install -g @anthropic-ai/claude-code",
-    "codex": "npm install -g @openai/codex-cli",
-    "gemini": "npm install -g @google/gemini-cli",
-    "cursor": "npm install -g cursor-agent",
-    "aider": "pip install aider-chat",
-}
+# NOTA: aqui vivian `INSTALL_COMMANDS`, `AUTH_INSTRUCTIONS` e `instalar_agente`.
+# Se retiraron por tres motivos: usaban `shell=True`, declaraban exito por el
+# codigo de salida (npm devuelve 0 sin dejar el binario en el PATH) y cubrian
+# 5 CLIs con dos nombres de paquete incorrectos. El catalogo unico y verificado
+# esta en `backend/app/core/cli_manager.py`, compartido con la API y la interfaz.
 
 
-AUTH_INSTRUCTIONS: dict[str, str] = {
-    "claude": "Ejecute 'claude' en su terminal y escriba '/login' para autenticar su cuenta de Anthropic.",
-    "gemini": "Ejecute 'gemini' en su terminal y elija 'Login with Google' para autenticar.",
-    "codex": "Ejecute 'codex' en su terminal para iniciar sesión con su cuenta de OpenAI.",
-    "cursor": "Ejecute 'cursor-agent login' para conectar sus credenciales de Cursor.",
-    "aider": "Guarde su API Key con `python conectar.py --clave openrouter TU_CLAVE` o exporte OPENAI_API_KEY.",
-}
+async def instalar_cli(nombre: str) -> int:
+    """Instala un agente CLI y dice cómo autenticarlo a continuación."""
+    from backend.app.core.cli_manager import CLIManagerError, install
 
-
-async def instalar_agente(agente: str) -> int:
-    agente_key = agente.lower().strip()
-    cmd = INSTALL_COMMANDS.get(agente_key)
-    if not cmd:
-        print(f"{C.ROJO}Agente desconocido '{agente}'. Opciónes soportadas: {', '.join(INSTALL_COMMANDS.keys())}{C.FIN}")
-        return 1
-
-    print(f"{C.AZUL}Ejecutando instalación para '{agente_key}': {cmd}...{C.FIN}")
+    print(f"{C.AZUL}Instalando {nombre}...{C.FIN}")
     try:
-        process = await asyncio.create_subprocess_shell(
-            cmd,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE
-        )
-        stdout, stderr = await process.communicate()
-        if process.returncode == 0:
-            print(f"{C.VERDE}{C.NEGRITA}[INSTALACIÓN COMPLETADA]{C.FIN} {agente_key} se instaló correctamente.")
-            
-            auth_hint = AUTH_INSTRUCTIONS.get(agente_key)
-            if auth_hint:
-                print(f"\n{C.AMARILLO}{C.NEGRITA}👉 Siguiente paso para autenticar:{C.FIN}")
-                print(f"   {C.NEGRITA}{auth_hint}{C.FIN}")
-            print()
-            return await mostrar_estado()
-        else:
-            print(f"{C.ROJO}[ERROR EN INSTALACIÓN]{C.FIN} {stderr.decode(errors='replace')}")
-            return 1
-    except Exception as e:
-        print(f"{C.ROJO}Error al ejecutar instalación: {e}{C.FIN}")
-        return 1
+        resultado = await install(nombre)
+    except CLIManagerError as exc:
+        print(f"{C.ROJO}{exc}{C.FIN}")
+        return 2
+
+    if resultado.get("installed"):
+        marca = "ya estaba instalado" if resultado.get("already_present") else "instalado"
+        print(f"{C.VERDE}{C.NEGRITA}[OK]{C.FIN} {nombre} {marca}.")
+        if resultado.get("executable"):
+            print(f"  {C.GRIS}{resultado['executable']}{C.FIN}")
+        siguiente = resultado.get("next_step")
+        if siguiente:
+            print(f"\n{C.NEGRITA}Siguiente paso — autenticar:{C.FIN}")
+            print(f"    {siguiente}")
+            print(f"    {C.GRIS}o bien: python conectar.py --login {nombre}{C.FIN}")
+        return 0
+
+    print(f"{C.AMARILLO}[SIN INSTALAR]{C.FIN} {resultado.get('detail', '')}")
+    if resultado.get("docs_url"):
+        print(f"  {C.GRIS}{resultado['docs_url']}{C.FIN}")
+    return 1
+
+
+async def login_cli(nombre: str) -> int:
+    """Abre una terminal con el comando de login del CLI."""
+    from backend.app.core.cli_manager import CLIManagerError, open_login_terminal
+
+    try:
+        resultado = await open_login_terminal(nombre)
+    except CLIManagerError as exc:
+        print(f"{C.ROJO}{exc}{C.FIN}")
+        return 2
+
+    if resultado.get("opened"):
+        print(f"{C.VERDE}[TERMINAL ABIERTA]{C.FIN} {resultado['detail']}")
+        print(f"  {C.GRIS}{resultado.get('next_step', '')}{C.FIN}")
+        print("\nAl terminar, compruebe con: python conectar.py")
+        return 0
+
+    print(f"{C.AMARILLO}{resultado.get('detail', '')}{C.FIN}")
+    return 1
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Conecta y verifica proveedores de IA.")
     parser.add_argument("--arreglar", action="store_true", help="aplica las reparaciones automáticas")
     parser.add_argument(
-        "--clave", nargs=2, metavar=("PROVEEDOR", "CREDENCIAL"), help="valida y guarda una clave"
+        "--instalar", metavar="CLI", help="instala un agente CLI con su gestor oficial"
     )
     parser.add_argument(
-        "--instalar", metavar="AGENTE", help="instala automáticamente un agente CLI (claude, codex, gemini, cursor, aider)"
+        "--login", metavar="CLI", help="abre una terminal con el comando de login del CLI"
+    )
+    parser.add_argument(
+        "--clave", nargs=2, metavar=("PROVEEDOR", "CREDENCIAL"), help="valida y guarda una clave"
     )
     args = parser.parse_args()
 
@@ -216,7 +225,9 @@ def main() -> int:
     load_env()
 
     if args.instalar:
-        return asyncio.run(instalar_agente(args.instalar))
+        return asyncio.run(instalar_cli(args.instalar))
+    if args.login:
+        return asyncio.run(login_cli(args.login))
     if args.clave:
         return asyncio.run(guardar_clave(*args.clave))
     if args.arreglar:

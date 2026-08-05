@@ -106,6 +106,26 @@ dependencias) y sube a Redis/Neo4j/fastembed cuando se configuran. Si el paquete
 no está instalado, el servicio reporta `available: false` y lanza
 `BrainUnavailable` — no devuelve estadísticas inventadas.
 
+### Trabajo sobre proyectos reales
+
+Cuatro capas que convierten «varios agentes llamando a un modelo» en un equipo
+que trabaja sobre carpetas y ramas del usuario. Nacieron de una auditoría que
+comparó lo que se decía del sistema con lo que el código hacía: la sesión
+compartida, la asignación de modelo por agente y el aislamiento se daban por
+implementados y no existían.
+
+| Componente | Archivo | Qué hace |
+|---|---|---|
+| Sesión compartida | `core/session.py` | Un `session_id` por objetivo. `compose_prompt()` inyecta el objetivo, lo que ya aportaron los otros agentes y los recuerdos recuperados; `run_with_context()` persiste cada contribución en la memoria. Sin esto cada agente partía de cero. |
+| Modelo por agente | `core/agent_models.py` | `DEFAULT_POLICIES` asigna proveedor y temperatura a cada agente (razonador → Claude Code, ejecutor web → Gemini, verificador a 0.05). `resolve_provider()` devuelve `None` si el preferido no está disponible — **nunca** uno que no lo esté. |
+| Proyectos locales | `projects/registry.py` | Carpetas registradas explícitamente; registrar es el consentimiento. `FORBIDDEN_ROOTS` bloquea `~`, Escritorio, Documentos y raíces del sistema. `unregister()` **no borra nada**. Persiste en `data/projects.json`. |
+| Ramas y aislamiento | `projects/workspaces.py` | Worktrees de git reales: `reserve()` crea la rama `silhouette/<agente>-<tarea>` en `.silhouette-worktrees/`, `integrate()` prueba con `merge-tree --write-tree` y **aborta** si hay conflicto, `release()` conserva las ramas sin integrar. |
+| CLIs | `core/cli_manager.py` | Instala y autentica los 12 CLIs soportados. `install()` comprueba que el binario **resuelva** después (npm sale con 0 sin dejarlo en el PATH); `open_login_terminal()` abre una terminal real para el OAuth, porque el login no se puede hacer sin interacción. |
+
+En el dashboard esto es la pestaña **Proyectos** (`ProjectsPanel.tsx`):
+registrar carpeta, listar y crear ramas, ver los espacios de cada agente,
+instalar y autenticar CLIs.
+
 ### Seguridad
 
 | Módulo | Responsabilidad |
@@ -299,6 +319,11 @@ saber qué se arregló evita volver a introducirlo:
 | Correo del administrador escrito en el código | Sale del entorno |
 | Chequeos de salud con cifras fijas (`1247` consultas, `2.1%` de error, siempre `healthy`) | Ping real a base de datos y Redis; estadísticas reales del router |
 | `task_manager` pedía un bucle de eventos al importarse | Se programa en el arranque |
+| Cada agente empezaba sin saber qué habían hecho los demás | `core/session.py`: sesión con identificador, contexto compartido inyectado en el prompt y contribuciones persistidas |
+| Todos los agentes compartían un único router sin política propia | `core/agent_models.py`: proveedor y temperatura por agente, sin recurrir a uno no disponible |
+| El sistema sólo sabía operar sobre su propio directorio | `projects/registry.py`: carpetas locales registradas, con raíces del sistema bloqueadas |
+| El «aislamiento» entre agentes concurrentes era una descripción | `projects/workspaces.py`: worktrees de git reales, integración que aborta ante conflicto |
+| El instalador de CLIs usaba `shell=True` y creía al código de salida | `core/cli_manager.py`: sin shell, y se verifica que el binario resuelva |
 
 ### Pendiente
 

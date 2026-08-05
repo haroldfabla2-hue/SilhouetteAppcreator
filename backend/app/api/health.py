@@ -5,7 +5,7 @@ Endpoints para health checks detallados
 import asyncio
 import logging
 import time
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import Any
 
 import psutil
@@ -331,8 +331,8 @@ async def check_llm_health() -> LLMHealth:
     contadores reales; son los que se reportan.
     """
     try:
-        from ..core.llm_router import CLI_PROVIDER_NAMES, LLMRouter
         from ..core.cli_adapters import is_available as cli_disponible
+        from ..core.llm_router import CLI_PROVIDER_NAMES, LLMRouter
 
         router = LLMRouter()
         stats = router.get_stats()

@@ -2348,6 +2348,240 @@ app.include_router(_api_memory.router, prefix="/api/v1", dependencies=[Depends(v
 app.include_router(_api_tasks.router, prefix="/api/v1", dependencies=[Depends(verify_admin)])
 
 
+# ==================== PROYECTOS, RAMAS Y ESPACIOS DE TRABAJO ====================
+# Trabajar sobre carpetas locales arbitrarias, gestionar sus ramas y dar a cada
+# agente concurrente un worktree aislado. El aislamiento y la fusion semantica
+# existian como clases sin invocar; aqui se usan de verdad.
+
+from backend.app.core.agent_models import agent_models
+from backend.app.core.cli_manager import CLIManagerError
+from backend.app.core.cli_manager import catalog as cli_catalog
+from backend.app.core.cli_manager import install as cli_install
+from backend.app.core.cli_manager import login_instructions, open_login_terminal
+from backend.app.core.session import session_manager
+from backend.app.projects.registry import ProjectError, project_registry
+from backend.app.projects.workspaces import WorkspaceError, workspace_manager
+
+
+class ProjectRequest(BaseModel):
+    path: str
+    name: str = ""
+    description: str = ""
+
+
+@app.get("/api/projects")
+async def projects_list():
+    """Proyectos registrados, con cual esta activo."""
+    return {"projects": project_registry.list_all(), "active": project_registry.active_id}
+
+
+@app.post("/api/projects")
+async def projects_register(req: ProjectRequest, admin=Depends(verify_admin)):
+    """Registra una carpeta local como proyecto sobre el que trabajar."""
+    try:
+        proyecto = project_registry.register(
+            req.path, name=req.name, description=req.description
+        )
+    except ProjectError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from None
+    return proyecto.to_dict()
+
+
+@app.post("/api/projects/{project_id}/activate")
+async def projects_activate(project_id: str, admin=Depends(verify_admin)):
+    """Fija el proyecto activo."""
+    try:
+        return project_registry.set_active(project_id).to_dict()
+    except ProjectError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from None
+
+
+@app.delete("/api/projects/{project_id}")
+async def projects_unregister(project_id: str, admin=Depends(verify_admin)):
+    """Retira un proyecto del registro. **No borra la carpeta.**"""
+    if not project_registry.unregister(project_id):
+        raise HTTPException(status_code=404, detail=f"No existe el proyecto {project_id}.")
+    return {"unregistered": True, "project_id": project_id, "folder_deleted": False}
+
+
+@app.get("/api/branches")
+async def branches_list(project_id: str | None = None):
+    """Ramas reales del proyecto."""
+    try:
+        return await workspace_manager.list_branches(project_id)
+    except (WorkspaceError, ProjectError) as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from None
+
+
+class BranchRequest(BaseModel):
+    name: str
+    project_id: str | None = None
+    from_ref: str | None = None
+    checkout: bool = False
+
+
+@app.post("/api/branches")
+async def branches_create(req: BranchRequest, admin=Depends(verify_admin)):
+    """Crea una rama."""
+    try:
+        return await workspace_manager.create_branch(
+            req.name, project_id=req.project_id, from_ref=req.from_ref, checkout=req.checkout
+        )
+    except (WorkspaceError, ProjectError) as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from None
+
+
+@app.post("/api/branches/switch")
+async def branches_switch(req: BranchRequest, admin=Depends(verify_admin)):
+    """Cambia de rama. Se niega si hay cambios sin guardar."""
+    try:
+        return await workspace_manager.switch_branch(req.name, project_id=req.project_id)
+    except (WorkspaceError, ProjectError) as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from None
+
+
+@app.delete("/api/branches/{name:path}")
+async def branches_delete(
+    name: str,
+    project_id: str | None = None,
+    force: bool = False,
+    admin=Depends(verify_admin),
+):
+    """Borra una rama."""
+    try:
+        return await workspace_manager.delete_branch(name, project_id=project_id, force=force)
+    except (WorkspaceError, ProjectError) as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from None
+
+
+class WorkspaceRequest(BaseModel):
+    task_id: str
+    agent: str
+    project_id: str | None = None
+    base_branch: str | None = None
+
+
+@app.get("/api/workspaces")
+async def workspaces_list():
+    """Espacios de trabajo aislados actualmente reservados."""
+    return {"workspaces": workspace_manager.active_workspaces()}
+
+
+@app.post("/api/workspaces/reserve")
+async def workspaces_reserve(req: WorkspaceRequest, admin=Depends(verify_admin)):
+    """Reserva un worktree aislado para que un agente trabaje sin colisionar."""
+    try:
+        espacio = await workspace_manager.reserve(
+            req.task_id, req.agent, project_id=req.project_id, base_branch=req.base_branch
+        )
+    except (WorkspaceError, ProjectError) as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from None
+    return espacio.to_dict()
+
+
+@app.post("/api/workspaces/{task_id}/integrate")
+async def workspaces_integrate(
+    task_id: str, resolve_conflicts: bool = True, admin=Depends(verify_admin)
+):
+    """Fusiona el trabajo del espacio en su rama base."""
+    try:
+        resultado = await workspace_manager.integrate(
+            task_id, resolve_conflicts=resolve_conflicts
+        )
+    except (WorkspaceError, ProjectError) as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from None
+    return resultado.to_dict()
+
+
+@app.post("/api/workspaces/{task_id}/release")
+async def workspaces_release(task_id: str, keep_branch: bool = False, admin=Depends(verify_admin)):
+    """Libera el espacio de trabajo."""
+    try:
+        return await workspace_manager.release(task_id, keep_branch=keep_branch)
+    except (WorkspaceError, ProjectError) as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from None
+
+
+# ==================== CLIs: INSTALACION Y AUTENTICACION ====================
+
+
+@app.get("/api/cli/catalog")
+async def cli_catalog_endpoint():
+    """Todos los CLIs con su estado, como instalarlos y como autenticarlos."""
+    return {"clis": cli_catalog()}
+
+
+@app.post("/api/cli/install/{cli_name}")
+async def cli_install_endpoint(cli_name: str, admin=Depends(verify_admin)):
+    """Instala un agente CLI con su gestor oficial."""
+    try:
+        return await cli_install(cli_name)
+    except CLIManagerError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from None
+
+
+@app.post("/api/cli/login/{cli_name}")
+async def cli_login_endpoint(cli_name: str, admin=Depends(verify_admin)):
+    """Abre una terminal real con el comando de login del CLI.
+
+    El flujo OAuth necesita terminal interactiva y el navegador del usuario; no
+    se puede completar dentro de una peticion HTTP y no se finge que si.
+    """
+    try:
+        return await open_login_terminal(cli_name)
+    except CLIManagerError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from None
+
+
+@app.get("/api/cli/login/{cli_name}")
+async def cli_login_help(cli_name: str):
+    """Instrucciones exactas de autenticacion de un CLI."""
+    return login_instructions(cli_name)
+
+
+# ==================== SESIONES Y MODELOS POR AGENTE ====================
+
+
+@app.get("/api/sessions")
+async def sessions_list():
+    """Sesiones activas con lo que ha aportado cada agente."""
+    return {"sessions": session_manager.all_sessions()}
+
+
+@app.get("/api/sessions/{session_id}")
+async def sessions_get(session_id: str):
+    """Detalle de una sesion: el hilo compartido entre agentes."""
+    sesion = session_manager.get(session_id)
+    if sesion is None:
+        raise HTTPException(status_code=404, detail=f"No existe la sesion {session_id}.")
+    return sesion.to_dict()
+
+
+@app.get("/api/models/assignment")
+async def models_assignment():
+    """Que modelo usa hoy cada agente, resuelto contra lo que hay disponible."""
+    return {"assignment": agent_models.effective_assignment(system_orchestrator.llm_router)}
+
+
+class ModelPolicyRequest(BaseModel):
+    preferred: list[str] | None = None
+    temperature: float | None = None
+    max_tokens: int | None = None
+    allow_fallback: bool | None = None
+
+
+@app.post("/api/models/assignment/{agent}")
+async def models_set_policy(agent: str, req: ModelPolicyRequest, admin=Depends(verify_admin)):
+    """Cambia que modelos prefiere un agente."""
+    return agent_models.set_policy(
+        agent,
+        preferred=req.preferred,
+        temperature=req.temperature,
+        max_tokens=req.max_tokens,
+        allow_fallback=req.allow_fallback,
+    ).to_dict()
+
+
 if __name__ == "__main__":
     # El correo del administrador sale del entorno; no se escribe en el código
     # ni se registra en el log.

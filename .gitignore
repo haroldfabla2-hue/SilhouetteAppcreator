@@ -58,6 +58,8 @@ silhouettemcp_data.json
 # Estado local del proceso; no pertenece al control de versiones.
 *.log
 data/agent_profiles.json
+# Rutas locales de la maquina: no se comparten.
+data/projects.json
 data/silhouette/
 agent_tasks_fallback.json
 artifacts/

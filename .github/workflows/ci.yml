@@ -155,6 +155,32 @@ jobs:
           fi
           echo "OK: los chequeos de salud miden de verdad."
 
+      # Una auditoria comparo lo que un agente describia con lo que el codigo
+      # hacia: la coherencia entre CLIs concurrentes se daba por implementada y
+      # no existia. Estas comprobaciones impiden que vuelva a ser solo una
+      # descripcion.
+      - name: La coherencia entre agentes esta implementada
+        run: |
+          for f in session.py agent_models.py cli_manager.py; do
+            if [ ! -f "backend/app/core/$f" ]; then
+              echo "::error::Falta backend/app/core/$f"
+              exit 1
+            fi
+          done
+          if ! grep -q "session_id" backend/app/core/session.py; then
+            echo "::error::Las sesiones deben tener identificador compartido."
+            exit 1
+          fi
+          if ! grep -q "compose_prompt" backend/app/core/session.py; then
+            echo "::error::El prompt debe componerse con el contexto compartido."
+            exit 1
+          fi
+          if ! grep -q "worktree" backend/app/projects/workspaces.py; then
+            echo "::error::El aislamiento por worktree debe estar implementado."
+            exit 1
+          fi
+          echo "OK: sesion compartida, contexto inyectado y aislamiento reales."
+
       # Reimportar los módulos archivados reintroduce sus datos inventados.
       - name: Nada importa desde legacy/
         run: |

@@ -12880,5 +12880,25 @@
       "partial_results": {}
     },
     "updated_at": "2026-08-05T01:57:06.667372"
+  },
+  "conv_efb96ba972cf": {
+    "status": "ERROR",
+    "payload": {
+      "conversation_id": "conv_efb96ba972cf",
+      "status": "error",
+      "error": "Reasoner fall\u00f3: [ErrorInfo(code='AGENT_ERROR', message='No hay ning\u00fan modelo disponible para atender la petici\u00f3n (claude3_5): las claves configuradas (OpenRouter) no respondieron; los agentes locales instalados (claude, gemini, antigravity) fallaron o no tienen sesi\u00f3n iniciada; circuito abierto por fallos repetidos en: cli_claude_code. Ejecute `python conectar.py` para ver el estado y las opciones de conexi\u00f3n.', retry_after=None, retryable=False)]",
+      "partial_results": {}
+    },
+    "updated_at": "2026-08-05T05:26:31.538894"
+  },
+  "conv_2752853cd334": {
+    "status": "ERROR",
+    "payload": {
+      "conversation_id": "conv_2752853cd334",
+      "status": "error",
+      "error": "Reasoner fall\u00f3: [ErrorInfo(code='AGENT_ERROR', message='No hay ning\u00fan modelo disponible para atender la petici\u00f3n (claude3_5): las claves configuradas (OpenRouter) no respondieron; los agentes locales instalados (claude, gemini, antigravity) fallaron o no tienen sesi\u00f3n iniciada; circuito abierto por fallos repetidos en: cli_claude_code. Ejecute `python conectar.py` para ver el estado y las opciones de conexi\u00f3n.', retry_after=None, retryable=False)]",
+      "partial_results": {}
+    },
+    "updated_at": "2026-08-05T05:26:31.242006"
   }
 }

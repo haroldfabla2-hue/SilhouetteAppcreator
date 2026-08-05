@@ -142,31 +142,60 @@ class BaseAgent(ABC):
     async def call_llm(
         self,
         prompt: str,
-        temperature: float = 0.7,
-        max_tokens: int = 2000,
-        model: str = "claude3_5"
+        temperature: float | None = None,
+        max_tokens: int | None = None,
+        model: str = "claude3_5",
+        session: Any = None,
     ) -> str:
+        """Llama al modelo respetando la política del agente y la sesión.
+
+        Dos comportamientos nuevos, ambos porque antes se afirmaban sin existir:
+
+        - **Modelo por agente.** Si hay una política declarada y su proveedor
+          preferido está disponible, se usa ese. Antes los cinco agentes caían
+          siempre en el mismo proveedor de la cadena general.
+        - **Contexto de sesión.** Con `session`, el prompt se compone con lo que
+          han aportado los demás agentes y con lo que la memoria recuerde del
+          objetivo. Antes cada llamada partía de cero.
         """
-        Llama al LLM usando el router real
-        
-        Args:
-            prompt: Prompt a enviar
-            temperature: Temperatura de generación
-            max_tokens: Máximo de tokens a generar
-            model: Modelo a usar
-            
-        Returns:
-            Respuesta del LLM como string
-        """
+        from backend.app.core.agent_models import agent_models
+
+        politica = agent_models.policy_for(self.agent_id)
+        temperatura = politica.temperature if temperature is None else temperature
+        limite = politica.max_tokens if max_tokens is None else max_tokens
+
         try:
             if self.llm_client and hasattr(self.llm_client, 'chat_completion'):
-                # Usar LLMRouter real
+                proveedor = agent_models.resolve_provider(self.agent_id, self.llm_client)
+
+                if session is not None:
+                    from backend.app.core.session import session_manager
+
+                    async def _ejecutar(prompt_compuesto: str) -> str:
+                        return await self.llm_client.chat_completion(
+                            prompt=prompt_compuesto,
+                            model=model,
+                            temperature=temperatura,
+                            max_tokens=limite,
+                            provider=proveedor,
+                            enable_fallback=politica.allow_fallback,
+                        )
+
+                    return await session_manager.run_with_context(
+                        session,
+                        self.agent_id,
+                        prompt,
+                        _ejecutar,
+                        model=proveedor.value if proveedor is not None else model,
+                    )
+
                 response = await self.llm_client.chat_completion(
                     prompt=prompt,
                     model=model,
-                    temperature=temperature,
-                    max_tokens=max_tokens,
-                    enable_fallback=True
+                    temperature=temperatura,
+                    max_tokens=limite,
+                    provider=proveedor,
+                    enable_fallback=politica.allow_fallback,
                 )
                 self.logger.debug(f"LLM response received ({len(response)} chars)")
                 return response
