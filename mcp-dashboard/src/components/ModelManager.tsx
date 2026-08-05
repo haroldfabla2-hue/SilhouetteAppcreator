@@ -26,6 +26,10 @@ export const ModelManager: React.FC = () => {
   const [credForm, setCredForm] = useState({
     openrouter_api_key: '',
     openai_api_key: '',
+    anthropic_api_key: '',
+    gemini_api_key: '',
+    deepseek_api_key: '',
+    groq_api_key: '',
     zhipu_api_key: '',
     moonshot_api_key: '',
     minimax_api_key: '',
@@ -72,6 +76,10 @@ export const ModelManager: React.FC = () => {
         setCredForm({
           openrouter_api_key: '',
           openai_api_key: '',
+          anthropic_api_key: '',
+          gemini_api_key: '',
+          deepseek_api_key: '',
+          groq_api_key: '',
           zhipu_api_key: '',
           moonshot_api_key: '',
           minimax_api_key: '',
@@ -209,7 +217,7 @@ export const ModelManager: React.FC = () => {
           </span>
         </div>
         <p className="text-xs text-gray-400 mb-4">
-          Guarda y aplica tus claves API privadas directamente en el servidor. Los valores actuales se muestran enmascarados.
+          Guarda y aplica tus claves API privadas directamente en el servidor desde esta interfaz.
         </p>
 
         <form onSubmit={handleSaveCredentials} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -235,6 +243,58 @@ export const ModelManager: React.FC = () => {
               placeholder={credentials.OPENAI_API_KEY?.masked_val || "sk-..."}
               value={credForm.openai_api_key}
               onChange={(e) => setCredForm({ ...credForm, openai_api_key: e.target.value })}
+              className="w-full bg-gray-900 border border-gray-700 text-white rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:border-amber-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium text-gray-300 mb-1">
+              Anthropic API Key {credentials.ANTHROPIC_API_KEY?.is_set && <span className="text-emerald-400">✓</span>}
+            </label>
+            <input
+              type="password"
+              placeholder={credentials.ANTHROPIC_API_KEY?.masked_val || "sk-ant-..."}
+              value={credForm.anthropic_api_key}
+              onChange={(e) => setCredForm({ ...credForm, anthropic_api_key: e.target.value })}
+              className="w-full bg-gray-900 border border-gray-700 text-white rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:border-amber-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium text-gray-300 mb-1">
+              Google AI (Gemini) API Key {credentials.GEMINI_API_KEY?.is_set && <span className="text-emerald-400">✓</span>}
+            </label>
+            <input
+              type="password"
+              placeholder={credentials.GEMINI_API_KEY?.masked_val || "AIzaSy..."}
+              value={credForm.gemini_api_key}
+              onChange={(e) => setCredForm({ ...credForm, gemini_api_key: e.target.value })}
+              className="w-full bg-gray-900 border border-gray-700 text-white rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:border-amber-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium text-gray-300 mb-1">
+              DeepSeek API Key {credentials.DEEPSEEK_API_KEY?.is_set && <span className="text-emerald-400">✓</span>}
+            </label>
+            <input
+              type="password"
+              placeholder={credentials.DEEPSEEK_API_KEY?.masked_val || "sk-..."}
+              value={credForm.deepseek_api_key}
+              onChange={(e) => setCredForm({ ...credForm, deepseek_api_key: e.target.value })}
+              className="w-full bg-gray-900 border border-gray-700 text-white rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:border-amber-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium text-gray-300 mb-1">
+              Groq API Key {credentials.GROQ_API_KEY?.is_set && <span className="text-emerald-400">✓</span>}
+            </label>
+            <input
+              type="password"
+              placeholder={credentials.GROQ_API_KEY?.masked_val || "gsk_..."}
+              value={credForm.groq_api_key}
+              onChange={(e) => setCredForm({ ...credForm, groq_api_key: e.target.value })}
               className="w-full bg-gray-900 border border-gray-700 text-white rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:border-amber-500"
             />
           </div>
@@ -274,19 +334,6 @@ export const ModelManager: React.FC = () => {
               placeholder={credentials.MINIMAX_API_KEY?.masked_val || "minimax-key-..."}
               value={credForm.minimax_api_key}
               onChange={(e) => setCredForm({ ...credForm, minimax_api_key: e.target.value })}
-              className="w-full bg-gray-900 border border-gray-700 text-white rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:border-amber-500"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-medium text-gray-300 mb-1">
-              Google Maps API Key {credentials.GOOGLE_MAPS_API_KEY?.is_set && <span className="text-emerald-400">✓</span>}
-            </label>
-            <input
-              type="password"
-              placeholder={credentials.GOOGLE_MAPS_API_KEY?.masked_val || "AIzaSy..."}
-              value={credForm.google_maps_api_key}
-              onChange={(e) => setCredForm({ ...credForm, google_maps_api_key: e.target.value })}
               className="w-full bg-gray-900 border border-gray-700 text-white rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:border-amber-500"
             />
           </div>

@@ -2249,6 +2249,10 @@ async def pull_local_model(req: PullModelRequest, admin=Depends(verify_admin)):
 class UpdateCredentialsRequest(BaseModel):
     openrouter_api_key: str | None = None
     openai_api_key: str | None = None
+    anthropic_api_key: str | None = None
+    gemini_api_key: str | None = None
+    deepseek_api_key: str | None = None
+    groq_api_key: str | None = None
     zhipu_api_key: str | None = None
     moonshot_api_key: str | None = None
     minimax_api_key: str | None = None
@@ -2296,6 +2300,10 @@ async def update_credentials(req: UpdateCredentialsRequest, admin=Depends(verify
         key_map = {
             "openrouter_api_key": "OPENROUTER_API_KEY",
             "openai_api_key": "OPENAI_API_KEY",
+            "anthropic_api_key": "ANTHROPIC_API_KEY",
+            "gemini_api_key": "GEMINI_API_KEY",
+            "deepseek_api_key": "DEEPSEEK_API_KEY",
+            "groq_api_key": "GROQ_API_KEY",
             "zhipu_api_key": "ZHIPU_API_KEY",
             "moonshot_api_key": "MOONSHOT_API_KEY",
             "minimax_api_key": "MINIMAX_API_KEY",
