@@ -156,6 +156,15 @@ INSTALL_COMMANDS: dict[str, str] = {
 }
 
 
+AUTH_INSTRUCTIONS: dict[str, str] = {
+    "claude": "Ejecute 'claude' en su terminal y escriba '/login' para autenticar su cuenta de Anthropic.",
+    "gemini": "Ejecute 'gemini' en su terminal y elija 'Login with Google' para autenticar.",
+    "codex": "Ejecute 'codex' en su terminal para iniciar sesión con su cuenta de OpenAI.",
+    "cursor": "Ejecute 'cursor-agent login' para conectar sus credenciales de Cursor.",
+    "aider": "Guarde su API Key con `python conectar.py --clave openrouter TU_CLAVE` o exporte OPENAI_API_KEY.",
+}
+
+
 async def instalar_agente(agente: str) -> int:
     agente_key = agente.lower().strip()
     cmd = INSTALL_COMMANDS.get(agente_key)
@@ -173,6 +182,11 @@ async def instalar_agente(agente: str) -> int:
         stdout, stderr = await process.communicate()
         if process.returncode == 0:
             print(f"{C.VERDE}{C.NEGRITA}[INSTALACIÓN COMPLETADA]{C.FIN} {agente_key} se instaló correctamente.")
+            
+            auth_hint = AUTH_INSTRUCTIONS.get(agente_key)
+            if auth_hint:
+                print(f"\n{C.AMARILLO}{C.NEGRITA}👉 Siguiente paso para autenticar:{C.FIN}")
+                print(f"   {C.NEGRITA}{auth_hint}{C.FIN}")
             print()
             return await mostrar_estado()
         else:
