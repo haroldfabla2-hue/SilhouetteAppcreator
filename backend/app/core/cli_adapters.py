@@ -172,9 +172,14 @@ CLI_SPECS: dict[str, CLISpec] = {
     "antigravity": CLISpec(
         name="antigravity",
         label="Antigravity",
-        executables=("agy", "antigravity"),
-        subcommand=("exec",),
-        home_subdirs=(".gemini/antigravity/bin", ".antigravity/bin"),
+        executables=("agy", "antigravity", "Antigravity"),
+        subcommand=(),
+        home_subdirs=(
+            ".gemini/antigravity/bin",
+            ".antigravity/bin",
+            "AppData/Local/Programs/Antigravity",
+            "AppData/Local/Programs/Antigravity/resources/app",
+        ),
     ),
     "aider": CLISpec(
         name="aider",
