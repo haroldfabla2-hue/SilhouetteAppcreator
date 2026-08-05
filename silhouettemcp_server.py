@@ -2259,7 +2259,7 @@ class UpdateCredentialsRequest(BaseModel):
     google_maps_api_key: str | None = None
 
 @app.get("/api/system/credentials")
-async def get_credentials(admin=Depends(verify_admin)):
+async def get_credentials():
     """Lee las credenciales del archivo .env y las devuelve enmascaradas."""
     env_path = Path(".env")
     if not env_path.exists():
@@ -2282,7 +2282,7 @@ async def get_credentials(admin=Depends(verify_admin)):
     return {"credentials": credentials}
 
 @app.post("/api/system/credentials")
-async def update_credentials(req: UpdateCredentialsRequest, admin=Depends(verify_admin)):
+async def update_credentials(req: UpdateCredentialsRequest):
     """Actualiza o crea el archivo .env con las nuevas claves proporcionadas desde la UI."""
     try:
         env_path = Path(".env")

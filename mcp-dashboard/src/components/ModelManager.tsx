@@ -69,9 +69,8 @@ export const ModelManager: React.FC = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(credForm)
       });
-      const data = await res.json();
-      if (data.success) {
-        alert(data.message);
+      if (res.ok && data.success) {
+        alert(data.message || 'Credenciales guardadas correctamente');
         fetchCredentials();
         setCredForm({
           openrouter_api_key: '',
@@ -86,10 +85,10 @@ export const ModelManager: React.FC = () => {
           google_maps_api_key: ''
         });
       } else {
-        alert('Error al guardar credenciales');
+        alert(`Error al guardar credenciales: ${data.detail || data.message || 'Desconocido'}`);
       }
     } catch (err) {
-      alert('Error de conexión con el servidor');
+      alert(`Error de conexión con el servidor: ${err}`);
     } finally {
       setSavingCreds(false);
     }
