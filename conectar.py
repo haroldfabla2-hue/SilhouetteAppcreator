@@ -147,11 +147,50 @@ async def guardar_clave(proveedor: str, credencial: str) -> int:
     return 1
 
 
+INSTALL_COMMANDS: dict[str, str] = {
+    "claude": "npm install -g @anthropic-ai/claude-code",
+    "codex": "npm install -g @openai/codex-cli",
+    "gemini": "npm install -g @google/gemini-cli",
+    "cursor": "npm install -g cursor-agent",
+    "aider": "pip install aider-chat",
+}
+
+
+async def instalar_agente(agente: str) -> int:
+    agente_key = agente.lower().strip()
+    cmd = INSTALL_COMMANDS.get(agente_key)
+    if not cmd:
+        print(f"{C.ROJO}Agente desconocido '{agente}'. Opciónes soportadas: {', '.join(INSTALL_COMMANDS.keys())}{C.FIN}")
+        return 1
+
+    print(f"{C.AZUL}Ejecutando instalación para '{agente_key}': {cmd}...{C.FIN}")
+    try:
+        process = await asyncio.create_subprocess_shell(
+            cmd,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE
+        )
+        stdout, stderr = await process.communicate()
+        if process.returncode == 0:
+            print(f"{C.VERDE}{C.NEGRITA}[INSTALACIÓN COMPLETADA]{C.FIN} {agente_key} se instaló correctamente.")
+            print()
+            return await mostrar_estado()
+        else:
+            print(f"{C.ROJO}[ERROR EN INSTALACIÓN]{C.FIN} {stderr.decode(errors='replace')}")
+            return 1
+    except Exception as e:
+        print(f"{C.ROJO}Error al ejecutar instalación: {e}{C.FIN}")
+        return 1
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Conecta y verifica proveedores de IA.")
     parser.add_argument("--arreglar", action="store_true", help="aplica las reparaciones automáticas")
     parser.add_argument(
         "--clave", nargs=2, metavar=("PROVEEDOR", "CREDENCIAL"), help="valida y guarda una clave"
+    )
+    parser.add_argument(
+        "--instalar", metavar="AGENTE", help="instala automáticamente un agente CLI (claude, codex, gemini, cursor, aider)"
     )
     args = parser.parse_args()
 
@@ -162,6 +201,8 @@ def main() -> int:
 
     load_env()
 
+    if args.instalar:
+        return asyncio.run(instalar_agente(args.instalar))
     if args.clave:
         return asyncio.run(guardar_clave(*args.clave))
     if args.arreglar:
