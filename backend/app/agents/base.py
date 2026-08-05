@@ -175,8 +175,12 @@ class BaseAgent(ABC):
                 return await self._call_openrouter_direct(prompt, temperature, max_tokens, model)
 
         except Exception as e:
-            self.logger.exception(f"Error en llamada LLM: {str(e)}")
-            return f"[Error LLM - Fallback para: {prompt[:100]}...]\nError: {str(e)}"
+            # Se propaga en lugar de devolver un texto de error como si fuera la
+            # respuesta del modelo. Devolverlo hacía que el agente siguiera
+            # trabajando sobre «[Error LLM - Fallback para: …]» tratándolo como
+            # contenido válido, y el fallo acababa reportado como éxito.
+            self.logger.exception("Error en llamada LLM: %s", e)
+            raise
 
     async def _call_openrouter_direct(
         self,

@@ -46,15 +46,29 @@ PHASE_THRESHOLDS: list[tuple[float, Phase]] = [
 # A partir de ahí, DEEP_REST.
 
 # Qué motores tienen sentido en cada fase.
+#
+# Los cuatro motores cognitivos del brain (`janitor`, `dreamer`, `curiosity`,
+# `evolution`) reescriben la memoria, así que sólo corren cuando nadie está
+# usando el sistema. Es el mismo motivo por el que la consolidación biológica
+# ocurre durante el sueño: no competir con la percepción.
 PHASE_ENGINES: dict[Phase, frozenset[str]] = {
     # En ACTIVE sólo late: todo lo demás competiría con la petición del usuario.
     Phase.ACTIVE: frozenset({"heartbeat"}),
     Phase.ALERT: frozenset({"heartbeat", "vitals"}),
-    Phase.DROWSY: frozenset({"heartbeat", "vitals", "introspection", "calibration"}),
-    Phase.DREAMING: frozenset(
-        {"heartbeat", "vitals", "introspection", "calibration", "consolidation", "curiosity", "goals"}
+    Phase.DROWSY: frozenset(
+        {"heartbeat", "vitals", "introspection", "calibration", "janitor"}
     ),
-    Phase.DEEP_REST: frozenset({"heartbeat", "vitals", "consolidation"}),
+    Phase.DREAMING: frozenset(
+        {
+            "heartbeat", "vitals", "introspection", "calibration", "consolidation", "goals",
+            # El ciclo cognitivo completo.
+            "janitor", "dreamer", "curiosity", "evolution",
+        }
+    ),
+    # En reposo profundo sólo lo que consolida y depura; nada que genere trabajo.
+    Phase.DEEP_REST: frozenset(
+        {"heartbeat", "vitals", "consolidation", "janitor", "dreamer"}
+    ),
 }
 
 # Multiplicador de cadencia por fase: dormido se piensa más despacio.

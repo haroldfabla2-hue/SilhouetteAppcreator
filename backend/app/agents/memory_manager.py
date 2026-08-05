@@ -531,9 +531,9 @@ class MemoryManagerAgent(BaseAgent):
                 inputs = message.payload.get("inputs", [])
                 reasoning_phase = next((item["data"] for item in inputs if item.get("phase") == "reasoning"), {})
                 exec_phase = next((item["data"] for item in inputs if item.get("phase") == "execution"), {})
-                
+
                 user_prompt = reasoning_phase.get("objetivo", "Consulta del usuario")
-                
+
                 # Intentar sintetizar la respuesta conversacional con LLMRouter
                 try:
                     from backend.app.core.llm_router import LLMRouter
@@ -542,14 +542,19 @@ class MemoryManagerAgent(BaseAgent):
                         prompt=f"Eres SilhouetteAppcreator, un Orquestador Multi-Agente autónomo superior. Responde de forma útil, clara y profesional en español al usuario que te dijo: '{user_prompt}'. Explicando tus capacidades si te lo pide.",
                         model="glm-5.2-max"
                     )
+                    result = {"success": True, "content": ai_text}
                 except Exception as e:
-                    logger.warning(f"Error llamando router en síntesis: {e}")
-                    ai_text = f"¡Hola! He procesado tu solicitud '{user_prompt}'. El sistema de agentes multi-equipo está 100% activo y verificado."
-
-                result = {
-                    "success": True,
-                    "content": ai_text
-                }
+                    # Antes se respondía «El sistema de agentes multi-equipo
+                    # está 100% activo y verificado» precisamente cuando el
+                    # modelo no había respondido. Ahora el fallo se reporta.
+                    logger.error("No se pudo sintetizar la respuesta: %s", e)
+                    result = {
+                        "success": False,
+                        "error": (
+                            f"No hay ningún modelo disponible para responder: {e}"
+                        ),
+                        "content": "",
+                    }
             else:
                 result = {"success": False, "error": f"Operación no soportada: {operation}"}
 

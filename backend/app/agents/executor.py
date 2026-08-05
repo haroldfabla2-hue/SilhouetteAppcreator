@@ -244,16 +244,16 @@ Proporciona solo el código Python sin explicaciones adicionales.
             with tempfile.TemporaryDirectory() as temp_dir:
                 script_path = os.path.join(temp_dir, "script.py")
 
-                # Escribir código al archivo
-                async with aiofiles.open(script_path, 'w') as f:
+                # Escribir código al archivo con encoding utf-8
+                async with aiofiles.open(script_path, 'w', encoding='utf-8') as f:
                     await f.write(code)
 
-                # Ejecutar con timeout
+                # Ejecutar con timeout (usando ejecutable de Python del sistema)
                 timeout = limites.get("time_seconds", 30)
                 try:
                     result = await asyncio.wait_for(
                         asyncio.create_subprocess_exec(
-                            "python3", script_path,
+                            sys.executable, script_path,
                             stdout=asyncio.subprocess.PIPE,
                             stderr=asyncio.subprocess.PIPE,
                             cwd=temp_dir

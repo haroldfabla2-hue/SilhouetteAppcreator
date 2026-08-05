@@ -1,0 +1,36 @@
+{
+  "saved_at": 1785817459.607532,
+  "ticks": 9,
+  "organs": {
+    "heartbeat": {
+      "last_run": 1785817389.589087,
+      "runs": 1,
+      "failures": 0
+    },
+    "vitals": {
+      "last_run": 1785817459.607532,
+      "runs": 1,
+      "failures": 0
+    },
+    "consolidation": {
+      "last_run": 0.0,
+      "runs": 0,
+      "failures": 0
+    },
+    "introspection": {
+      "last_run": 0.0,
+      "runs": 0,
+      "failures": 0
+    },
+    "calibration": {
+      "last_run": 0.0,
+      "runs": 0,
+      "failures": 0
+    },
+    "goals": {
+      "last_run": 0.0,
+      "runs": 0,
+      "failures": 0
+    }
+  }
+}

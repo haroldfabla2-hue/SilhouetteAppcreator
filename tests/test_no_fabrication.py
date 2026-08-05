@@ -146,3 +146,43 @@ class TestConsistenciaDelVerificador:
             {"steps": [{"id": "a", "status": "DONE", "success": False}]}
         )
         assert coherente["score"] != incoherente["score"]
+
+
+class TestAgentesPropaganFallos:
+    """Un fallo del modelo no puede convertirse en la respuesta del modelo."""
+
+    async def test_base_agent_propaga_el_error(self) -> None:
+        """`call_llm` devolvía «[Error LLM - Fallback para: …]» como si fuera texto
+        generado, y el agente seguía trabajando sobre esa cadena."""
+        from backend.app.agents.base import BaseAgent
+
+        class RouterRoto:
+            async def chat_completion(self, *a: object, **k: object) -> str:
+                raise RuntimeError("proveedor caido")
+
+        agente = ExecutorAgent("general", llm_client=RouterRoto())
+        with pytest.raises(RuntimeError, match="proveedor caido"):
+            await agente.call_llm("hola")
+        assert issubclass(ExecutorAgent, BaseAgent)
+
+    async def test_la_sintesis_no_finge_exito(self) -> None:
+        from backend.app.agents.memory_manager import MemoryManagerAgent
+        from backend.app.models import AgentMessage
+
+        class RouterRoto:
+            async def chat_completion(self, *a: object, **k: object) -> str:
+                raise RuntimeError("sin modelo")
+
+        agente = MemoryManagerAgent(llm_client=RouterRoto())
+        mensaje = AgentMessage(
+            conversation_id="t",
+            sender="test",
+            recipients=["memory_manager"],
+            intent="synthesis",
+            payload={"operation": "synthesis", "reasoning_phase": {"objetivo": "Hola"}},
+        )
+        respuesta = await agente.process_message(mensaje)
+
+        assert respuesta.result["success"] is False
+        assert respuesta.result["content"] == ""
+        assert "100% activo" not in str(respuesta.result)

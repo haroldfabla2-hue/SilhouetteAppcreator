@@ -64,8 +64,8 @@ class LLMHealth(BaseModel):
     available_models: list[str]
     active_requests: int
     total_requests: int
-    avg_response_time_ms: float
-    error_rate_percent: float
+    avg_response_time_ms: float | None = None
+    error_rate_percent: float | None = None
     provider_stats: dict[str, Any]
 
 
@@ -73,10 +73,12 @@ class RedisHealth(BaseModel):
     """Estado de Redis"""
     status: str
     response_time_ms: float
-    memory_usage_mb: float
-    connected_clients: int
-    ops_per_second: float
-    key_stats: dict[str, int]
+    memory_usage_mb: float | None = None
+    connected_clients: int | None = None
+    ops_per_second: float | None = None
+    key_stats: dict[str, int] = {}
+    # Motivo cuando el estado no es «healthy». Sin él, un fallo se perdía.
+    error: str | None = None
 
 
 class HealthResponse(BaseModel):
@@ -279,90 +281,139 @@ async def get_system_metrics() -> HealthMetrics:
 
 
 async def check_database_health() -> DatabaseHealth:
-    """Verifica el estado de la base de datos"""
+    """Comprueba la base de datos con una consulta real.
 
+    Antes hacía `await asyncio.sleep(0.05)` («simular latencia») y devolvía
+    siempre `healthy` con 1247 consultas y un ratio de caché de 0.95 escritos a
+    mano. Un chequeo de salud que no puede fallar no informa de nada.
+    """
     start_time = time.time()
 
     try:
-        # Simular ping a base de datos
-        await asyncio.sleep(0.05)  # Simular latencia
+        from sqlalchemy import create_engine, text
 
+        from ..core import settings
+
+        motor = create_engine(settings.DATABASE_URL, pool_pre_ping=True)
+        with motor.connect() as conexion:
+            conexion.execute(text("SELECT 1"))
+        pool = motor.pool
         response_time = (time.time() - start_time) * 1000
 
         return DatabaseHealth(
             status="healthy",
-            response_time_ms=response_time,
+            response_time_ms=round(response_time, 2),
             connection_pool={
-                "active": 5,
-                "idle": 10,
-                "max_connections": 100,
-                "pool_status": "active"
+                "size": getattr(pool, "size", lambda: None)(),
+                "checked_out": getattr(pool, "checkedout", lambda: None)(),
+                "pool_status": "active",
             },
-            query_stats={
-                "total_queries": 1247,
-                "slow_queries": 3,
-                "avg_query_time_ms": 12.5,
-                "cache_hit_ratio": 0.95
-            },
-            last_vacuum=(datetime.now() - timedelta(hours=2)).isoformat()
+            query_stats={"detail": "El motor no expone contadores agregados."},
+            last_vacuum=None,
         )
 
-    except Exception:
-        response_time = (time.time() - start_time) * 1000
-        raise
+    except Exception as exc:
+        # No poder conectar es un resultado legítimo, no una excepción a ocultar.
+        return DatabaseHealth(
+            status="unavailable",
+            response_time_ms=round((time.time() - start_time) * 1000, 2),
+            connection_pool={},
+            query_stats={"error": str(exc)[:200]},
+            last_vacuum=None,
+        )
 
 
 async def check_llm_health() -> LLMHealth:
-    """Verifica el estado del sistema LLM"""
+    """Estado real del router de modelos.
 
+    Antes devolvía `total_requests=1247`, `error_rate=2.1%` y estadísticas por
+    proveedor inventadas, siempre con `status: healthy`. El router lleva
+    contadores reales; son los que se reportan.
+    """
     try:
-        # TODO: Implementar verificación real del LLM router
-        # Por ahora simular estado
+        from ..core.llm_router import CLI_PROVIDER_NAMES, LLMRouter
+        from ..core.cli_adapters import is_available as cli_disponible
+
+        router = LLMRouter()
+        stats = router.get_stats()
+        por_proveedor = stats.get("providers", stats) or {}
+
+        llamadas = sum(int(v.get("calls", 0)) for v in por_proveedor.values() if isinstance(v, dict))
+        errores = sum(int(v.get("errors", 0)) for v in por_proveedor.values() if isinstance(v, dict))
+
+        disponibles: list[str] = []
+        if router.openrouter_api_key:
+            disponibles.append("openrouter")
+        if router.minimax_api_key:
+            disponibles.append("minimax")
+        disponibles.extend(n for n in CLI_PROVIDER_NAMES.values() if cli_disponible(n))
 
         return LLMHealth(
-            status="healthy",
-            available_models=["minimax-m2", "llama-3.3-70b"],
-            active_requests=3,
-            total_requests=1247,
-            avg_response_time_ms=450.0,
-            error_rate_percent=2.1,
-            provider_stats={
-                "minimax": {"requests": 678, "avg_time": 380, "errors": 12},
-                "openrouter": {"requests": 569, "avg_time": 520, "errors": 15}
-            }
+            status="healthy" if disponibles else "unavailable",
+            available_models=disponibles,
+            active_requests=0,
+            total_requests=llamadas,
+            # Sin llamadas todavía, la tasa es desconocida: no se reporta 0.
+            avg_response_time_ms=None,
+            error_rate_percent=round(errores / llamadas * 100, 2) if llamadas else None,
+            provider_stats=por_proveedor,
         )
 
-    except Exception:
-        raise
+    except Exception as exc:
+        return LLMHealth(
+            status="unavailable",
+            available_models=[],
+            active_requests=0,
+            total_requests=0,
+            avg_response_time_ms=None,
+            error_rate_percent=None,
+            provider_stats={"error": str(exc)[:200]},
+        )
 
 
 async def check_redis_health() -> RedisHealth:
-    """Verifica el estado de Redis"""
+    """Comprueba Redis con un PING real.
 
+    Antes simulaba la latencia y devolvía 45,6 MB de memoria y 1247 claves
+    escritos a mano.
+    """
     start_time = time.time()
 
     try:
-        # Simular ping a Redis
-        await asyncio.sleep(0.02)
+        import redis.asyncio as redis
 
-        response_time = (time.time() - start_time) * 1000
+        from ..core import settings
+
+        cliente = redis.from_url(settings.REDIS_URL, decode_responses=True)
+        await cliente.ping()
+        info = await cliente.info()
+        await cliente.aclose()
 
         return RedisHealth(
             status="healthy",
-            response_time_ms=response_time,
-            memory_usage_mb=45.6,
-            connected_clients=12,
-            ops_per_second=145.7,
+            response_time_ms=round((time.time() - start_time) * 1000, 2),
+            memory_usage_mb=round(int(info.get("used_memory", 0)) / 1024 / 1024, 2),
+            connected_clients=int(info.get("connected_clients", 0)),
+            ops_per_second=float(info.get("instantaneous_ops_per_sec", 0)),
             key_stats={
-                "total_keys": 1247,
-                "expired_keys": 89,
-                "evicted_keys": 0
-            }
+                "total_keys": int(info.get("db0", {}).get("keys", 0))
+                if isinstance(info.get("db0"), dict)
+                else 0,
+                "expired_keys": int(info.get("expired_keys", 0)),
+                "evicted_keys": int(info.get("evicted_keys", 0)),
+            },
         )
 
-    except Exception:
-        response_time = (time.time() - start_time) * 1000
-        raise
+    except Exception as exc:
+        return RedisHealth(
+            status="unavailable",
+            response_time_ms=round((time.time() - start_time) * 1000, 2),
+            memory_usage_mb=None,
+            connected_clients=None,
+            ops_per_second=None,
+            key_stats={},
+            error=str(exc)[:200],
+        )
 
 
 async def check_critical_endpoints() -> dict[str, ServiceHealth]:
@@ -473,32 +524,39 @@ def _error_db_health(error: Exception) -> DatabaseHealth:
         status="unhealthy",
         response_time_ms=0,
         connection_pool={},
-        query_stats={}
+        query_stats={"error": str(error)[:200]},
     )
 
 
 def _error_llm_health(error: Exception) -> LLMHealth:
-    """Crea respuesta de error para LLM"""
+    """Respuesta cuando la comprobación del LLM falla.
+
+    Los valores desconocidos van a `None`, no a 0 ni a 100: si la comprobación
+    no llegó a ejecutarse, no se sabe cuál era la latencia ni la tasa de error.
+    Y el motivo del fallo se conserva — antes se recibía como argumento y se
+    descartaba.
+    """
     return LLMHealth(
         status="unhealthy",
         available_models=[],
         active_requests=0,
         total_requests=0,
-        avg_response_time_ms=0,
-        error_rate_percent=100,
-        provider_stats={}
+        avg_response_time_ms=None,
+        error_rate_percent=None,
+        provider_stats={"error": str(error)[:200]},
     )
 
 
 def _error_redis_health(error: Exception) -> RedisHealth:
-    """Crea respuesta de error para Redis"""
+    """Respuesta cuando la comprobación de Redis falla."""
     return RedisHealth(
         status="unhealthy",
         response_time_ms=0,
-        memory_usage_mb=0,
-        connected_clients=0,
-        ops_per_second=0,
-        key_stats={}
+        memory_usage_mb=None,
+        connected_clients=None,
+        ops_per_second=None,
+        key_stats={},
+        error=str(error)[:200],
     )
 
 

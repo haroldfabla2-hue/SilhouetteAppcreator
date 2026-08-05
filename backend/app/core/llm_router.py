@@ -6,16 +6,21 @@ import asyncio
 import json
 import logging
 import os
-import re
-import shutil
 import time
 from collections import defaultdict, deque
 from datetime import datetime
 from enum import Enum
-from pathlib import Path
 from typing import Any
 
 import httpx
+
+from .env_loader import ensure_loaded
+
+# El router puede importarse sin pasar por el servidor (tests, scripts, CLI);
+# aquí se garantiza que el `.env` esté cargado antes de leer ninguna clave.
+# Los imports que siguen van después a propósito: `config` lee el entorno al
+# importarse, así que el orden no es estilístico sino funcional.
+ensure_loaded()
 
 try:
     from ..core.config import settings
@@ -27,6 +32,15 @@ except Exception:
 
 import litellm
 
+from .cli_adapters import (
+    CLIInvocationError,
+    CLINotAuthenticated,
+    CLIUnavailable,
+    run_cli,
+)
+from .cli_adapters import (
+    is_available as cli_is_available,
+)
 from .dynamic_model_registry import model_registry
 
 logger = logging.getLogger(__name__)
@@ -53,112 +67,63 @@ class LLMProvider(str, Enum):
     CLI_CLAUDE_CODE = "cli_claude_code"
     CLI_CODEX = "cli_codex"
     CLI_ANTIGRAVITY = "cli_antigravity"
+    CLI_CURSOR = "cli_cursor"
+    CLI_AIDER = "cli_aider"
+    CLI_QWEN = "cli_qwen"
+    CLI_OPENCODE = "cli_opencode"
+    CLI_CRUSH = "cli_crush"
+    CLI_COPILOT = "cli_copilot"
+    CLI_GOOSE = "cli_goose"
+    CLI_AMP = "cli_amp"
     FALLBACK_LOCAL = "fallback_local"
 
-class CLIExecutionError(RuntimeError):
-    """Un modelo CLI local no pudo ejecutarse o no devolvió salida.
 
-    Se propaga para que el router active el siguiente proveedor de la cadena de
-    fallback. Nunca se convierte en una respuesta de texto: un fallo tiene que
-    parecer un fallo.
+# Correspondencia entre proveedor del router y adaptador de CLI.
+CLI_PROVIDER_NAMES: dict[LLMProvider, str] = {
+    LLMProvider.CLI_CLAUDE_CODE: "claude",
+    LLMProvider.CLI_GEMINI: "gemini",
+    LLMProvider.CLI_CODEX: "codex",
+    LLMProvider.CLI_ANTIGRAVITY: "antigravity",
+    LLMProvider.CLI_CURSOR: "cursor",
+    LLMProvider.CLI_AIDER: "aider",
+    LLMProvider.CLI_QWEN: "qwen",
+    LLMProvider.CLI_OPENCODE: "opencode",
+    LLMProvider.CLI_CRUSH: "crush",
+    LLMProvider.CLI_COPILOT: "copilot",
+    LLMProvider.CLI_GOOSE: "goose",
+    LLMProvider.CLI_AMP: "amp",
+}
+
+# Orden de preferencia al recurrir a agentes locales.
+CLI_FALLBACK_ORDER: tuple[LLMProvider, ...] = (
+    LLMProvider.CLI_CLAUDE_CODE,
+    LLMProvider.CLI_CURSOR,
+    LLMProvider.CLI_CODEX,
+    LLMProvider.CLI_GEMINI,
+    LLMProvider.CLI_COPILOT,
+    LLMProvider.CLI_ANTIGRAVITY,
+    LLMProvider.CLI_QWEN,
+    LLMProvider.CLI_OPENCODE,
+    LLMProvider.CLI_AIDER,
+    LLMProvider.CLI_CRUSH,
+    LLMProvider.CLI_GOOSE,
+    LLMProvider.CLI_AMP,
+)
+
+class NoProviderAvailable(RuntimeError):
+    """Ningún proveedor de modelo pudo atender la petición.
+
+    Se lanza en lugar de devolver una respuesta de relleno: quien llama debe
+    poder distinguir «el modelo dijo esto» de «no había ningún modelo».
     """
 
 
-class CLIExecutor:
-    """Helper class to execute local CLI models (Gemini, Antigravity, Claude, Codex)."""
-
-    @staticmethod
-    async def execute_cli(command: str, prompt: str) -> str:
-        """Executes a CLI command asynchronously, injecting the prompt."""
-        try:
-            # Detectar ejecutables en Windows (.cmd, .ps1, PATH)
-            resolved_cmd = shutil.which(command)
-            if not resolved_cmd:
-                # Rutas derivadas del entorno real, no del nombre de usuario de
-                # la máquina de desarrollo original.
-                home = Path.home()
-                appdata = os.getenv("APPDATA", str(home / "AppData" / "Roaming"))
-                potential_paths = [
-                    Path(appdata) / "npm" / f"{command}.cmd",
-                    home / ".gemini" / "antigravity" / "bin" / f"{command}.exe",
-                    home / ".local" / "bin" / command,
-                ]
-                nvm_root = os.getenv("NVM_SYMLINK") or os.getenv("NVM_HOME")
-                if nvm_root:
-                    potential_paths.insert(0, Path(nvm_root) / f"{command}.cmd")
-
-                for p in potential_paths:
-                    if p.exists():
-                        resolved_cmd = str(p)
-                        break
-
-            if not resolved_cmd:
-                # Antes se sustituía silenciosamente por `gemini`, de modo que
-                # pedir Claude podía acabar ejecutando otro modelo sin avisar.
-                raise CLIExecutionError(
-                    f"No se encontró el ejecutable del CLI '{command}' en el PATH "
-                    "ni en las ubicaciones conocidas."
-                )
-
-            # En Windows, usar cmd.exe /c si es un script .cmd o .bat
-            if resolved_cmd.endswith(".cmd") or resolved_cmd.endswith(".bat"):
-                cmd_args = ["cmd.exe", "/c", resolved_cmd]
-            else:
-                cmd_args = [resolved_cmd]
-
-            if "claude" in command.lower():
-                cmd_args.extend(["-p", prompt])
-            elif any(k in command.lower() for k in ['agy', 'antigravity']):
-                cmd_args.extend(["exec", prompt])
-            else:
-                cmd_args.append(prompt)
-
-            process = await asyncio.create_subprocess_exec(
-                *cmd_args,
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE
-            )
-            try:
-                stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=120.0)
-            except asyncio.TimeoutError:
-                process.kill()
-                await process.wait()
-                raise
-
-            output = stdout.decode('utf-8', errors='ignore')
-
-            # Un fallo se propaga como excepción para que el router pruebe el
-            # siguiente proveedor. Devolver una frase de relleno hacía que una
-            # cadena de fallos totales se reportara hacia arriba como éxitos.
-            if process.returncode != 0 and not output.strip():
-                err_output = stderr.decode('utf-8', errors='ignore').strip()
-                raise CLIExecutionError(
-                    f"El CLI '{command}' terminó con código {process.returncode}: "
-                    f"{err_output[:400] or '(sin salida de error)'}"
-                )
-
-            # Limpiar banners o avisos de versión
-            output = re.sub(r'Update available!.*?\n', '', output, flags=re.IGNORECASE)
-            output = re.sub(r'A new version of .*? is available.*?\n', '', output, flags=re.IGNORECASE)
-
-            cleaned = output.strip()
-            if not cleaned:
-                raise CLIExecutionError(
-                    f"El CLI '{command}' terminó correctamente pero no devolvió salida."
-                )
-            return cleaned
-
-        except asyncio.TimeoutError:
-            logger.warning(f"[CLIExecutor] Timeout ejecutando {command} (120s)")
-            raise CLIExecutionError(
-                f"El CLI '{command}' agotó el tiempo límite de 120 s."
-            ) from None
-        except CLIExecutionError:
-            raise
-        except Exception as e:
-            logger.warning(f"[CLIExecutor] Fallo ejecutando {command}: {e}")
-            raise CLIExecutionError(f"No se pudo ejecutar el CLI '{command}': {e}") from e
-
+# NOTA: aquí vivían `CLIExecutionError` y `CLIExecutor`, con la resolución de
+# rutas escrita a mano que no probaba extensiones de Windows (y por eso no
+# encontraba `claude.exe`) y que pasaba el prompt de forma posicional (lo que
+# dejaba a Gemini en modo interactivo hasta agotar el tiempo límite).
+# Ese trabajo lo hace ahora `core/cli_adapters.py`, donde cada CLI declara
+# cómo se le invoca.
 
 class RateLimiter:
     """Rate limiter simple por proveedor"""
@@ -467,12 +432,14 @@ class LLMRouter:
         else:
             base_fallback = []
 
-        # Append CLI fallbacks as a safety net if APIs are fully exhausted
-        base_fallback.extend([
-            LLMProvider.CLI_CLAUDE_CODE,
-            LLMProvider.CLI_GEMINI,
-            LLMProvider.CLI_CODEX
-        ])
+        # Red de seguridad: si las APIs se agotan, se prueban los CLIs locales
+        # que estén realmente instalados, en orden de preferencia. Filtrar aquí
+        # evita gastar intentos en agentes que no existen en esta máquina.
+        base_fallback.extend(
+            provider
+            for provider in CLI_FALLBACK_ORDER
+            if cli_is_available(CLI_PROVIDER_NAMES[provider])
+        )
 
         return base_fallback
 
@@ -490,13 +457,12 @@ class LLMRouter:
         if "openrouter" in provider.value and not self.openrouter_api_key:
             return False
 
-        # Verificar CLI availability using shutil.which
-        if provider == LLMProvider.CLI_GEMINI:
-            return shutil.which('gemini') is not None
-        if provider == LLMProvider.CLI_CLAUDE_CODE:
-            return shutil.which('claude') is not None
-        if provider == LLMProvider.CLI_CODEX:
-            return shutil.which('codex') is not None
+        # Disponibilidad real del CLI. Antes sólo se comprobaban tres, con
+        # `shutil.which` a secas: Antigravity y el resto caían al `return True`
+        # final y se anunciaban como disponibles sin estarlo.
+        cli_name = CLI_PROVIDER_NAMES.get(provider)
+        if cli_name is not None:
+            return cli_is_available(cli_name)
 
         # Verificar rate limit (sincronizado para compatibilidad)
         if provider in self.RATE_LIMITS:
@@ -578,9 +544,10 @@ class LLMRouter:
             return await self._call_openrouter_model(
                 "grok_4_3", prompt, temperature, max_tokens, request_id
             )
-        elif provider in [LLMProvider.CLI_GEMINI, LLMProvider.CLI_CLAUDE_CODE, LLMProvider.CLI_CODEX, LLMProvider.CLI_ANTIGRAVITY, LLMProvider.FALLBACK_LOCAL]:
-            cli_prov = LLMProvider.CLI_ANTIGRAVITY if provider == LLMProvider.FALLBACK_LOCAL else provider
-            return await self._call_cli_provider(cli_prov, prompt, request_id)
+        elif provider in CLI_PROVIDER_NAMES:
+            # Cualquier CLI registrado en `cli_adapters` se despacha aquí; añadir
+            # uno nuevo no requiere tocar esta cadena.
+            return await self._call_cli_provider(provider, prompt, request_id)
         else:
             # Check dynamic model registry
             dyn_model = model_registry.get_model(str(provider))
@@ -632,34 +599,39 @@ class LLMRouter:
             raise
 
     async def _call_cli_provider(self, provider: LLMProvider, prompt: str, request_id: str) -> str:
-        """Call a local CLI tool as an LLM provider."""
-        self.stats[provider]["calls"] += 1
+        """Ejecuta un agente CLI local como proveedor de modelo.
 
-        cmd = None
-        if provider == LLMProvider.CLI_GEMINI:
-            cmd = shutil.which("gemini") or "gemini"
-        elif provider == LLMProvider.CLI_CLAUDE_CODE:
-            cmd = shutil.which("claude") or r"C:\Users\USER\AppData\Roaming\npm\claude.cmd"
-        elif provider == LLMProvider.CLI_CODEX:
-            cmd = shutil.which("codex") or r"C:\Users\USER\AppData\Roaming\npm\codex.cmd"
-        elif provider == LLMProvider.CLI_ANTIGRAVITY:
-            antigravity_bin = r"C:\Users\USER\AppData\Local\Programs\Antigravity\Antigravity.exe"
-            cmd = shutil.which("agy") or shutil.which("antigravity") or (antigravity_bin if os.path.exists(antigravity_bin) else "antigravity")
+        La resolución de rutas y los argumentos de cada CLI viven en
+        `cli_adapters`. Antes estaban aquí, con rutas escritas a mano que
+        incluían el nombre de usuario de la máquina de desarrollo original y que
+        no probaban extensiones de Windows.
+        """
+        self.stats[provider]["calls"] += 1
+        cli_name = CLI_PROVIDER_NAMES.get(provider)
+        if cli_name is None:
+            raise CLIUnavailable(f"El proveedor {provider.value} no es un CLI conocido.")
 
         try:
-            self.request_logger.info(f"[{request_id}] Executing CLI fallback: {cmd}")
-            content = await CLIExecutor.execute_cli(cmd, prompt)
-
-            self.request_logger.info(f"[{request_id}] {cmd} CLI - Respuesta exitosa: {len(content)} chars")
-            self.stats[provider]["last_success"] = datetime.utcnow().isoformat()
-            # Estimating tokens: roughly 4 chars per token
-            estimated_tokens = len(content) // 4
-            self.stats[provider]["total_tokens"] += estimated_tokens
-
-            return content
-        except Exception as e:
-            self.error_logger.error(f"[{request_id}] Error in CLI {cmd}: {e}")
+            self.request_logger.info(f"[{request_id}] Ejecutando CLI: {cli_name}")
+            content = await run_cli(cli_name, prompt)
+        except CLINotAuthenticated as e:
+            # No es un fallo transitorio: reintentar no arregla una sesión
+            # cerrada. Se abre el circuito para no gastar intentos en él.
+            self.error_logger.error(f"[{request_id}] CLI {cli_name} sin sesión: {e}")
+            self.stats[provider]["errors"] += 1
+            self._record_error(provider)
             raise
+        except (CLIUnavailable, CLIInvocationError) as e:
+            self.error_logger.error(f"[{request_id}] CLI {cli_name} falló: {e}")
+            self.stats[provider]["errors"] += 1
+            raise
+
+        self.request_logger.info(
+            f"[{request_id}] CLI {cli_name} respondió: {len(content)} caracteres"
+        )
+        self.stats[provider]["last_success"] = datetime.utcnow().isoformat()
+        self.stats[provider]["total_tokens"] += len(content) // 4
+        return content
 
     async def _check_rate_limit(self, provider: LLMProvider) -> bool:
         """Verifica rate limit para un proveedor"""
@@ -868,42 +840,61 @@ class LLMRouter:
         provider = LLMProvider.FALLBACK_LOCAL
         self.stats[provider]["calls"] += 1
 
-        logger.warning(f"[{request_id}] Usando fallback local - Modelo: {model}")
-        
-        prompt_lower = prompt.lower()
-        if any(w in prompt_lower for w in ["hola", "saludos", "buenos dias", "buenas tardes"]):
-            return (
-                "¡Hola! Soy **SilhouetteAppcreator**, tu Orquestador de Desarrollo de Software Multi-Agente Autónoma.\n\n"
-                "Estoy equipado con una arquitectura de 5 niveles (Reasoner, Planner, Executor, Verifier y MemoryManager), "
-                "verificación matemática Z3 Solver, memoria cognitiva de 4 niveles (`silhouette-brain`) y razonamiento MCTS.\n\n"
-                "¿En qué aplicación, script, API o refactorización de código te gustaría trabajar hoy?"
+        logger.error(
+            "[%s] Ningún proveedor respondió. Modelo solicitado: %s", request_id, model
+        )
+        raise NoProviderAvailable(self._diagnose_no_provider(model))
+
+    def _diagnose_no_provider(self, model: str) -> str:
+        """Explica por qué no hay ningún modelo y qué hacer al respecto.
+
+        Antes, cuando fallaban todos los proveedores, se devolvía un texto
+        enlatado elegido por palabras clave del prompt: un saludo, una lista de
+        capacidades, o un parte que afirmaba «Reasoner: intención analizada
+        correctamente» y «Verifier: verificación completada» sin que ningún
+        agente se hubiera ejecutado. Quien preguntaba recibía una respuesta
+        segura de sí misma en lugar de saber que el sistema no tenía modelo.
+        """
+        motivos: list[str] = []
+
+        if not self.openrouter_api_key and not self.minimax_api_key:
+            motivos.append("no hay ninguna clave de API configurada")
+        else:
+            configuradas = [
+                nombre
+                for nombre, clave in (
+                    ("OpenRouter", self.openrouter_api_key),
+                    ("MiniMax", self.minimax_api_key),
+                )
+                if clave
+            ]
+            motivos.append(
+                f"las claves configuradas ({', '.join(configuradas)}) no respondieron"
             )
-        elif any(w in prompt_lower for w in ["hacer", "capacidades", "funciona", "que puedes", "quien eres"]):
-            return (
-                "## 🚀 Capacidades del Sistema SilhouetteAppcreator\n\n"
-                "Como sistema autónomo de desarrollo de software, puedo ayudarte con:\n"
-                "1. **Creación de Aplicaciones Completas**: APIs en FastAPI/Node, aplicaciones React, servicios backend.\n"
-                "2. **Auditoría y Refactorización**: Análisis simbólico con Z3 Solver y verificación de calidad de código.\n"
-                "3. **Razonamiento y Planificación MCTS**: Búsqueda en árbol Monte Carlo para desglosar tareas complejas en paralelo.\n"
-                "4. **Memoria Cognitiva Continua**: 4 niveles de memoria (Working, Episodios, Vectores y Grafos) con daemons autónomos.\n"
-                "5. **Fábrica de Servidores MCP**: Creación y orquestación dinámica de herramientas FastMCP.\n\n"
-                "Para comenzar, simplemente indícame la aplicación o tarea de código que deseas construir."
+
+        cli_instalados = [
+            nombre for nombre in CLI_PROVIDER_NAMES.values() if cli_is_available(nombre)
+        ]
+        if cli_instalados:
+            motivos.append(
+                f"los agentes locales instalados ({', '.join(cli_instalados)}) "
+                "fallaron o no tienen sesión iniciada"
             )
+        else:
+            motivos.append("no hay ningún agente CLI instalado")
 
-        # Generar respuesta estructurada si es una tarea específica
-        return f"""# [Respuesta de Agente Local Silhouette]
+        abiertos = [
+            p.value for p in LLMProvider
+            if self._is_circuit_breaker_open(p)
+        ]
+        if abiertos:
+            motivos.append(f"circuito abierto por fallos repetidos en: {', '.join(abiertos)}")
 
-He analizado tu solicitud: **"{prompt[:200]}"**
-
-El sistema ha procesado la intención mediante la matriz multi-agente.
-Para habilitar generación por LLMs en la nube con máxima precisión, puedes agregar `OPENROUTER_API_KEY` o `MINIMAX_API_KEY` en tu archivo `.env`.
-
-### Estado de Agentes:
-- 🧠 **Reasoner**: Intención analizada correctamente.
-- 📐 **Planner**: Plan de tareas desglosado.
-- ⚙️ **Executor**: Entorno de ejecución y sandbox en regla.
-- 🔍 **Verifier**: Verificación de calidad y seguridad completada.
-"""
+        return (
+            f"No hay ningún modelo disponible para atender la petición ({model}): "
+            + "; ".join(motivos)
+            + ". Ejecute `python conectar.py` para ver el estado y las opciones de conexión."
+        )
 
     def get_stats(self) -> dict[str, Any]:
         """Obtiene estadísticas detalladas del router"""

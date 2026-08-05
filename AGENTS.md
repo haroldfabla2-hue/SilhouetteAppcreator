@@ -27,11 +27,40 @@ De ahí las tres reglas que rigen este repositorio:
 
 ---
 
+## Conectar una IA
+
+```bash
+python conectar.py              # qué hay conectado, qué falta y cómo arreglarlo
+python conectar.py --arreglar   # aplica las reparaciones automáticas
+python conectar.py --clave openrouter sk-or-v1-...
+```
+
+El asistente **sondea de verdad**: ejecuta cada agente instalado y llama a cada
+API. Un CLI instalado sin sesión iniciada aparece como `[SIN SESION]`, no como
+disponible; una clave revocada aparece como inválida aunque la variable exista.
+
+| Vía | Cómo |
+|---|---|
+| Clave de API | `python conectar.py --clave <proveedor> <clave>`. Se valida antes de guardarla: si no funciona, no se escribe. |
+| Cuenta de Google | `gemini` y elegir «Login with Google». Sin gestionar claves. |
+| Suscripción de Claude | `claude` y escribir `/login`. |
+| Local, sin coste | `ollama serve` — se detecta solo. |
+
+Proveedores soportados: OpenRouter, OpenAI, Anthropic, Google AI, Groq,
+DeepSeek, Zhipu, Moonshot, MiniMax, xAI, Mistral, Ollama, LM Studio y vLLM.
+
+Agentes CLI soportados (12): Claude Code, Gemini CLI, Codex, Cursor Agent,
+Antigravity, Aider, Qwen Code, OpenCode, Crush, Copilot CLI, Goose y Amp.
+Añadir uno nuevo es añadir un `CLISpec` en `backend/app/core/cli_adapters.py`;
+no hay que tocar el router.
+
+---
+
 ## Puesta en marcha
 
 ```bash
 # 1. Dependencias (incluye silhouette-brain desde su repositorio)
-pip install -e ".[dev,reasoning]"
+pip install -e ".[dev,reasoning,research,market]"
 
 # 2. Configuración
 cp .env.example .env
@@ -113,7 +142,9 @@ pytest        # 163 tests, sin servicios externos
 `.github/workflows/ci.yml` incluye además **barreras de seguridad** que fallan el
 build si reaparece cualquiera de estos problemas: secretos versionados, claves de
 API en el árbol, credenciales escritas en el código, CORS con comodín en una
-superficie activa, o archivos `.pyc` versionados.
+superficie activa, archivos `.pyc` versionados, simulaciones fuera de
+`legacy/`, importaciones desde `legacy/`, respuestas fabricadas en el router
+o en los agentes, y métricas de salud con cifras fijas.
 
 ### Al añadir un endpoint
 
@@ -151,6 +182,22 @@ curl      localhost:8001/api/evolution/goals
 curl      localhost:8001/api/squads
 ```
 
+### Herramientas reales (`backend/app/tools/`)
+
+Cada módulo sustituye a una capacidad que en `legacy/` devolvía datos inventados.
+
+| Módulo | Sustituye a | Qué hace ahora |
+|---|---|---|
+| `git_agent.py` | `git_operations_agent.py` (5 métodos `_simulate_*`) | Comandos git reales: estado, ramas, historial, merge y detección de conflictos con `merge-tree` (sin tocar el árbol de trabajo). Rutas confinadas al workspace; nombres de rama validados contra inyección de opciones. |
+| `research.py` | `expanded_research.py` (patentes e inventores con `random.choice()`) | arXiv + Semantic Scholar, APIs públicas y gratuitas. XML parseado con `defusedxml`. Las patentes se declaran no implementadas en lugar de fingirse. |
+| `market_data.py` | `expanded_finance.py` (`random.uniform(10, 500)` como precio) | Cotizaciones e histórico reales vía `yfinance`, con advertencia de retardo en cada respuesta. |
+
+```bash
+curl "localhost:8001/api/git/info?path=."         -H "Authorization: Bearer $TOKEN"
+curl "localhost:8001/api/research/search?query=monte+carlo+tree+search"
+curl "localhost:8001/api/market/quote?symbol=MSFT"
+```
+
 ### El organismo (`backend/app/organism/`)
 
 La capa que mantiene el sistema vivo **sin que nadie interactúe**. Es lo que
@@ -161,6 +208,22 @@ convierte un servidor que espera peticiones en algo que trabaja por su cuenta.
 | `homeostasis.py` | Mide CPU, RAM y disco y clasifica el entorno. Bajo presión **espacia** la cadencia; nunca desactiva un motor. «Nunca perder capacidades, sólo adaptarlas.» |
 | `circadian.py` | Cinco fases según el silencio: ACTIVE, ALERT, DROWSY, DREAMING, DEEP_REST. Cada una habilita distintos motores. |
 | `vital_daemon.py` | El bucle vital: late, aísla fallos, persiste su ritmo y garantiza instancia única. |
+| `cognitive_organs.py` | Los cuatro motores de `silhouette-brain` (Curiosity, Janitor, Dreamer, Evolution) registrados como órganos. Corren durante el sueño porque reescriben la memoria. |
+| `self_healing.py` | Diagnóstico medido (recursos, órganos, agentes, estancamiento) y reparación real: libera tareas colgadas y recalibra agentes degradados. |
+
+Los motores cognitivos son la pieza biomimética del ciclo. La Curiosidad merece
+una nota: **sólo genera preguntas, nunca hechos** — la misma regla que rige el
+proyecto. Un test (`test_ningun_motor_queda_sin_fase`) impide que un órgano
+quede registrado sin fase circadiana, un fallo que ya ocurrió una vez: tres
+motores se registraron pero no estaban en `PHASE_ENGINES`, así que nunca se
+habrían ejecutado.
+
+```bash
+curl      localhost:8001/api/cognition/engines
+curl -X POST localhost:8001/api/cognition/run-all -H "Authorization: Bearer $TOKEN"
+curl      localhost:8001/api/health/diagnose
+curl -X POST localhost:8001/api/health/heal      -H "Authorization: Bearer $TOKEN"
+```
 
 El comportamiento que da: **mientras trabajas, el organismo se aparta y sólo
 late; cuando te vas, consolida memoria, deriva objetivos y recalibra agentes.**
@@ -187,11 +250,26 @@ curl -X POST localhost:8001/api/organism/tick   -H "Authorization: Bearer $TOKEN
 
 ## Deuda conocida (declarada, no oculta)
 
-### Simulaciones: ninguna
+### Simulaciones: ninguna en la superficie activa
 
-`backend/app/` no contiene simulaciones. La barrera de CI «Ninguna simulación en
-backend/app» falla el build si reaparece un `mock_*`, `_simulate_*` o
-`MockFastMCP`.
+Toda la superficie activa —los 107 archivos `.py` que se ejecutan— está libre de
+datos fabricados. Dos barreras de CI lo mantienen así: una prohíbe simulaciones
+fuera de `legacy/` y `tests/`, y otra impide importar código archivado.
+
+Los mocks **dentro de `tests/`** son legítimos y están permitidos: simular una
+dependencia en un test es ingeniería correcta. Lo que no se admite es que
+código de producción devuelva datos inventados.
+
+### El archivo histórico (`legacy/`)
+
+9 directorios con 354 archivos `.py` (222.898 líneas) se apartaron a `legacy/`
+con `git mv`, **íntegros y con su historial**. Eran huérfanos completos: ni
+`backend/`, ni el servidor, ni `docker-compose.yml` importaban una línea de
+ahí. 39 de sus archivos de producción fabricaban datos — el más ilustrativo,
+un «Research Intelligence Agent» que generaba números de patente e inventores
+con `random.choice()`.
+
+Nada se ha perdido. Para recuperar o portar algo, ver `legacy/README.md`.
 
 Lo que se retiró y por qué importaba cada caso:
 
@@ -206,18 +284,32 @@ Lo que se retiró y por qué importaba cada caso:
 | `core/dynamic_mcp_factory.py`: `MockFastMCP` reportado como `status: active` | Lanza `MCPFactoryUnavailable` si FastMCP no está instalado |
 | `core/llm_router.py`: descartaba toda respuesta que contuviera la palabra «error» | Sólo descarta sus propios marcadores de degradación, y sólo al principio |
 
-### Otros
+### Resuelto
 
-- **Dos backends coexisten**: `silhouettemcp_server.py` (8001, activo) y
-  `backend/main.py` (8000). Pendiente de consolidar en uno.
-- **`code/` y `package/`** son volcados heredados de scripts sueltos con CORS
-  abierto. No se sirven; pendientes de retirada. Están fuera del alcance de las
-  barreras de CI precisamente por eso.
+Estos puntos estuvieron abiertos y ya no lo están. Se dejan anotados porque
+saber qué se arregló evita volver a introducirlo:
+
+| Era | Estado |
+|---|---|
+| Dos backends con configuración divergente | Una sola aplicación; `backend/main.py` la reexporta para el puerto 8000 |
+| Los routers `/api/v1` sin ninguna autenticación | Montados con `Depends(verify_admin)`; 401 sin token |
+| `@app.on_event` deprecado | Migrado a `lifespan` |
+| `class Config` de Pydantic v1 | Migrado a `SettingsConfigDict` |
+| `code/`, `package/` y 7 directorios más en la raíz | En `legacy/`, aislados por CI |
+| Correo del administrador escrito en el código | Sale del entorno |
+| Chequeos de salud con cifras fijas (`1247` consultas, `2.1%` de error, siempre `healthy`) | Ping real a base de datos y Redis; estadísticas reales del router |
+| `task_manager` pedía un bucle de eventos al importarse | Se programa en el arranque |
+
+### Pendiente
+
 - **Historial de Git**: contuvo una clave de OpenRouter y una clave maestra. Se
   retiraron del índice, pero **siguen en el historial** hasta que se reescriba
-  con `git filter-repo`. Las claves deben rotarse con independencia de eso.
-- **`@app.on_event`** está deprecado; migrar a *lifespan* de FastAPI.
-- **`backend/app/core/config.py`** usa `class Config` de Pydantic v1.
+  con `git filter-repo`. Rotar las claves es independiente de eso, y prioritario.
+- **Seguimiento asíncrono de herramientas** (`api/tools.py`): devuelve 501. Para
+  implementarlo hace falta Redis; se declara en lugar de fingirse.
+- **Búsqueda de patentes** (`tools/research.py`): lanza `NotImplementedError`.
+  Requiere elegir una API externa — PatentsView es gratuita con registro; Google
+  Patents y EPO OPS son de pago. Es una decisión de producto.
 - **`frontend/`** (referenciado por `docker-compose.yml`) es una app React
   anterior a `mcp-dashboard`; decidir cuál sobrevive.
 

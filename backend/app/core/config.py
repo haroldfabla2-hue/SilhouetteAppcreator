@@ -3,7 +3,7 @@ Configuración central del sistema
 """
 import os
 
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
@@ -17,9 +17,23 @@ class Settings(BaseSettings):
     # API Settings
     API_V1_PREFIX: str = "/api/v1"
 
-    # API Keys
-    MINIMAX_API_KEY: str = os.getenv("MINIMAX_API_KEY", "")
-    OPENROUTER_API_KEY: str = os.getenv("OPENROUTER_API_KEY", "")
+    # Las claves de API no se declaran como campos. Antes eran
+    # `os.getenv("...", "")` en el cuerpo de la clase, y esa llamada se evalúa
+    # una sola vez —al importar este módulo—, de modo que si el `.env` se
+    # cargaba después quedaban fijadas a cadena vacía para siempre. Ese era el
+    # motivo real de que el sistema arrancara sin ningún modelo teniendo las
+    # claves bien escritas.
+    #
+    # Como propiedades reflejan el entorno actual, lo que además permite
+    # conectar un proveedor nuevo desde la API sin reiniciar el servidor.
+
+    @property
+    def MINIMAX_API_KEY(self) -> str:
+        return os.getenv("MINIMAX_API_KEY", "")
+
+    @property
+    def OPENROUTER_API_KEY(self) -> str:
+        return os.getenv("OPENROUTER_API_KEY", "")
 
     # MiniMax M2 API
     MINIMAX_API_BASE: str = "https://api.minimax.chat/v1"
@@ -59,9 +73,14 @@ class Settings(BaseSettings):
     ENABLE_TRACING: bool = True
     METRICS_PORT: int = 9090
 
-    class Config:
-        env_file = ".env"
-        case_sensitive = True
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        case_sensitive=True,
+        # El repositorio define variables que no son campos de esta clase
+        # (SILHOUETTE_*, claves de otros proveedores). Ignorarlas evita que un
+        # `.env` completo impida instanciar la configuración.
+        extra="ignore",
+    )
 
 
 settings = Settings()

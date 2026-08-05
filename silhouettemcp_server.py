@@ -35,6 +35,21 @@ from prometheus_client import Counter, Gauge, generate_latest, CONTENT_TYPE_LATE
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger("SilhouetteMCPServer")
 
+# La consola va antes que nada: en Windows, escribir un emoji o una comilla
+# tipográfica en un log con la página de códigos por defecto lanza
+# UnicodeEncodeError y aborta la petición en curso.
+from backend.app.core.console import configure as configure_console  # noqa: E402
+
+configure_console()
+
+# El entorno se carga ANTES que cualquier otra cosa: la autenticación, el CORS,
+# la lista blanca de procesos y el router leen `os.getenv()` en tiempo de import.
+# Sin esto, las claves de API escritas en `.env` no las veía nadie y el sistema
+# arrancaba sin ningún modelo disponible.
+from backend.app.core.env_loader import load_env  # noqa: E402
+
+load_env()
+
 # ==================== CONFIGURACIÓN DE AUTENTICACIÓN ====================
 # Las credenciales viven en el entorno, nunca en el código. Genere el hash con:
 #   python -m backend.app.security.auth "<contraseña>"
@@ -58,13 +73,55 @@ if not auth_service.is_configured:
         "Defina SILHOUETTE_ADMIN_EMAIL y SILHOUETTE_ADMIN_PASSWORD_HASH."
     )
 
+# ==================== CICLO DE VIDA ====================
+# `@app.on_event` está deprecado en FastAPI. `lifespan` lo sustituye y además
+# garantiza que el apagado se ejecute aunque el arranque haya fallado a medias.
+from contextlib import asynccontextmanager
+
+
+@asynccontextmanager
+async def lifespan(_app: FastAPI):
+    """Arranque y apagado ordenados del servidor."""
+    # Los componentes se resuelven aquí, no al importar: cuando esto corre, el
+    # módulo ya está cargado por completo.
+    try:
+        from backend.app.core.startup_manager import StartupManager
+
+        logger.info("Inicializando SilhouetteMCP...")
+        # La limpieza periódica de tareas no puede programarse al importar
+        # (no hay bucle de eventos todavía); aquí sí lo hay.
+        from backend.app.services.task_manager import task_manager
+
+        task_manager.ensure_cleanup_running()
+
+        await StartupManager(root_dir=str(Path(__file__).parent)).execute_startup_scripts(
+            globals()["system_orchestrator"]
+        )
+    except Exception as exc:  # noqa: BLE001 - un fallo de arranque no debe impedir servir
+        logger.error("Fallo durante el arranque: %s", exc)
+
+    yield
+
+    # El apagado se intenta siempre, incluso si el arranque falló.
+    for nombre in ("organism", "evolution_scheduler"):
+        componente = globals().get(nombre)
+        if componente is None:
+            continue
+        try:
+            await componente.stop()
+        except Exception as exc:  # noqa: BLE001 - apagar nunca debe lanzar
+            logger.warning("Error al detener %s: %s", nombre, exc)
+    logger.info("SilhouetteMCP detenido.")
+
+
 # Configuración del servidor
 app = FastAPI(
     title="SilhouetteMCP Server",
     description="Servidor MCP superior para gestión multi-aplicación con agentes",
     version="2.0.0",
     docs_url="/docs",
-    redoc_url="/redoc"
+    redoc_url="/redoc",
+    lifespan=lifespan,
 )
 
 # CORS: lista blanca explícita. Un comodín junto a allow_credentials=True es
@@ -88,6 +145,28 @@ app.add_middleware(
 # Sistema de autenticación
 security = HTTPBearer()
 
+
+@app.exception_handler(Exception)
+async def _sin_modelo_handler(request: Request, exc: Exception):
+    """Traduce «no hay modelo» a un 503 con el diagnóstico y qué hacer.
+
+    Sin esto acababa en un 500 genérico, indistinguible de un error de
+    programación, cuando en realidad es un estado de configuración con solución
+    concreta.
+    """
+    from backend.app.core.llm_router import NoProviderAvailable
+
+    if isinstance(exc, NoProviderAvailable):
+        return JSONResponse(
+            status_code=503,
+            content={
+                "error": "no_llm_available",
+                "detail": str(exc),
+                "next_step": "GET /api/setup/status enumera qué falta y cómo conectarlo.",
+            },
+        )
+    raise exc
+
 # Mount static files for dashboard
 dashboard_path = Path(__file__).parent / "dashboard-static"
 if dashboard_path.exists():
@@ -100,12 +179,6 @@ from backend.app.orchestrator.multi_agent import MultiAgentOrchestrator
 
 # Global orchestrator instance for startup tasks and system-wide operations
 system_orchestrator = MultiAgentOrchestrator()
-
-@app.on_event("startup")
-async def startup_event():
-    logger.info("Initializing SilhouetteMCP Auto-Bootstrap...")
-    startup_mgr = StartupManager(root_dir=str(Path(__file__).parent))
-    await startup_mgr.execute_startup_scripts(system_orchestrator)
 
 # ==================== MODELOS DE DATOS ====================
 
@@ -188,13 +261,14 @@ class SilhouetteMCPStore:
         """Crear datos por defecto del servidor"""
         now = datetime.now().isoformat()
         
-        # Aplicación por defecto para Alberto
+        # Aplicación por defecto. El propietario sale del entorno: dejarlo
+        # escrito en el código lo publicaba en cada copia del repositorio.
         default_app = Application(
             id="silhouettemcp_default",
             name="SilhouetteMCP Dashboard",
             description="Dashboard principal de gestión",
             api_key=self._generate_api_key(),
-            owner_email="alberto.farahb@hotmail.com",
+            owner_email=os.getenv("SILHOUETTE_ADMIN_EMAIL", "admin@localhost"),
             agents=[
                 AgentInstance(
                     id="dashboard_admin",
@@ -1144,6 +1218,136 @@ async def _touch_organism(request: Request, call_next):
     return await call_next(request)
 
 
+# ==================== CONEXIÓN DE IAs ====================
+# Un solo sitio para saber qué modelos hay, conectar uno nuevo y arreglar lo que
+# esté bloqueado. `/api/setup/status` es el punto de entrada.
+
+from backend.app.core import onboarding as _onboarding
+from backend.app.core.providers import PROVIDERS, check_provider
+
+
+@app.get("/api/setup/status")
+async def setup_status():
+    """Estado completo de conectividad: qué IA está lista y qué falta para el resto."""
+    informe = await _onboarding.build_report()
+    return informe.to_dict()
+
+
+@app.get("/api/setup/providers")
+async def setup_providers():
+    """Catálogo de proveedores conectables, con dónde obtener cada credencial."""
+    return {
+        "providers": [
+            {
+                "name": s.name,
+                "label": s.label,
+                "kind": s.kind.value,
+                "auth": s.auth.value,
+                "env_var": s.env_var,
+                "signup_url": s.signup_url,
+                "how_to": s.how_to,
+                "configured": s.configured,
+            }
+            for s in PROVIDERS.values()
+        ]
+    }
+
+
+class ConnectProviderRequest(BaseModel):
+    provider: str
+    credential: str
+
+
+@app.post("/api/setup/credential")
+async def setup_credential(req: ConnectProviderRequest, admin=Depends(verify_admin)):
+    """Valida una credencial con una llamada real y la guarda sólo si funciona."""
+    try:
+        resultado = await _onboarding.connect_provider(req.provider, req.credential)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from None
+    if not resultado["saved"] and resultado["health"]["status"] != "ready":
+        raise HTTPException(status_code=400, detail=resultado["detail"])
+    return resultado
+
+
+@app.post("/api/setup/verify/{provider}")
+async def setup_verify(provider: str, admin=Depends(verify_admin)):
+    """Comprueba un proveedor ya configurado, sin modificar nada."""
+    try:
+        return (await check_provider(provider)).to_dict()
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from None
+
+
+@app.post("/api/setup/login/{cli_name}")
+async def setup_login(cli_name: str, admin=Depends(verify_admin)):
+    """Inicia el login por navegador de un agente CLI (Google, GitHub…)."""
+    try:
+        return await _onboarding.start_browser_login(cli_name)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from None
+
+
+@app.post("/api/setup/fix/{fix_id}")
+async def setup_fix(fix_id: str, admin=Depends(verify_admin)):
+    """Aplica una reparación automática de las que reporta `/api/setup/status`."""
+    reparacion = _onboarding.AUTO_FIXES.get(fix_id)
+    if reparacion is None:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Reparación desconocida '{fix_id}'. Disponibles: {', '.join(_onboarding.AUTO_FIXES)}",
+        )
+    return reparacion()
+
+
+@app.get("/api/models/cli")
+async def list_cli_agents():
+    """Agentes de línea de comandos detectados en esta máquina.
+
+    La detección es real: se localiza el ejecutable probando el PATH y las rutas
+    conocidas con todas las extensiones del sistema.
+    """
+    from backend.app.core.cli_adapters import discover_installed
+
+    inventario = discover_installed()
+    return {
+        "agents": list(inventario.values()),
+        "available": sorted(n for n, i in inventario.items() if i["available"]),
+        "total_registered": len(inventario),
+    }
+
+
+class CLIProbeRequest(BaseModel):
+    cli_name: str
+    prompt: str = "Responde únicamente con la palabra OK."
+
+
+@app.post("/api/models/cli/probe")
+async def probe_cli_agent(req: CLIProbeRequest, admin=Depends(verify_admin)):
+    """Ejecuta un agente CLI de verdad para comprobar que responde.
+
+    Distingue los tres estados que importan: no instalado, instalado pero sin
+    sesión, y operativo.
+    """
+    from backend.app.core.cli_adapters import (
+        CLIInvocationError,
+        CLINotAuthenticated,
+        CLIUnavailable,
+        run_cli,
+    )
+
+    try:
+        salida = await run_cli(req.cli_name, req.prompt)
+    except CLIUnavailable as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from None
+    except CLINotAuthenticated as exc:
+        raise HTTPException(status_code=401, detail=str(exc)) from None
+    except CLIInvocationError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from None
+
+    return {"cli": req.cli_name, "ok": True, "response": salida}
+
+
 @app.get("/api/organism/vitals")
 async def organism_vitals():
     """Signos vitales: fase, recursos, salud de cada órgano y actividad."""
@@ -1189,11 +1393,263 @@ async def set_homeostasis(req: HomeostasisRequest, admin=Depends(verify_admin)):
     return organism.homeostasis.synthesize().to_dict()
 
 
-@app.on_event("shutdown")
-async def _stop_organism():
-    """El organismo se detiene con orden al cerrar el servidor."""
-    await organism.stop()
-    await evolution_scheduler.stop()
+# ==================== MOTORES COGNITIVOS Y AUTO-SANACIÓN ====================
+# Los cuatro motores del brain (Curiosity, Janitor, Dreamer, Evolution) se
+# registran como órganos: se ejecutan solos durante la fase de sueño, que es
+# cuando reescribir la memoria no compite con el trabajo del usuario.
+
+from backend.app.organism.cognitive_organs import (
+    CognitiveEnginesUnavailable,
+    CognitiveOrgans,
+)
+from backend.app.organism.self_healing import SelfHealing
+
+cognitive_organs = CognitiveOrgans(brain=brain_service)
+cognitive_organs.register_with(organism)
+
+self_healing = SelfHealing(
+    organism=organism, supervisor=team_supervisor, improver=agent_improver
+)
+
+
+@app.get("/api/cognition/engines")
+async def cognition_engines():
+    """Estado de los motores cognitivos, contado desde ejecuciones reales."""
+    return cognitive_organs.stats()
+
+
+@app.post("/api/cognition/run/{engine}")
+async def cognition_run(engine: str, admin=Depends(verify_admin)):
+    """Ejecuta un motor cognitivo de inmediato."""
+    try:
+        return (await cognitive_organs.run_engine(engine)).to_dict()
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from None
+    except CognitiveEnginesUnavailable as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from None
+
+
+@app.post("/api/cognition/run-all")
+async def cognition_run_all(admin=Depends(verify_admin)):
+    """Ciclo cognitivo completo: Janitor → Dreamer → Curiosity → Evolution."""
+    try:
+        return {"runs": [r.to_dict() for r in await cognitive_organs.run_all()]}
+    except CognitiveEnginesUnavailable as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from None
+
+
+@app.get("/api/health/diagnose")
+async def health_diagnose():
+    """Diagnóstico de salud medido, no estimado."""
+    return self_healing.diagnose().to_dict()
+
+
+@app.post("/api/health/heal")
+async def health_heal(admin=Depends(verify_admin)):
+    """Aplica las reparaciones que procedan y reporta qué hizo."""
+    return await self_healing.heal()
+
+
+# ==================== HERRAMIENTAS REALES ====================
+# Cada una sustituye a una capacidad que en legacy/ devolvía datos inventados.
+
+from backend.app.tools import git_agent as _git
+from backend.app.tools import market_data as _market
+from backend.app.tools import research as _research
+
+
+@app.get("/api/git/info")
+async def git_info(path: str = ".", admin=Depends(verify_admin)):
+    """Estado real del repositorio."""
+    try:
+        return (await _git.GitAgent(path).get_repository_info()).to_dict()
+    except _git.GitError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from None
+
+
+@app.get("/api/git/history")
+async def git_history(path: str = ".", limit: int = 20, admin=Depends(verify_admin)):
+    """Historial real de commits."""
+    try:
+        commits = await _git.GitAgent(path).get_commit_history(limit=limit)
+    except _git.GitError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from None
+    return {"commits": [c.to_dict() for c in commits], "count": len(commits)}
+
+
+class GitBranchRequest(BaseModel):
+    path: str = "."
+    name: str
+    from_ref: Optional[str] = None
+
+
+@app.post("/api/git/branch")
+async def git_branch(req: GitBranchRequest, admin=Depends(verify_admin)):
+    """Crea una rama real."""
+    try:
+        return await _git.GitAgent(req.path).create_branch(req.name, from_ref=req.from_ref)
+    except _git.InvalidBranchName as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from None
+    except _git.GitError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from None
+
+
+class GitConflictRequest(BaseModel):
+    path: str = "."
+    source: str
+    target: str
+
+
+@app.post("/api/git/check-conflicts")
+async def git_check_conflicts(req: GitConflictRequest, admin=Depends(verify_admin)):
+    """Comprueba si dos ramas fusionan limpio, sin fusionar nada."""
+    try:
+        informe = await _git.GitAgent(req.path).detect_conflicts(req.source, req.target)
+    except (_git.InvalidBranchName, _git.GitError) as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from None
+    return informe.to_dict()
+
+
+@app.get("/api/research/search")
+async def research_search(query: str, limit: int = 10):
+    """Búsqueda real en arXiv y Semantic Scholar."""
+    try:
+        return await _research.search(query, limit=limit)
+    except _research.ResearchUnavailable as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from None
+
+
+@app.get("/api/market/quote")
+async def market_quote(symbol: str):
+    """Cotización real, con su advertencia de retardo."""
+    try:
+        return (await _market.get_quote(symbol)).to_dict()
+    except _market.MarketDataUnavailable as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from None
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from None
+
+
+@app.get("/api/market/history")
+async def market_history(symbol: str, period: str = "1mo", interval: str = "1d"):
+    """Serie histórica real de precios."""
+    try:
+        return await _market.get_history(symbol, period=period, interval=interval)
+    except _market.MarketDataUnavailable as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from None
+
+
+# ==================== HERRAMIENTAS DEL AGENTE DE DESARROLLO ====================
+# Editar código, ejecutar los tests y entender el repositorio. Sin estas tres,
+# el sistema genera texto pero no desarrolla.
+
+from backend.app.tools.code_editor import CodeEditor, EditError
+from backend.app.tools.repo_index import RepoIndex
+from backend.app.tools.suite_runner import SuiteRunner, SuiteRunnerUnavailable
+
+code_editor = CodeEditor()
+repo_index = RepoIndex()
+test_runner = SuiteRunner()
+
+
+@app.get("/api/code/read")
+async def code_read(path: str, admin=Depends(verify_admin)):
+    """Lee un archivo con su estructura (clases y funciones con su línea)."""
+    try:
+        return code_editor.read(path).to_dict()
+    except EditError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from None
+
+
+class CodeReplaceRequest(BaseModel):
+    path: str
+    old: str
+    new: str
+    replace_all: bool = False
+
+
+@app.post("/api/code/replace")
+async def code_replace(req: CodeReplaceRequest, admin=Depends(verify_admin)):
+    """Sustituye un fragmento exacto. Valida la sintaxis antes de escribir."""
+    try:
+        return code_editor.replace(
+            req.path, req.old, req.new, replace_all=req.replace_all
+        ).to_dict()
+    except EditError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from None
+
+
+class CodeWriteRequest(BaseModel):
+    path: str
+    content: str
+
+
+@app.post("/api/code/write")
+async def code_write(req: CodeWriteRequest, admin=Depends(verify_admin)):
+    """Sobrescribe un archivo, respaldando el anterior."""
+    try:
+        return code_editor.write(req.path, req.content).to_dict()
+    except EditError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from None
+
+
+@app.post("/api/code/revert")
+async def code_revert(path: str, admin=Depends(verify_admin)):
+    """Restaura la última copia de seguridad de un archivo."""
+    try:
+        return code_editor.revert(path).to_dict()
+    except EditError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from None
+
+
+@app.post("/api/tests/run")
+async def tests_run(
+    target: Optional[str] = None,
+    keyword: Optional[str] = None,
+    admin=Depends(verify_admin),
+):
+    """Ejecuta la suite de verdad y devuelve lo que ocurrió."""
+    try:
+        return (await test_runner.run(target, keyword=keyword)).to_dict()
+    except SuiteRunnerUnavailable as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from None
+
+
+@app.get("/api/repo/stats")
+async def repo_stats():
+    """Estructura del repositorio, contada leyendo los archivos."""
+    return repo_index.stats()
+
+
+@app.get("/api/repo/symbol")
+async def repo_symbol(name: str, exact: bool = False):
+    """Dónde está definido un símbolo."""
+    return {"symbol": name, "matches": repo_index.find_symbol(name, exact=exact)}
+
+
+@app.get("/api/repo/references")
+async def repo_references(symbol: str):
+    """Dónde se define y dónde se usa: la consulta previa a cambiar una firma."""
+    return repo_index.find_references(symbol)
+
+
+@app.get("/api/repo/search")
+async def repo_search(pattern: str, regex: bool = False, suffix: Optional[str] = None):
+    """Busca texto en el repositorio."""
+    try:
+        return {"pattern": pattern, "hits": repo_index.search_text(pattern, regex=regex, suffix=suffix)}
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from None
+
+
+@app.get("/api/repo/outline")
+async def repo_outline(path: str):
+    """Estructura de un archivo concreto."""
+    try:
+        return repo_index.outline(path)
+    except (FileNotFoundError, PathNotAllowed) as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from None
+
 
 @app.post("/api/agents/deploy")
 async def deploy_agent(request: Request, admin=Depends(verify_admin)):
@@ -1832,12 +2288,37 @@ async def update_credentials(req: UpdateCredentialsRequest, admin=Depends(verify
 
 # ==================== MAIN ====================
 
+# ==================== API v1 (consolidada) ====================
+# Estos routers vivían sólo en `backend/main.py`, un segundo servidor en el
+# puerto 8000 con su propia configuración. Mantener dos superficies significaba
+# aplicar cada arreglo de seguridad dos veces — y ya se había olvidado una.
+#
+# Al montarlos aquí hay una sola aplicación que asegurar. Como los routers no
+# traían ninguna comprobación de acceso, la autenticación se impone a nivel de
+# router: ejecutar herramientas, escribir memoria y lanzar tareas son
+# operaciones con efectos.
+from backend.app.api import health as _api_health
+from backend.app.api import memory as _api_memory
+from backend.app.api import tasks as _api_tasks
+from backend.app.api import tools as _api_tools
+
+app.include_router(_api_health.router, prefix="/api/v1")
+app.include_router(_api_tools.router, prefix="/api/v1", dependencies=[Depends(verify_admin)])
+app.include_router(_api_memory.router, prefix="/api/v1", dependencies=[Depends(verify_admin)])
+app.include_router(_api_tasks.router, prefix="/api/v1", dependencies=[Depends(verify_admin)])
+
+
 if __name__ == "__main__":
-    logger.info("🚀 Iniciando SilhouetteMCP Server...")
-    logger.info("📊 Dashboard Ultra: http://localhost:8001/dashboard-ultra")
-    logger.info("📊 Dashboard Admin: https://silhouettemcp.albertofarah.com/admin/dashboard")
-    logger.info("🔑 Login: alberto.farahb@hotmail.com")
-    logger.info("📡 API Docs: https://silhouettemcp.albertofarah.com/docs")
+    # El correo del administrador sale del entorno; no se escribe en el código
+    # ni se registra en el log.
+    logger.info("Iniciando SilhouetteMCP Server en http://localhost:8001")
+    logger.info("Documentación de la API: http://localhost:8001/docs")
+    logger.info("Panel: http://localhost:8001/dashboard-ultra")
+    if not auth_service.is_configured:
+        logger.warning(
+            "Sin administrador configurado: defina SILHOUETTE_ADMIN_EMAIL y "
+            "SILHOUETTE_ADMIN_PASSWORD_HASH, o ejecute `python conectar.py`."
+        )
     
     # Configurar logging a archivo
     file_handler = logging.FileHandler("silhouettemcp.log")

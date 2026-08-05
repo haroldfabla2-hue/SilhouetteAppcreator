@@ -124,7 +124,7 @@ class MCTSCodePlanner:
         """Función de evaluación heurística de un plan candidato.
 
         Es una evaluación determinista, no una simulación: el mismo plan
-        siempre obtiene la misma puntuación. Antes se sumaba `random.uniform()`,
+        siempre obtiene la misma puntuación. Antes se le sumaba ruido aleatorio,
         lo que hacía que dos ejecuciones sobre la misma entrada dieran planes
         distintos y que ninguna decisión fuera reproducible ni depurable.
 

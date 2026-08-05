@@ -319,19 +319,49 @@ class TaskManager:
             yield "data: [DONE]\n\n"
 
     def _start_cleanup_task(self):
-        """Inicia tarea de limpieza de tareas viejas"""
+        """Programa la limpieza periódica de tareas antiguas.
 
-        async def cleanup_loop():
-            while True:
-                try:
-                    await asyncio.sleep(self.cleanup_interval)
-                    await self._cleanup_old_tasks()
-                except Exception as e:
-                    logger.error(f"Error en cleanup de tareas: {e}")
+        Este método se llama al construir el gestor, que a su vez ocurre al
+        importar el módulo. Antes usaba `asyncio.get_event_loop()`, que en
+        Python 3.12 **lanza** si no hay un bucle en marcha — de modo que
+        importar el servidor después de cualquier `asyncio.run()` reventaba con
+        «There is no current event loop».
 
-        # Iniciar en thread separado para no bloquear
-        loop = asyncio.get_event_loop()
-        loop.create_task(cleanup_loop())
+        Ahora sólo se programa si hay un bucle corriendo. Si no lo hay, la
+        limpieza queda pendiente y `ensure_cleanup_running()` la activa cuando
+        el servidor arranca.
+        """
+        try:
+            loop = asyncio.get_running_loop()
+        except RuntimeError:
+            # Sin bucle en marcha: se programará más tarde, no es un error.
+            self._cleanup_task = None
+            return
+
+        self._cleanup_task = loop.create_task(self._cleanup_loop())
+
+    async def _cleanup_loop(self):
+        """Bucle de limpieza. Sobrevive a los fallos de una iteración."""
+        while True:
+            try:
+                await asyncio.sleep(self.cleanup_interval)
+                await self._cleanup_old_tasks()
+            except asyncio.CancelledError:
+                raise
+            except Exception as e:
+                logger.error(f"Error en cleanup de tareas: {e}")
+
+    def ensure_cleanup_running(self) -> bool:
+        """Activa la limpieza si aún no está en marcha. Idempotente."""
+        tarea = getattr(self, "_cleanup_task", None)
+        if tarea is not None and not tarea.done():
+            return True
+        try:
+            asyncio.get_running_loop()
+        except RuntimeError:
+            return False
+        self._start_cleanup_task()
+        return self._cleanup_task is not None
 
     async def _cleanup_old_tasks(self):
         """Limpia tareas completadas hace más de 1 hora"""
