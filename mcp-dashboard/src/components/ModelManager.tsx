@@ -69,6 +69,7 @@ export const ModelManager: React.FC = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(credForm)
       });
+      const data = await res.json();
       if (res.ok && data.success) {
         alert(data.message || 'Credenciales guardadas correctamente');
         fetchCredentials();
